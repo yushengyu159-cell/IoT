@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESG VISA - 文件管理</title>
+    <link rel="stylesheet" href="/static/styles.css?v=20250819-file-management">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- 顶部标题栏 -->
+        <header class="app-header">
+            <div class="app-title">
+                <h1>ESG VISA</h1>
+            </div>
+            <div class="user-info" onclick="showUserDetail()">
+                <div class="user-avatar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <div class="user-details">
+                    <span id="userName">用户</span>
+                    <span id="userEmail">user@example.com</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="app-body">
+            <!-- 左侧导航栏（英文与图标，风格同参考图） -->
+            <nav class="sidebar">
+                <div class="nav-item active">
+                    <div class="nav-icon red"></div>
+                    <span>Upload Data</span>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-icon blue"></div>
+                    <span>Certificate</span>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-icon purple"></div>
+                    <span>Documents</span>
+                </div>
+                
+                <div class="nav-separator"></div>
+                
+                <div class="nav-item">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </div>
+                <div class="nav-item">
+                    <i class="fas fa-question-circle"></i>
+                    <span>FAQ</span>
+                </div>
+            </nav>
+
+            <!-- 右侧主内容区 -->
+            <main class="main-content">
+                <!-- 操作按钮区域 -->
+                <div class="action-bar">
+                    <div class="action-left">
+                        <button class="btn btn-info" onclick="refreshFileList()">
+                            <i class="fas fa-refresh"></i> 刷新列表
+                        </button>
+                    </div>
+                    <div class="action-right">
+                        <button class="btn btn-primary btn-sm" onclick="showUploadModal()">
+                            <i class="fas fa-plus"></i> 新增文件
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 文件上传模态框（隐藏） -->
+                <div class="modal hidden" id="uploadModal">
+                    <div class="modal-content upload-modal-content">
+                        <div class="modal-header">
+                            <h3><i class="fas fa-upload"></i> 上传新文件</h3>
+                            <button class="close-btn" onclick="closeUploadModal()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="fileUploadForm">
+                                <div class="form-group">
+                                    <label for="fileInput">选择文件</label>
+                                    <div class="file-input-wrapper">
+                                        <input type="file" id="fileInput" name="file" required>
+                                        <div class="file-input-display" id="fileInputDisplay">
+                                            <i class="fas fa-cloud-upload-alt"></i>
+                                            <span>点击选择文件或拖拽文件到此处</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="fileDesc">文件描述</label>
+                                    <textarea id="fileDesc" name="desc" placeholder="请输入文件描述" rows="5" required></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="uploader">上传者身份</label>
+                                    <input type="text" id="uploader" name="uploader" placeholder="上传者身份（自动填充）" readonly required>
+                                    <small class="form-help">上传者身份固定为当前登录者的 DID</small>
+                                </div>
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-upload"></i> 开始上传
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" onclick="closeUploadModal()">
+                                        取消
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 文件清单区域（参考图空状态风格） -->
+                <div class="file-list-area">
+                    <div class="file-list-container">
+                        <h3><i class="fas fa-list"></i> Building Data</h3>
+                        <div class="file-list" id="fileList">
+                            <!-- 列表为空时的插画与提示（由JS回填时会被替换） -->
+                            <div class="empty-state">
+                                <div class="empty-hero">
+                                    <!-- 简单SVG插画，纯前端，无外链 -->
+                                    <svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                        <defs>
+                                            <linearGradient id="g" x1="0" x2="1">
+                                                <stop offset="0" stop-color="#cfead4"/>
+                                                <stop offset="1" stop-color="#a6d9ad"/>
+                                            </linearGradient>
+                                        </defs>
+                                        <rect x="20" y="60" width="160" height="60" rx="12" fill="url(#g)" opacity="0.35"/>
+                                        <circle cx="80" cy="52" r="18" fill="#2e7d32" opacity="0.15"/>
+                                        <circle cx="120" cy="52" r="12" fill="#2e7d32" opacity="0.15"/>
+                                        <rect x="60" y="82" width="20" height="16" rx="4" fill="#2e7d32" opacity="0.2"/>
+                                        <rect x="94" y="82" width="20" height="16" rx="4" fill="#2e7d32" opacity="0.2"/>
+                                        <rect x="128" y="82" width="20" height="16" rx="4" fill="#2e7d32" opacity="0.2"/>
+                                    </svg>
+                                    <div class="empty-title">Drag & Drop or Click to Upload Building Data</div>
+                                    <div class="empty-subtext">Instant ESG Rating</div>
+                                    <ul class="empty-bullets">
+                                        <li>Supported formats: PDF/DOC/DOCX/CSV (Max 50MB)</li>
+                                        <li>Include green building certification data, energy & carbon</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- 文件详情模态框（隐藏） -->
+        <div class="modal hidden" id="fileDetailModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>文件详情</h3>
+                    <button class="close-btn" onclick="closeFileDetail()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body" id="fileDetailContent">
+                    <!-- 文件详情内容将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 用户详情模态框（隐藏） -->
+        <div class="modal hidden" id="userDetailModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>用户DID信息</h3>
+                    <button class="close-btn" onclick="closeUserDetail()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body" id="userDetailContent">
+                    <!-- 用户详情内容将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 状态消息 -->
+        <div id="statusMessage" class="status-message hidden"></div>
+        
+        <!-- 下载进度条 -->
+        <div id="downloadProgress" class="download-progress hidden">
+            <div class="progress-header">
+                <h4><i class="fas fa-download"></i> 文件下载进度</h4>
+                <div class="progress-actions">
+                    <button class="btn btn-danger btn-sm" onclick="cancelDownload()" id="cancelDownloadBtn">
+                        <i class="fas fa-stop"></i> 取消下载
+                    </button>
+                    <button class="close-btn" onclick="hideDownloadProgress()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="progress-content">
+                <div class="file-info">
+                    <span id="downloadFileName">文件名</span>
+                    <span id="downloadFileSize">文件大小</span>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-text">
+                        <span id="progressPercent">0%</span>
+                        <span id="progressStatus">准备中...</span>
+                    </div>
+                </div>
+                <div class="progress-details">
+                    <div class="detail-item">
+                        <span class="label">已下载:</span>
+                        <span id="downloadedSize">0 B</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">剩余时间:</span>
+                        <span id="remainingTime">计算中...</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">下载速度:</span>
+                        <span id="downloadSpeed">0 B/s</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 加载遮罩 -->
+    <div id="loadingOverlay" class="loading-overlay hidden">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>处理中...</p>
+        </div>
+    </div>
+
+    <script src="/static/file-management.js?v=20250826-download-fix"></script>
+    
+    <!-- Language switching script -->
+    <script>
+    (function(){
+        if (window.__esgLangInit_filemgmt) return; window.__esgLangInit_filemgmt = true;
+        window.languageData = window.languageData || {
+            en:{code:'EN',flag:'🇺🇸',t:{
+                // Header
+                pageTitle:'ESG VISA - File Management',
+                userName:'User',
+                // Navigation
+                uploadData:'Upload Data',
+                certificate:'Certificate',
+                documents:'Documents',
+                settings:'Settings',
+                faq:'FAQ',
+                // Action buttons
+                refreshList:'Refresh List',
+                addFile:'Add New File',
+                // Upload modal
+                uploadNewFile:'Upload New File',
+                selectFile:'Select File',
+                clickOrDrag:'Click to select file or drag file here',
+                fileDesc:'File Description',
+                fileDescPlaceholder:'Please enter file description',
+                uploader:'Uploader Identity',
+                uploaderPlaceholder:'Uploader identity (auto-filled)',
+                uploaderHelp:'Uploader identity is fixed as current user\'s DID',
+                startUpload:'Start Upload',
+                cancel:'Cancel',
+                // File list
+                buildingData:'Building Data',
+                emptyTitle:'Drag & Drop or Click to Upload Building Data',
+                emptySubtext:'Instant ESG Rating',
+                supportedFormats:'Supported formats: PDF/DOC/DOCX/CSV (Max 50MB)',
+                includeData:'Include green building certification data, energy & carbon',
+                // File details
+                fileDetails:'File Details',
+                viewDetails:'View Details',
+                downloadBtn:'Download',
+                basicInfo:'Basic Information',
+                fileDescLabel:'File Description',
+                uploaderNameLabel:'Uploader',
+                uploaderIdentityLabel:'Uploader Identity',
+                uploadTimeLabel:'Upload Time',
+                txHashLabel:'Transaction Hash',
+                shardInfo:'Shards',
+                shardCountLabel:'Shard Count',
+                shardSizeLabel:'Shard Size',
+                totalFileSizeLabel:'Total File Size',
+                encryptionInfo:'Encryption',
+                encryptionKeyLabel:'Encryption Key',
+                ivLabel:'Initialization Vector',
+                cipherSampleLabel:'Cipher Sample',
+                uploadPerformance:'Upload Performance',
+                startTimeLabel:'Start Time',
+                endTimeLabel:'End Time',
+                totalDurationLabel:'Total Duration',
+                unknown:'Unknown',
+                noDescription:'No description',
+                // User details
+                userDIDInfo:'User DID Information',
+                basicInfoTitle:'Basic Information',
+                nameLabel:'Name',
+                phoneLabel:'Phone',
+                emailLabel:'Email',
+                roleLabel:'Role',
+                ageLabel:'Age',
+                roleRelatedTitle:'Role Related',
+                buildingNameLabel:'Building Name',
+                buildingAddrLabel:'Building Address',
+                buildingTypeLabel:'Building Type',
+                propertyNameLabel:'Property Name',
+                occupationLabel:'Occupation',
+                institutionLabel:'Institution',
+                didInfoTitle:'DID Identity',
+                didIdentifierLabel:'DID Identifier',
+                registerTimeLabel:'Register Time',
+                identityStatusLabel:'Identity Status',
+                verifiedText:'Verified',
+                chainInfoTitle:'Blockchain',
+                chainStatusLabel:'On-chain Status',
+                onChainText:'On-chain',
+                assetIdLabel:'Asset ID',
+                chaincodeStatusLabel:'Chaincode Status',
+                chainTimeLabel:'On-chain Time',
+                chainMsgLabel:'Chaincode Message',
+                logoutText:'Log out',
+                // Download progress
+                downloadProgress:'File Download Progress',
+                cancelDownload:'Cancel Download',
+                fileName:'File Name',
+                fileSize:'File Size',
+                downloaded:'Downloaded:',
+                remainingTime:'Remaining Time:',
+                downloadSpeed:'Download Speed:',
+                calculating:'Calculating...',
+                preparing:'Preparing...',
+                // Status messages
+                processing:'Processing...',
+                // Runtime messages
+                pleaseSelectFile:'Please select a file to upload',
+                pleaseEnterDesc:'Please enter file description',
+                pleaseEnterUploader:'Please enter uploader info',
+                cannotGetUploader:'Unable to get correct uploader, please re-login',
+                wrongDid:'Uploader DID format is incorrect, please re-login',
+                uploadSuccess:'Encrypted chunk upload succeeded!',
+                uploadFailed:'Upload failed',
+                loadingListFailed:'Failed to load file list',
+                pleaseLogin:'Please login first',
+                preparingDownloadInfo:'Preparing download...',
+                downloadingNormalInfo:'Downloading normal file...',
+                processingFileData:'Processing file data, please wait...',
+                decryptedDownloadSuccess:'Encrypted file downloaded and decrypted successfully',
+                downloadFailedPrefix:'Download failed: ',
+                // Progress bar labels
+                fileNameLabel:'File Name',
+                fileSizeLabel:'File Size',
+                ready:'Preparing...',
+                calculating:'Calculating...',
+                startDownloading:'Starting download...',
+                downloading:'Downloading...',
+                downloadingInProgress:'Downloading in progress...',
+                almostDone:'Almost done...',
+                done:'Completed',
+                downloadCancelled:'Download cancelled',
+                cancelled:'Cancelled',
+                downloadCompleted:'Download completed!',
+                seconds:'s',
+                minutes:'min',
+                hours:'h',
+                // Logout
+                confirmLogout:'Are you sure you want to log out?',
+                logoutSuccess:'Logged out successfully'
+            }},
+            'zh-cn':{code:'简体',flag:'🇨🇳',t:{
+                // Header
+                pageTitle:'ESG VISA - 文件管理',
+                userName:'用户',
+                // Navigation
+                uploadData:'上传数据',
+                certificate:'证书',
+                documents:'文档',
+                settings:'设置',
+                faq:'常见问题',
+                // Action buttons
+                refreshList:'刷新列表',
+                addFile:'新增文件',
+                // Upload modal
+                uploadNewFile:'上传新文件',
+                selectFile:'选择文件',
+                clickOrDrag:'点击选择文件或拖拽文件到此处',
+                fileDesc:'文件描述',
+                fileDescPlaceholder:'请输入文件描述',
+                uploader:'上传者身份',
+                uploaderPlaceholder:'上传者身份（自动填充）',
+                uploaderHelp:'上传者身份固定为当前登录者的 DID',
+                startUpload:'开始上传',
+                cancel:'取消',
+                // File list
+                buildingData:'建筑数据',
+                emptyTitle:'拖拽或点击上传建筑数据',
+                emptySubtext:'即时ESG评级',
+                supportedFormats:'支持格式：PDF/DOC/DOCX/CSV（最大50MB）',
+                includeData:'包含绿色建筑认证数据、能源和碳数据',
+                // File details
+                fileDetails:'文件详情',
+                viewDetails:'文件详情',
+                downloadBtn:'下载',
+                basicInfo:'基础信息',
+                fileDescLabel:'文件描述',
+                uploaderNameLabel:'上传者',
+                uploaderIdentityLabel:'上传者身份',
+                uploadTimeLabel:'上传时间',
+                txHashLabel:'交易哈希',
+                shardInfo:'分片信息',
+                shardCountLabel:'分片数量',
+                shardSizeLabel:'分片大小',
+                totalFileSizeLabel:'总文件大小',
+                encryptionInfo:'加密信息',
+                encryptionKeyLabel:'加密密钥',
+                ivLabel:'初始化向量',
+                cipherSampleLabel:'密文样本',
+                uploadPerformance:'上传性能',
+                startTimeLabel:'开始时间',
+                endTimeLabel:'结束时间',
+                totalDurationLabel:'总耗时',
+                unknown:'未知',
+                noDescription:'无描述',
+                // User details
+                userDIDInfo:'用户DID信息',
+                basicInfoTitle:'基本信息',
+                nameLabel:'姓名',
+                phoneLabel:'手机号码',
+                emailLabel:'邮箱地址',
+                roleLabel:'角色',
+                ageLabel:'年龄',
+                roleRelatedTitle:'角色相关信息',
+                buildingNameLabel:'建筑名称',
+                buildingAddrLabel:'建筑地址',
+                buildingTypeLabel:'建筑类型',
+                propertyNameLabel:'物业名称',
+                occupationLabel:'职业',
+                institutionLabel:'机构名称',
+                didInfoTitle:'DID身份信息',
+                didIdentifierLabel:'DID标识符',
+                registerTimeLabel:'注册时间',
+                identityStatusLabel:'身份状态',
+                verifiedText:'已验证',
+                chainInfoTitle:'区块链信息',
+                chainStatusLabel:'链上状态',
+                onChainText:'已上链',
+                assetIdLabel:'资产ID',
+                chaincodeStatusLabel:'链码状态',
+                chainTimeLabel:'上链时间',
+                chainMsgLabel:'链码消息',
+                logoutText:'退出登录',
+                // Download progress
+                downloadProgress:'文件下载进度',
+                cancelDownload:'取消下载',
+                fileName:'文件名',
+                fileSize:'文件大小',
+                downloaded:'已下载:',
+                remainingTime:'剩余时间:',
+                downloadSpeed:'下载速度:',
+                calculating:'计算中...',
+                preparing:'准备中...',
+                // Status messages
+                processing:'处理中...',
+                // Runtime messages
+                pleaseSelectFile:'请选择要上传的文件',
+                pleaseEnterDesc:'请输入文件描述',
+                pleaseEnterUploader:'请输入上传者信息',
+                cannotGetUploader:'无法获取正确的上传者身份，请重新登录',
+                wrongDid:'上传者身份格式不正确，请重新登录获取正确的 DID',
+                uploadSuccess:'加密分片上传成功！',
+                uploadFailed:'上传失败',
+                loadingListFailed:'加载文件列表失败',
+                pleaseLogin:'请先登录',
+                preparingDownloadInfo:'正在准备下载...',
+                downloadingNormalInfo:'正在下载普通文件...',
+                processingFileData:'正在处理文件数据，请稍候...',
+                decryptedDownloadSuccess:'加密文件下载并解密成功',
+                downloadFailedPrefix:'下载失败: ',
+                // Progress bar labels
+                fileNameLabel:'文件名',
+                fileSizeLabel:'文件大小',
+                ready:'准备中...',
+                calculating:'计算中...',
+                startDownloading:'开始下载...',
+                downloading:'下载中...',
+                downloadingInProgress:'下载进行中...',
+                almostDone:'即将完成...',
+                done:'已完成',
+                downloadCancelled:'下载已取消',
+                cancelled:'已取消',
+                downloadCompleted:'下载完成！',
+                seconds:'秒',
+                minutes:'分钟',
+                hours:'小时',
+                // Logout
+                confirmLogout:'确定要退出登录吗？',
+                logoutSuccess:'退出登录成功'
+            }},
+            'zh-tw':{code:'繁體',flag:'🇭🇰',t:{
+                // Header
+                pageTitle:'ESG VISA - 文件管理',
+                userName:'用戶',
+                // Navigation
+                uploadData:'上傳數據',
+                certificate:'證書',
+                documents:'文檔',
+                settings:'設置',
+                faq:'常見問題',
+                // Action buttons
+                refreshList:'刷新列表',
+                addFile:'新增文件',
+                // Upload modal
+                uploadNewFile:'上傳新文件',
+                selectFile:'選擇文件',
+                clickOrDrag:'點擊選擇文件或拖拽文件到此處',
+                fileDesc:'文件描述',
+                fileDescPlaceholder:'請輸入文件描述',
+                uploader:'上傳者身份',
+                uploaderPlaceholder:'上傳者身份（自動填充）',
+                uploaderHelp:'上傳者身份固定為當前登錄者的 DID',
+                startUpload:'開始上傳',
+                cancel:'取消',
+                // File list
+                buildingData:'建築數據',
+                emptyTitle:'拖拽或點擊上傳建築數據',
+                emptySubtext:'即時ESG評級',
+                supportedFormats:'支持格式：PDF/DOC/DOCX/CSV（最大50MB）',
+                includeData:'包含綠色建築認證數據、能源和碳數據',
+                // File details
+                fileDetails:'文件詳情',
+                viewDetails:'文件詳情',
+                downloadBtn:'下載',
+                basicInfo:'基礎資訊',
+                fileDescLabel:'檔案描述',
+                uploaderNameLabel:'上傳者',
+                uploaderIdentityLabel:'上傳者身份',
+                uploadTimeLabel:'上傳時間',
+                txHashLabel:'交易雜湊',
+                shardInfo:'分片資訊',
+                shardCountLabel:'分片數量',
+                shardSizeLabel:'分片大小',
+                totalFileSizeLabel:'總檔案大小',
+                encryptionInfo:'加密資訊',
+                encryptionKeyLabel:'加密金鑰',
+                ivLabel:'初始化向量',
+                cipherSampleLabel:'密文樣本',
+                uploadPerformance:'上傳效能',
+                startTimeLabel:'開始時間',
+                endTimeLabel:'結束時間',
+                totalDurationLabel:'總耗時',
+                unknown:'未知',
+                noDescription:'無描述',
+                // User details
+                userDIDInfo:'用戶DID資訊',
+                basicInfoTitle:'基本資訊',
+                nameLabel:'姓名',
+                phoneLabel:'手機號碼',
+                emailLabel:'電子郵件',
+                roleLabel:'角色',
+                ageLabel:'年齡',
+                roleRelatedTitle:'角色相關資訊',
+                buildingNameLabel:'建築名稱',
+                buildingAddrLabel:'建築地址',
+                buildingTypeLabel:'建築類型',
+                propertyNameLabel:'物業名稱',
+                occupationLabel:'職業',
+                institutionLabel:'機構名稱',
+                didInfoTitle:'DID 身份資訊',
+                didIdentifierLabel:'DID 識別子',
+                registerTimeLabel:'註冊時間',
+                identityStatusLabel:'身份狀態',
+                verifiedText:'已驗證',
+                chainInfoTitle:'區塊鏈資訊',
+                chainStatusLabel:'鏈上狀態',
+                onChainText:'已上鏈',
+                assetIdLabel:'資產ID',
+                chaincodeStatusLabel:'鏈碼狀態',
+                chainTimeLabel:'上鏈時間',
+                chainMsgLabel:'鏈碼訊息',
+                logoutText:'登出',
+                // Download progress
+                downloadProgress:'文件下載進度',
+                cancelDownload:'取消下載',
+                fileName:'文件名',
+                fileSize:'文件大小',
+                downloaded:'已下載:',
+                remainingTime:'剩餘時間:',
+                downloadSpeed:'下載速度:',
+                calculating:'計算中...',
+                preparing:'準備中...',
+                // Status messages
+                processing:'處理中...',
+                // Runtime messages
+                pleaseSelectFile:'請選擇要上傳的檔案',
+                pleaseEnterDesc:'請輸入檔案描述',
+                pleaseEnterUploader:'請輸入上傳者資訊',
+                cannotGetUploader:'無法獲取正確的上傳者身份，請重新登入',
+                wrongDid:'上傳者身份格式不正確，請重新登入以獲取正確 DID',
+                uploadSuccess:'加密分片上傳成功！',
+                uploadFailed:'上傳失敗',
+                loadingListFailed:'載入檔案列表失敗',
+                pleaseLogin:'請先登入',
+                preparingDownloadInfo:'正在準備下載...',
+                downloadingNormalInfo:'正在下載普通檔案...',
+                processingFileData:'正在處理檔案資料，請稍候...',
+                decryptedDownloadSuccess:'加密檔案下載並解密成功',
+                downloadFailedPrefix:'下載失敗: ',
+                // Progress bar labels
+                fileNameLabel:'檔名',
+                fileSizeLabel:'檔案大小',
+                ready:'準備中...',
+                calculating:'計算中...',
+                startDownloading:'開始下載...',
+                downloading:'下載中...',
+                downloadingInProgress:'下載進行中...',
+                almostDone:'即將完成...',
+                done:'已完成',
+                downloadCancelled:'下載已取消',
+                cancelled:'已取消',
+                downloadCompleted:'下載完成！',
+                seconds:'秒',
+                minutes:'分鐘',
+                hours:'小時',
+                // Logout
+                confirmLogout:'確定要登出嗎？',
+                logoutSuccess:'登出成功'
+            }}
+        };
+        
+        function apply(lang){
+            var d=languageData[lang]; if(!d) return;
+            // Header
+            var userName=document.getElementById('userName'); if(userName) userName.textContent=d.t.userName;
+            // Navigation
+            var navItems=document.querySelectorAll('.nav-item span');
+            if(navItems.length>=5){
+                navItems[0].textContent=d.t.uploadData;
+                navItems[1].textContent=d.t.certificate;
+                navItems[2].textContent=d.t.documents;
+                navItems[3].textContent=d.t.settings;
+                navItems[4].textContent=d.t.faq;
+            }
+            // Action buttons
+            var refreshBtn=document.querySelector('.btn-info'); if(refreshBtn) refreshBtn.innerHTML='<i class="fas fa-refresh"></i> '+d.t.refreshList;
+            var addBtn=document.querySelector('.btn-primary.btn-sm'); if(addBtn) addBtn.innerHTML='<i class="fas fa-plus"></i> '+d.t.addFile;
+            // Upload modal
+            var uploadTitle=document.querySelector('#uploadModal h3'); if(uploadTitle) uploadTitle.innerHTML='<i class="fas fa-upload"></i> '+d.t.uploadNewFile;
+            var fileLabel=document.querySelector('label[for="fileInput"]'); if(fileLabel) fileLabel.textContent=d.t.selectFile;
+            var fileDisplay=document.getElementById('fileInputDisplay'); if(fileDisplay) fileDisplay.innerHTML='<i class="fas fa-cloud-upload-alt"></i><span>'+d.t.clickOrDrag+'</span>';
+            var descLabel=document.querySelector('label[for="fileDesc"]'); if(descLabel) descLabel.textContent=d.t.fileDesc;
+            var descInput=document.getElementById('fileDesc'); if(descInput) descInput.placeholder=d.t.fileDescPlaceholder;
+            var uploaderLabel=document.querySelector('label[for="uploader"]'); if(uploaderLabel) uploaderLabel.textContent=d.t.uploader;
+            var uploaderInput=document.getElementById('uploader'); if(uploaderInput) uploaderInput.placeholder=d.t.uploaderPlaceholder;
+            var uploaderHelp=document.querySelector('.form-help'); if(uploaderHelp) uploaderHelp.textContent=d.t.uploaderHelp;
+            var startBtn=document.querySelector('#fileUploadForm .btn-primary'); if(startBtn) startBtn.innerHTML='<i class="fas fa-upload"></i> '+d.t.startUpload;
+            var cancelBtn=document.querySelector('#fileUploadForm .btn-secondary'); if(cancelBtn) cancelBtn.textContent=d.t.cancel;
+            // File list
+            var listTitle=document.querySelector('.file-list-container h3'); if(listTitle) listTitle.innerHTML='<i class="fas fa-list"></i> '+d.t.buildingData;
+            var emptyTitle=document.querySelector('.empty-title'); if(emptyTitle) emptyTitle.textContent=d.t.emptyTitle;
+            var emptySubtext=document.querySelector('.empty-subtext'); if(emptySubtext) emptySubtext.textContent=d.t.emptySubtext;
+            var bullets=document.querySelectorAll('.empty-bullets li');
+            if(bullets.length>=2){
+                bullets[0].textContent=d.t.supportedFormats;
+                bullets[1].textContent=d.t.includeData;
+            }
+            // File details modal
+            var detailTitle=document.querySelector('#fileDetailModal h3'); if(detailTitle) detailTitle.textContent=d.t.fileDetails;
+            // User details modal
+            var userTitle=document.querySelector('#userDetailModal h3'); if(userTitle) userTitle.textContent=d.t.userDIDInfo;
+            // Download progress
+            var progressTitle=document.querySelector('#downloadProgress h4'); if(progressTitle) progressTitle.innerHTML='<i class="fas fa-download"></i> '+d.t.downloadProgress;
+            var cancelDownloadBtn=document.getElementById('cancelDownloadBtn'); if(cancelDownloadBtn) cancelDownloadBtn.innerHTML='<i class="fas fa-stop"></i> '+d.t.cancelDownload;
+            var fileName=document.getElementById('downloadFileName'); if(fileName) fileName.textContent=d.t.fileName;
+            var fileSize=document.getElementById('downloadFileSize'); if(fileSize) fileSize.textContent=d.t.fileSize;
+            var downloaded=document.querySelector('.detail-item .label'); if(downloaded) downloaded.textContent=d.t.downloaded;
+            var remaining=document.querySelectorAll('.detail-item .label')[1]; if(remaining) remaining.textContent=d.t.remainingTime;
+            var speed=document.querySelectorAll('.detail-item .label')[2]; if(speed) speed.textContent=d.t.downloadSpeed;
+            var calculating=document.getElementById('remainingTime'); if(calculating) calculating.textContent=d.t.calculating;
+            var preparing=document.getElementById('progressStatus'); if(preparing) preparing.textContent=d.t.preparing;
+            // Loading
+            var loading=document.querySelector('.loading-spinner p'); if(loading) loading.textContent=d.t.processing;
+            // Additional elements that might be missed
+            var userEmail=document.getElementById('userEmail'); if(userEmail && userEmail.textContent === 'user@example.com') userEmail.textContent='user@example.com';
+            // Progress bar labels that might be missed
+            var progressLabels=document.querySelectorAll('#downloadProgress .detail-item .label');
+            if(progressLabels.length>=3){
+                progressLabels[0].textContent=d.t.downloaded;
+                progressLabels[1].textContent=d.t.remainingTime;
+                progressLabels[2].textContent=d.t.downloadSpeed;
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded',function(){ 
+            var lang=localStorage.getItem('esg_language')||'en'; 
+            apply(lang); 
+        });
+    })();
+    </script>
+</body>
+</html>

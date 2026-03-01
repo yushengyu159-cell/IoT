@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>外部系统文件上传测试页面</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 40px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        input[type="file"],
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="file"]:focus,
+        input[type="text"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .file-info {
+            margin-top: 8px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 6px;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 6px;
+            display: none;
+        }
+        
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .result h3 {
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        
+        .result pre {
+            background: rgba(0,0,0,0.05);
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+            line-height: 1.5;
+            margin-top: 10px;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        
+        .info-box h4 {
+            color: #1976D2;
+            margin-bottom: 8px;
+        }
+        
+        .info-box p {
+            color: #555;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        
+        .api-endpoint {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            margin-top: 5px;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📤 外部系统文件上传测试</h1>
+        <p class="subtitle">用于测试文件上传接口，供其他系统集成使用</p>
+        
+        <div class="info-box">
+            <h4>📋 接口信息</h4>
+            <p><strong>系统域名:</strong> app.esgvisa.com</p>
+            <p><strong>接口地址:</strong></p>
+            <div class="api-endpoint" id="apiEndpoint">https://app.esgvisa.com/api/esg/upload-encrypted</div>
+            <p style="margin-top: 10px;"><strong>功能:</strong> 文件加密分片上传、IPFS存储、区块链存证</p>
+            <p style="margin-top: 5px; font-size: 12px; color: #666;">
+                💡 提示: 生产环境使用HTTPS，开发环境可使用HTTP (端口8199)
+            </p>
+        </div>
+        
+        <form id="uploadForm">
+            <div class="form-group">
+                <label for="fileInput">选择文件 *</label>
+                <input type="file" id="fileInput" name="file" required>
+                <div class="file-info" id="fileInfo" style="display: none;"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="descInput">文件描述（可选）</label>
+                <textarea id="descInput" name="desc" placeholder="请输入文件描述信息..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="uploaderInput">上传者标识（可选）</label>
+                <input type="text" id="uploaderInput" name="uploader" placeholder="例如: external-system@example.com 或 did:example:xxx">
+            </div>
+            
+            <div class="form-group">
+                <label for="apiUrlInput">API地址（可选，默认使用生产环境HTTPS）</label>
+                <input type="text" id="apiUrlInput" name="apiUrl" placeholder="https://app.esgvisa.com" value="https://app.esgvisa.com">
+                <p style="margin-top: 5px; font-size: 12px; color: #666;">
+                    生产环境: https://app.esgvisa.com | 开发环境: http://app.esgvisa.com:8199
+                </p>
+            </div>
+            
+            <button type="submit" class="btn" id="uploadBtn">🚀 开始上传</button>
+        </form>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>正在上传文件，请稍候...</p>
+        </div>
+        
+        <div class="result" id="result">
+            <h3 id="resultTitle"></h3>
+            <pre id="resultContent"></pre>
+        </div>
+    </div>
+    
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const uploadForm = document.getElementById('uploadForm');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const loading = document.getElementById('loading');
+        const result = document.getElementById('result');
+        const resultTitle = document.getElementById('resultTitle');
+        const resultContent = document.getElementById('resultContent');
+        const apiUrlInput = document.getElementById('apiUrlInput');
+        const apiEndpoint = document.getElementById('apiEndpoint');
+        
+        // 更新API端点显示
+        function updateApiEndpoint() {
+            let baseUrl = apiUrlInput.value.trim();
+            if (!baseUrl) {
+                // 默认使用生产环境HTTPS
+                baseUrl = 'https://app.esgvisa.com';
+                apiUrlInput.value = baseUrl;
+            }
+            apiEndpoint.textContent = `${baseUrl}/api/esg/upload-encrypted`;
+        }
+        
+        apiUrlInput.addEventListener('input', updateApiEndpoint);
+        updateApiEndpoint();
+        
+        // 文件选择事件
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                fileInfo.style.display = 'block';
+                const size = (file.size / 1024 / 1024).toFixed(2);
+                fileInfo.innerHTML = `
+                    <strong>文件名:</strong> ${file.name}<br>
+                    <strong>文件大小:</strong> ${size} MB<br>
+                    <strong>文件类型:</strong> ${file.type || '未知'}
+                `;
+            } else {
+                fileInfo.style.display = 'none';
+            }
+        });
+        
+        // 表单提交事件
+        uploadForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const file = fileInput.files[0];
+            if (!file) {
+                showResult('error', '请选择要上传的文件');
+                return;
+            }
+            
+            // 显示加载状态
+            loading.classList.add('show');
+            result.style.display = 'none';
+            uploadBtn.disabled = true;
+            
+            try {
+                // 构建FormData
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                const desc = document.getElementById('descInput').value.trim();
+                if (desc) {
+                    formData.append('desc', desc);
+                }
+                
+                const uploader = document.getElementById('uploaderInput').value.trim();
+                if (uploader) {
+                    formData.append('uploader', uploader);
+                }
+                
+                // 获取API地址
+                let baseUrl = apiUrlInput.value.trim();
+                if (!baseUrl) {
+                    // 默认使用生产环境HTTPS
+                    baseUrl = 'https://app.esgvisa.com';
+                }
+                const apiUrl = `${baseUrl}/api/esg/upload-encrypted`;
+                
+                console.log('上传到:', apiUrl);
+                console.log('文件信息:', {
+                    name: file.name,
+                    size: file.size,
+                    type: file.type
+                });
+                
+                // 发送请求
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.code === 200) {
+                    showResult('success', '上传成功！', data);
+                    
+                    // 保存关键信息到localStorage（可选）
+                    if (data.data && data.data.meta && data.data.meta.cids) {
+                        const fileInfo = {
+                            cid: data.data.meta.cids[0],
+                            key: data.data.key,
+                            fileName: data.data.meta.fileName,
+                            uploadAt: data.data.meta.uploadAt
+                        };
+                        console.log('文件信息（请妥善保管）:', fileInfo);
+                    }
+                } else {
+                    showResult('error', `上传失败: ${data.message}`, data);
+                }
+            } catch (error) {
+                console.error('上传错误:', error);
+                showResult('error', `网络错误: ${error.message}`, { error: error.toString() });
+            } finally {
+                loading.classList.remove('show');
+                uploadBtn.disabled = false;
+            }
+        });
+        
+        // 显示结果
+        function showResult(type, title, data) {
+            result.className = `result ${type}`;
+            resultTitle.textContent = title;
+            resultContent.textContent = JSON.stringify(data, null, 2);
+            result.style.display = 'block';
+            
+            // 滚动到结果区域
+            result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    </script>
+</body>
+</html>
+

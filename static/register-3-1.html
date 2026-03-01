@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="ui-id" content="注册3.1">
+    <title>ESG VISA - Where is your building located?</title>
+    <link rel="stylesheet" href="/static/styles.css?v=20250819-register-3-1">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container" data-ui-id="register-3-1">
+        <div class="grid-pattern"></div>
+        
+
+        <div class="main-content-login" style="max-width:860px;">
+            <div class="logo-container" style="margin-bottom:16px;">
+                <div class="logo-image" style="width:48px;height:48px;">
+                    <img src="/static/log.png" alt="ESG VISA Logo" class="logo-img" style="width:40px;height:40px;">
+                </div>
+            </div>
+
+            <div class="header" style="margin-bottom:10px;">
+                <h1 data-translate="location.title">Where is your building located?</h1>
+                <p data-translate="location.subtitle">Adding the location helps us identify your property more accurately.</p>
+            </div>
+
+            <div class="form-container">
+                <div class="form-section">
+                    <div class="form-group">
+                        <input type="text" id="buildingName" placeholder="Enter your building name" data-translate="building.name.placeholder">
+                    </div>
+
+                    <div class="form-group input-with-action">
+                        <input type="text" id="buildingAddress" placeholder="Enter your Address" data-translate="address.placeholder" readonly>
+                        <button type="button" id="useLocationBtn" class="input-action-btn" data-translate="use.location"><i class="fa-solid fa-location-crosshairs"></i> Use Location</button>
+                    </div>
+
+                    <div class="wizard-footer">
+                        <a class="back-link" href="/static/register-3.html" style="opacity:.8;">
+                            <i class="fa-solid fa-arrow-left"></i>
+                            <span data-translate="back">Back</span>
+                        </a>
+                        <div class="wizard-dots">
+                            <span class="dot active"></span>
+                            <span class="dot"></span>
+                            <span class="dot"></span>
+                        </div>
+                        <a class="back-link" href="#" id="nextBtn">
+                            <span data-translate="next">Next</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .input-with-action{position:relative}
+        .input-action-btn{position:absolute;top:6px;right:6px;border:1px solid #e1e5e9;background:#f8f9fa;color:#333;border-radius:8px;padding:8px 10px;font-size:.9rem;cursor:pointer;z-index:10;pointer-events:auto}
+        .input-action-btn i{margin-right:6px;color:#00BCD4}
+        .input-action-btn:hover{background:#eef7f8;border-color:#00BCD4}
+        .input-action-btn:active{transform:scale(0.98)}
+        /* 与注册3保持一致的底部布局 */
+        .wizard-footer{display:flex;align-items:center;justify-content:space-between;width:100%;margin-top:10px}
+        .wizard-dots{display:flex;gap:6px;align-items:center;margin:0 auto}
+        .wizard-dots .dot{width:6px;height:6px;border-radius:50%;background:#cfd8dc}
+        .wizard-dots .dot.active{background:#00BCD4}
+    </style>
+
+    <script>
+    // 页面加载时检查是否有选择的位置
+    document.addEventListener('DOMContentLoaded', function() {
+        checkSelectedLocation();
+        
+        // 位置选择功能 - 确保在DOM加载完成后绑定事件
+        const useLocationBtn = document.getElementById('useLocationBtn');
+        if (useLocationBtn) {
+            useLocationBtn.addEventListener('click', () => {
+                console.log('Use Location按钮被点击');
+                // 跳转到位置选择页面
+                window.location.href = '/static/location-selector.html';
+            });
+        } else {
+            console.error('找不到useLocationBtn元素');
+        }
+    });
+
+    function checkSelectedLocation() {
+        const selectedLocation = localStorage.getItem('esg_selected_location');
+        if (selectedLocation) {
+            try {
+                const location = JSON.parse(selectedLocation);
+                document.getElementById('buildingAddress').value = location.address;
+                console.log('已加载选择的位置:', location);
+            } catch (error) {
+                console.error('解析位置数据失败:', error);
+            }
+        }
+    }
+
+    document.getElementById('nextBtn').addEventListener('click', async (e) => {
+        e.preventDefault();
+        
+        const buildingName = document.getElementById('buildingName').value.trim();
+        const buildingAddress = document.getElementById('buildingAddress').value.trim();
+        
+        // 验证必填字段
+        if (!buildingName) {
+            alert('请输入建筑名称');
+            document.getElementById('buildingName').focus();
+            return;
+        }
+        
+        if (!buildingAddress) {
+            alert('请输入建筑地址');
+            document.getElementById('buildingAddress').focus();
+            return;
+        }
+        
+        // 存储到localStorage
+        localStorage.setItem('esg_building_name', buildingName);
+        localStorage.setItem('esg_building_addr', buildingAddress);
+        
+        // 如果有选择的位置信息，也保存位置数据
+        const selectedLocation = localStorage.getItem('esg_selected_location');
+        if (selectedLocation) {
+            try {
+                const location = JSON.parse(selectedLocation);
+                localStorage.setItem('esg_building_latitude', location.latitude);
+                localStorage.setItem('esg_building_longitude', location.longitude);
+                console.log('保存位置数据:', location);
+            } catch (error) {
+                console.error('保存位置数据失败:', error);
+            }
+        }
+        
+        // 跳转到建筑类型选择页面
+        window.location.href = '/static/register-3-2.html';
+    });
+    </script>
+    <script>
+    (function(){
+        if (window.__esgLangInit_v31) return; window.__esgLangInit_v31 = true;
+        window.languageData = window.languageData || {
+            en:{code:'EN',flag:'🇺🇸',t:{
+                title:'Where is your building located?',
+                subtitle:'Adding the location helps us identify your property more accurately.',
+                country:'Country/Region',
+                city:'City',
+                address:'Address',
+                continue:'Continue',
+                back:'Back',
+                processing:'Processing...',
+                selectCountry:'Select country',
+                enterCity:'Enter city name',
+                enterAddress:'Enter building address'
+            }},
+            'zh-cn':{code:'简体',flag:'🇨🇳',t:{
+                title:'你的建筑位于哪里？',
+                subtitle:'添加位置可帮助我们更准确地识别你的物业。',
+                country:'国家/地区',
+                city:'城市',
+                address:'地址',
+                continue:'继续',
+                back:'返回',
+                processing:'处理中...',
+                selectCountry:'选择国家',
+                enterCity:'输入城市名称',
+                enterAddress:'输入建筑地址'
+            }},
+            'zh-tw':{code:'繁體',flag:'🇭🇰',t:{
+                title:'你的建築位於哪裡？',
+                subtitle:'添加位置可幫助我們更準確地識別你的物業。',
+                country:'國家/地區',
+                city:'城市',
+                address:'地址',
+                continue:'繼續',
+                back:'返回',
+                processing:'處理中...',
+                selectCountry:'選擇國家',
+                enterCity:'輸入城市名稱',
+                enterAddress:'輸入建築地址'
+            }}
+        };
+        function apply(lang){ 
+            var d=languageData[lang]; if(!d) return; 
+            var h1=document.querySelector('.header h1'); if(h1) h1.textContent=d.t.title; 
+            var sub=document.querySelector('.header p'); if(sub) sub.textContent=d.t.subtitle;
+            // 更新表单标签和占位符
+            var labels=document.querySelectorAll('.form-group label');
+            if(labels.length>=3){
+                labels[0].textContent=d.t.country;
+                labels[1].textContent=d.t.city;
+                labels[2].textContent=d.t.address;
+            }
+            var inputs=document.querySelectorAll('.form-group input, .form-group select');
+            if(inputs.length>=3){
+                inputs[0].placeholder=d.t.selectCountry;
+                inputs[1].placeholder=d.t.enterCity;
+                inputs[2].placeholder=d.t.enterAddress;
+            }
+            var btn=document.querySelector('.btn-primary'); if(btn) btn.textContent=d.t.continue;
+            var back=document.querySelector('.back-link'); if(back) back.textContent=d.t.back;
+            var loading=document.querySelector('.loading-spinner p'); if(loading) loading.textContent=d.t.processing;
+        }
+        document.addEventListener('DOMContentLoaded',function(){ 
+            var lang=localStorage.getItem('esg_language')||'en'; 
+            apply(lang); 
+        });
+    })();
+    </script>
+    
+    <!-- 引入统一语言配置和自动翻译 -->
+    <script src="/static/language-config.js"></script>
+    <script src="/static/auto-translate.js"></script>
+</body>
+</html>
+
+

@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="ui-id" content="注册3.2">
+    <title>ESG VISA - What type of building are you managing?</title>
+    <link rel="stylesheet" href="/static/styles.css?v=20250819-register-3-2">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container" data-ui-id="register-3-2">
+        <div class="grid-pattern"></div>
+
+        <div class="main-content-login" style="max-width:980px;">
+            <div class="logo-container" style="margin-bottom:16px;">
+                <div class="logo-image" style="width:48px;height:48px;">
+                    <img src="/static/log.png" alt="ESG VISA Logo" class="logo-img" style="width:40px;height:40px;">
+                </div>
+            </div>
+
+            <div class="header" style="margin-bottom:10px;">
+                <h1 data-translate="building.type.title">What type of building are you managing?</h1>
+                <p data-translate="building.type.subtitle">Adding the location helps us identify your property more accurately.</p>
+            </div>
+
+            <div class="form-container">
+                <div class="form-section">
+                    <div class="building-grid">
+                        <label class="chip"><input type="radio" name="btype" value="Private Residence" checked><span data-translate="building.types.private">Private Residence</span></label>
+                        <label class="chip"><input type="radio" name="btype" value="Village / Ding-style House"><span data-translate="building.types.village">Village / Ding-style House</span></label>
+                        <label class="chip"><input type="radio" name="btype" value="Subsidized Housing"><span data-translate="building.types.subsidized">Subsidized Housing</span></label>
+                        <label class="chip"><input type="radio" name="btype" value="Retail Shop"><span data-translate="building.types.retail">Retail Shop</span></label>
+                        <label class="chip"><input type="radio" name="btype" value="Office Building"><span data-translate="building.types.office">Office Building</span></label>
+                        <label class="chip"><input type="radio" name="btype" value="Industrial Unit"><span data-translate="building.types.industrial">Industrial Unit</span></label>
+                        <label class="chip"><input type="radio" name="btype" value="Serviced Apartment"><span data-translate="building.types.serviced">Serviced Apartment</span></label>
+                        <label class="chip"><input type="radio" name="btype" value="Shopping Mall"><span data-translate="building.types.shopping">Shopping Mall</span></label>
+                        <label class="chip"><input type="radio" name="btype" value="Mixed-Use Building"><span data-translate="building.types.mixed">Mixed-Use Building</span></label>
+                    </div>
+
+                    <div class="wizard-footer">
+                        <a class="back-link" href="/static/register-3-1.html" style="opacity:.8;">
+                            <i class="fa-solid fa-arrow-left"></i>
+                            <span data-translate="back">Back</span>
+                        </a>
+                        <div class="wizard-dots">
+                            <span class="dot"></span>
+                            <span class="dot active"></span>
+                            <span class="dot"></span>
+                        </div>
+                        <a class="back-link" href="#" id="nextBtn">
+                            <span data-translate="next">Next</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .building-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:20px 0 30px}
+        .chip{display:flex;align-items:center;justify-content:center;border:2px solid #e1e5e9;border-radius:10px;padding:14px 12px;cursor:pointer;transition:.2s box-shadow,.2s border;background:#fff}
+        .chip input{display:none}
+        .chip span{font-size:.95rem;color:#333}
+        .chip:hover{box-shadow:0 6px 18px rgba(0,0,0,.06)}
+        .chip input:checked + span{font-weight:600}
+        .chip:has(input:checked){border-color:#00BCD4;background:#f5feff}
+        .wizard-footer{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
+        .wizard-dots{display:flex;gap:6px;align-items:center}
+        .wizard-dots .dot{width:6px;height:6px;border-radius:50%;background:#cfd8dc}
+        .wizard-dots .dot.active{background:#00BCD4}
+        @media(max-width:900px){.building-grid{grid-template-columns:1fr}}
+        
+        /* 状态消息样式 */
+        .status-message {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+            font-size: 14px;
+            text-align: center;
+            display: none;
+            transition: all 0.3s ease;
+        }
+        
+        .status-message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status-message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status-message.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+
+    <script>
+    // 完整的建筑类型选择和注册完成功能
+    
+    // 页面加载完成后预填充数据
+    document.addEventListener('DOMContentLoaded', function() {
+        const savedBtype = localStorage.getItem('esg_btype');
+        if (savedBtype) {
+            const radio = document.querySelector(`input[value="${savedBtype}"]`);
+            if (radio) radio.checked = true;
+        }
+    });
+
+    document.getElementById('nextBtn').addEventListener('click', async (e) => {
+        e.preventDefault();
+        
+        const selectedBtype = document.querySelector('input[name="btype"]:checked');
+        if (!selectedBtype) {
+            alert('请选择建筑类型');
+            return;
+        }
+        
+        // 存储建筑类型
+        localStorage.setItem('esg_btype', selectedBtype.value);
+        
+        // 获取所有注册数据
+        const email = localStorage.getItem('esg_email');
+        const password = localStorage.getItem('esg_password');
+        const fullName = localStorage.getItem('esg_fullName');
+        const role = localStorage.getItem('esg_role');
+        const buildingName = localStorage.getItem('esg_building_name');
+        const buildingAddr = localStorage.getItem('esg_building_addr');
+        const buildingType = selectedBtype.value;
+        
+        // 调试信息
+        console.log('注册数据检查:', {
+            email: email,
+            password: password ? '***' : '缺失',
+            fullName: fullName,
+            role: role,
+            buildingName: buildingName,
+            buildingAddr: buildingAddr,
+            buildingType: buildingType
+        });
+        
+        // 验证数据完整性
+        const missingFields = [];
+        if (!email) missingFields.push('邮箱');
+        if (!password) missingFields.push('密码');
+        if (!fullName) missingFields.push('全名');
+        if (!role) missingFields.push('角色');
+        if (!buildingName) missingFields.push('建筑名称');
+        if (!buildingAddr) missingFields.push('建筑地址');
+        if (!buildingType) missingFields.push('建筑类型');
+        
+        if (missingFields.length > 0) {
+            const message = `注册数据不完整，缺失字段：${missingFields.join('、')}\n\n请访问调试页面检查数据：/static/debug-data.html`;
+            alert(message);
+            console.error('数据验证失败:', missingFields);
+            return;
+        }
+        
+        try {
+            // 准备发送的数据
+            const requestData = {
+                email: email,
+                password: password,
+                fullName: fullName,
+                phone: localStorage.getItem('esg_phone') || '', // 添加手机号字段
+                role: role,
+                buildingName: buildingName,
+                buildingAddr: buildingAddr,
+                buildingType: buildingType
+            };
+            
+            console.log('🚀 准备发送到后端的数据:', requestData);
+            console.log('📤 请求URL: /api/register/step3');
+            console.log('📤 请求方法: POST');
+            console.log('📤 请求头: Content-Type: application/json');
+            
+            // 调用后端注册API完成Owner注册
+            const response = await fetch('/api/register/step3', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestData)
+            });
+            
+            console.log('📥 后端响应状态:', response.status);
+            console.log('📥 后端响应头:', response.headers);
+            
+            const result = await response.json();
+            console.log('📥 后端响应数据:', result);
+            
+            if (result.code === 200) {
+                // 注册成功，设置用户登录状态
+                const userInfo = {
+                    Email: email,
+                    Name: fullName,
+                    Role: role,
+                    Phone: localStorage.getItem('esg_phone') || '', // 从localStorage获取手机号
+                    Age: '20', // 自动设置为20岁
+                    DID: '', // 先设为空，等待链码返回
+                    RegisterTime: '', // 等待后端返回真实时间
+                    BuildingName: buildingName,
+                    BuildingAddr: buildingAddr,
+                    BuildingType: buildingType,
+                    isLoggedIn: true
+                };
+                
+                // 存储链码返回的数据（如果后端返回了的话）
+                if (result.data && result.data.chaincodeData) {
+                    localStorage.setItem('chaincodeData', JSON.stringify(result.data.chaincodeData));
+                    // 将链码数据也合并到用户信息中，优先使用链码返回的DID
+                    Object.assign(userInfo, result.data.chaincodeData);
+                    // 如果链码返回了DID，使用链码的DID；否则使用本地生成的
+                    if (!userInfo.DID || userInfo.DID === '') {
+                        userInfo.DID = generateDID(email);
+                    }
+                    // 使用后端返回的真实注册时间
+                    if (result.data.RegisterTime) {
+                        userInfo.RegisterTime = result.data.RegisterTime;
+                    }
+                    localStorage.setItem('userInfo', JSON.stringify(userInfo));
+                } else {
+                    // 如果没有链码数据，使用本地生成的DID
+                    userInfo.DID = generateDID(email);
+                    // 使用后端返回的真实注册时间
+                    if (result.data.RegisterTime) {
+                        userInfo.RegisterTime = result.data.RegisterTime;
+                    }
+                    localStorage.setItem('userInfo', JSON.stringify(userInfo));
+                }
+                
+                localStorage.setItem('isLoggedIn', 'true');
+                
+                // 使用后端返回的跳转地址
+                const redirectUrl = result.data?.redirect_url || '/static/dashboard.html';
+                showStatusMessage('注册成功，正在跳转...', 'success');
+                setTimeout(() => {
+                    window.location.href = redirectUrl;
+                }, 1500);
+            } else {
+                throw new Error(result.message || '注册失败');
+            }
+            
+        } catch (error) {
+            console.error('注册错误:', error);
+            showStatusMessage(error.message || '注册失败，请重试', 'error');
+        }
+    });
+    
+    // 生成DID标识符
+    function generateDID(email) {
+        const timestamp = Date.now();
+        const hash = btoa(email + timestamp).replace(/[^a-zA-Z0-9]/g, '').substring(0, 16);
+        return `did:esg:user:${hash}`;
+    }
+    
+    // 显示状态消息
+    function showStatusMessage(message, type = 'info') {
+        // 创建状态消息元素
+        let statusDiv = document.getElementById('statusMessage');
+        if (!statusDiv) {
+            statusDiv = document.createElement('div');
+            statusDiv.id = 'statusMessage';
+            statusDiv.className = 'status-message';
+            document.querySelector('.form-section').appendChild(statusDiv);
+        }
+        
+        statusDiv.textContent = message;
+        statusDiv.className = `status-message ${type}`;
+        statusDiv.style.display = 'block';
+        
+        // 自动隐藏消息
+        setTimeout(() => {
+            statusDiv.style.display = 'none';
+        }, 5000);
+    }
+    </script>
+    <script>
+    (function(){
+        if (window.__esgLangInit_v32) return; window.__esgLangInit_v32 = true;
+        window.languageData = window.languageData || {
+            en:{code:'EN',flag:'🇺🇸',t:{
+                title:'What type of building are you managing?',
+                subtitle:'Adding the location helps us identify your property more accurately.',
+                residential:'Residential',
+                commercial:'Commercial',
+                office:'Office Building',
+                retail:'Retail/Shopping',
+                industrial:'Industrial',
+                hospitality:'Hospitality',
+                healthcare:'Healthcare',
+                education:'Education',
+                other:'Other',
+                continue:'Continue',
+                back:'Back',
+                processing:'Processing...'
+            }},
+            'zh-cn':{code:'简体',flag:'🇨🇳',t:{
+                title:'你管理的是哪类建筑？',
+                subtitle:'添加位置可帮助我们更准确地识别你的物业。',
+                residential:'住宅',
+                commercial:'商业',
+                office:'办公楼',
+                retail:'零售/购物',
+                industrial:'工业',
+                hospitality:'酒店',
+                healthcare:'医疗',
+                education:'教育',
+                other:'其他',
+                continue:'继续',
+                back:'返回',
+                processing:'处理中...'
+            }},
+            'zh-tw':{code:'繁體',flag:'🇭🇰',t:{
+                title:'你管理的是哪類建築？',
+                subtitle:'添加位置可幫助我們更準確地識別你的物業。',
+                residential:'住宅',
+                commercial:'商業',
+                office:'辦公樓',
+                retail:'零售/購物',
+                industrial:'工業',
+                hospitality:'酒店',
+                healthcare:'醫療',
+                education:'教育',
+                other:'其他',
+                continue:'繼續',
+                back:'返回',
+                processing:'處理中...'
+            }}
+        };
+        function apply(lang){ 
+            var d=languageData[lang]; if(!d) return; 
+            var h1=document.querySelector('.header h1'); if(h1) h1.textContent=d.t.title; 
+            var sub=document.querySelector('.header p'); if(sub) sub.textContent=d.t.subtitle;
+            // 更新建筑类型选项
+            var types=document.querySelectorAll('.building-type-option');
+            if(types.length>0){
+                types[0].textContent=d.t.residential;
+                types[1].textContent=d.t.commercial;
+                types[2].textContent=d.t.office;
+                types[3].textContent=d.t.retail;
+                types[4].textContent=d.t.industrial;
+                types[5].textContent=d.t.hospitality;
+                types[6].textContent=d.t.healthcare;
+                types[7].textContent=d.t.education;
+                types[8].textContent=d.t.other;
+            }
+            var btn=document.querySelector('.btn-primary'); if(btn) btn.textContent=d.t.continue;
+            var back=document.querySelector('.back-link'); if(back) back.textContent=d.t.back;
+            var loading=document.querySelector('.loading-spinner p'); if(loading) loading.textContent=d.t.processing;
+        }
+        document.addEventListener('DOMContentLoaded',function(){ 
+            var lang=localStorage.getItem('esg_language')||'en'; 
+            apply(lang); 
+        });
+    })();
+    </script>
+    
+    <!-- 引入统一语言配置和自动翻译 -->
+    <script src="/static/language-config.js"></script>
+    <script src="/static/auto-translate.js"></script>
+</body>
+</html>
+
+

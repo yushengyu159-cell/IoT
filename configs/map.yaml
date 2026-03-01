@@ -1,0 +1,21 @@
+# 地图API配置文件
+map:
+  # 高德地图配置
+  amap:
+    key: "${MAP_AMAP_KEY}"
+    base_url: "https://restapi.amap.com/v3"
+    timeout: 10s
+    retry_count: 3
+    
+  # 百度地图配置  
+  baidu:
+    key: "${MAP_BAIDU_KEY}"
+    base_url: "https://api.map.baidu.com"
+    timeout: 10s
+    retry_count: 3
+    
+  # 默认配置
+  default:
+    provider: "amap"  # 优先使用高德地图
+    fallback: "baidu" # 备用百度地图
+    cache_ttl: 3600s  # 缓存1小时

@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  ipfs-node:
+    image: ipfs/kubo:latest
+    container_name: fabric-sdk-ipfs
+    restart: unless-stopped
+    ports:
+      - "4001:4001"      # P2P端口
+      - "5001:5001"      # API端口
+      - "8081:8080"      # Gateway端口 (避免与phpMyAdmin冲突)
+      - "9001:9000"      # Web UI端口 (避免冲突)
+    environment:
+      - IPFS_PROFILE=server
+      - IPFS_PATH=/data/ipfs
+    volumes:
+      - ipfs_data:/data/ipfs
+      - ipfs_staging:/export
+    command: ipfs daemon --migrate=true --agent-version-suffix=docker
+    networks:
+      - ipfs-network
+
+  ipfs-cluster:
+    image: ipfs/ipfs-cluster:latest
+    container_name: fabric-sdk-ipfs-cluster
+    restart: unless-stopped
+    ports:
+      - "9094:9094"      # Cluster API端口
+      - "9095:9095"      # Cluster Proxy端口
+    environment:
+      - CLUSTER_PEERNAME=cluster0
+      - CLUSTER_SECRET=your-secret-key-here
+      - CLUSTER_IPFSHTTP_NODEMULTIADDRESS=/dns4/ipfs-node/tcp/5001/http
+      - CLUSTER_MONITORPINGINTERVAL=2s
+    volumes:
+      - ipfs_cluster_data:/data/ipfs-cluster
+    depends_on:
+      - ipfs-node
+    networks:
+      - ipfs-network
+
+  ipfs-webui:
+    image: ipfs/ipfs-webui:latest
+    container_name: fabric-sdk-ipfs-webui
+    restart: unless-stopped
+    ports:
+      - "3001:3000"      # Web UI端口 (避免冲突)
+    environment:
+      - REACT_APP_IPFS_API_URL=http://localhost:5001
+    depends_on:
+      - ipfs-node
+    networks:
+      - ipfs-network
+
+volumes:
+  ipfs_data:
+    driver: local
+  ipfs_staging:
+    driver: local
+  ipfs_cluster_data:
+    driver: local
+
+networks:
+  ipfs-network:
+    driver: bridge

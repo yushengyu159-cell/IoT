@@ -1,0 +1,42 @@
+# 邮箱验证配置
+email:
+  # QQ邮箱配置
+  qq:
+    host: "smtp.qq.com"
+    port: "587"
+    username: "tj18832045990@qq.com"
+    password: "REPLACE_WITH_QQ_SMTP_PASSWORD"
+    from: "tj18832045990@qq.com"
+    enabled: true
+    use_ssl: false
+    use_tls: true
+  
+  # 163邮箱配置
+  163:
+    host: "smtp.163.com"
+    port: "465"
+    username: "tj18832045990@163.com"
+    password: "REPLACE_WITH_163_SMTP_PASSWORD"
+    from: "tj18832045990@163.com"
+    enabled: true
+    use_ssl: true
+    use_tls: false
+  
+  # Gmail配置
+  gmail:
+    host: "smtp.gmail.com"
+    port: "587"
+    username: "your-gmail@gmail.com"
+    password: "your-gmail-app-password"
+    from: "your-gmail@gmail.com"
+    enabled: false
+    use_ssl: false
+    use_tls: true
+  
+  # 通用配置
+  common:
+    code_expire_minutes: 10
+    resend_cooldown_seconds: 60
+    max_send_per_hour: 10
+    subject: "ESG VISA - 邮箱验证码"
+    show_code_in_dev: true

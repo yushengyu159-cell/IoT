@@ -1,0 +1,300 @@
+# 域名调试记录（app.esgvisa.com）
+
+时间：2025-09-02
+
+## 环境概览
+- 服务器：Alibaba Cloud Ubuntu 24.04（公网：47.238.159.234）
+- Nginx：1.24.0（系统仓库）
+- 后端：GoFrame HTTP Server（对外 8199 提供 HTTP，初始返回 302 -> /static/）
+- Docker：存在 `fabric-sdk-mysql` 占用 3306（与本次域名无关）
+
+## 变更与配置
+1) MySQL 安装冲突修复（与域名无关）
+- 3306 被 Docker 占用，导致 `mysql-server-8.0` postinst 失败。
+- 处理：新增 `/etc/mysql/mysql.conf.d/override-port.cnf` 将系统 MySQL 改为 3307；完成 `dpkg --configure -a`，服务运行正常。
+
+2) Nginx 站点创建
+```
+server {
+    listen 80;
+    server_name app.esgvisa.com;
+
+    # 初始为 127.0.0.1:8199 -> 由于本机未监听 8199（ss 无输出），改为公网 47.238.159.234:8199
+    location / {
+        proxy_http_version 1.1;
+        proxy_set_header   Upgrade $http_upgrade;
+        proxy_set_header   Connection $connection_upgrade;
+        proxy_set_header   Host $host;
+        proxy_set_header   X-Real-IP $remote_addr;
+        proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_pass http://47.238.159.234:8199;
+    }
+}
+```
+- 站点启用：`ln -s sites-available/app.esgvisa.com -> sites-enabled/`
+- 语法校验/重载：`nginx -t && systemctl reload nginx`
+
+3) Nginx 全局优化（已应用）
+- gzip 增强：`gzip_vary on; gzip_proxied any; gzip_comp_level 5; ...`
+- 代理/上传调优（`/etc/nginx/conf.d/app.esgvisa.com.conf`）：
+  - `proxy_connect_timeout 60s; proxy_send_timeout 120s; proxy_read_timeout 120s;`
+  - `client_max_body_size 50m;`
+  - WebSocket 透传：`map $http_upgrade $connection_upgrade { default upgrade; '' close; }`
+
+## 故障现象
+- 现象：浏览器访问 `http://app.esgvisa.com/static/index.html` 显示 502/ERR_CONNECTION_CLOSED。
+- 服务器侧自检：
+  - `curl -I http://127.0.0.1 -H 'Host: app.esgvisa.com'` -> 302 /static/ 或 200 OK（取具体路径），说明反代链路正常。
+  - `curl -I http://47.238.159.234:8199/static/index.html` -> 200 OK，后端直连正常。
+- Nginx 日志：早期有 `upstream http://127.0.0.1:8199 connect() failed`（本机未监听），改为公网后消失。
+
+## 根因定位
+- 公共 DNS 查询均为 NXDOMAIN：
+  - `nslookup app.esgvisa.com 223.5.5.5` -> NXDOMAIN
+  - `nslookup app.esgvisa.com 8.8.8.8` -> NXDOMAIN
+  - `nslookup app.esgvisa.com 1.1.1.1` -> NXDOMAIN
+- 结论：域名 `app.esgvisa.com` 的 A 记录尚未在“权威 DNS”生效（或记录未创建/创建在错误的 DNS 服务商/被 CDN 代理关闭等）。
+
+## 处理方案与现状
+1) 服务器侧反代链路已可用：
+   - 通过 Nginx -> `47.238.159.234:8199` 返回 200；
+   - 直连 `47.238.159.234:8199/static/index.html` 返回 200；
+   - 说明服务端配置正确。
+
+2) 待办（DNS 层）：在权威 DNS 控制台添加记录（关闭 CDN/代理）。
+   - 主机记录：`app`
+   - 记录类型：`A`
+   - 记录值：`47.238.159.234`
+   - TTL：`600`
+   - 建议暂不添加 AAAA（IPv6）。
+
+3) 验证方法（任一均应解析到 47.238.159.234 才算生效）：
+   - Windows：
+     - `nslookup app.esgvisa.com 223.5.5.5`
+     - `nslookup app.esgvisa.com 8.8.8.8`
+     - `nslookup app.esgvisa.com 1.1.1.1`
+   - Linux/mac：
+     - `dig +short @223.5.5.5 app.esgvisa.com A`
+     - `dig +short @8.8.8.8 app.esgvisa.com A`
+     - `dig +short @1.1.1.1 app.esgvisa.com A`
+
+4) 临时可用方案（无需等待 DNS）：
+   - 本机 hosts 增加：`47.238.159.234 app.esgvisa.com`，刷新 DNS 缓存后直接访问 `http://app.esgvisa.com/static/index.html`；
+   - DNS 生效后移除 hosts。
+
+## 后续可选优化（待 DNS 生效后执行）
+- 一键启用 HTTPS（Let’s Encrypt，自动续期），强制 80 -> 443；
+- 若后端迁回本机监听，仅开放内网：将 `proxy_pass` 改回 `http://127.0.0.1:8199`，并在安全组关闭 8199 公网；
+- 根据业务需要继续优化压缩、缓存、超时与限流策略；
+- GoFrame 侧：CORS 放行 `app.esgvisa.com`，信任 `X-Forwarded-*`，Cookie 域/SameSite/secure 参数与 WebSocket Origin 白名单等。
+
+## 详细故障排查步骤记录
+
+### 1. 服务端验证命令序列
+```bash
+# 检查端口监听
+ss -ltnp | grep ':8199'  # 本机无监听
+ss -ltnp | grep ':3306'  # Docker MySQL 占用
+
+# 直连后端验证
+curl -sI http://47.238.159.234:8199/static/index.html
+# 返回：HTTP/1.1 200 OK, Content-Type: text/html; charset=utf-8
+
+# Nginx 反代验证
+curl -sI http://127.0.0.1/static/index.html -H 'Host: app.esgvisa.com'
+# 返回：HTTP/1.1 200 OK, Server: nginx/1.24.0
+
+# 检查 Nginx 配置
+nginx -t  # 语法检查通过
+systemctl status nginx  # 服务运行正常
+```
+
+### 2. DNS 解析验证记录
+```bash
+# 服务器端查询（均返回 NXDOMAIN）
+dig +short A app.esgvisa.com
+dig +short @8.8.8.8 app.esgvisa.com A
+dig +short @223.5.5.5 app.esgvisa.com A
+dig +short @1.1.1.1 app.esgvisa.com A
+
+# 客户端 Windows 查询
+nslookup app.esgvisa.com 8.8.8.8
+nslookup app.esgvisa.com 223.5.5.5
+nslookup app.esgvisa.com 1.1.1.1
+# 结果：*** server can't find app.esgvisa.com: NXDOMAIN
+```
+
+### 3. 浏览器错误类型分析
+- **502 Bad Gateway**: 反代到不可达的上游（已解决）
+- **ERR_CONNECTION_CLOSED**: DNS 解析失败，连接被重置
+- **风险提示**: 非标准端口或 HTTP 协议警告
+
+## 配置文件位置汇总
+
+### Nginx 配置
+- 主配置：`/etc/nginx/nginx.conf`
+- 站点配置：`/etc/nginx/sites-available/app.esgvisa.com`
+- 站点启用：`/etc/nginx/sites-enabled/app.esgvisa.com`
+- 调优配置：`/etc/nginx/conf.d/app.esgvisa.com.conf`
+
+### MySQL 配置
+- 端口覆盖：`/etc/mysql/mysql.conf.d/override-port.cnf`
+- 系统 MySQL 监听：3307（避开 Docker 3306）
+
+### 日志文件
+- Nginx 访问：`/var/log/nginx/access.log`
+- Nginx 错误：`/var/log/nginx/error.log`
+- MySQL 错误：`/var/log/mysql/error.log`
+
+## 关键决策点记录
+
+### 1. 代理目标选择
+- **问题**: 初始配置 `proxy_pass http://127.0.0.1:8199` 导致 502
+- **原因**: 本机无进程监听 8199 端口
+- **解决**: 改为 `proxy_pass http://47.238.159.234:8199`
+- **影响**: 需要后端服务对外暴露 8199 端口
+
+### 2. MySQL 端口冲突处理
+- **问题**: Docker 容器占用 3306，系统 MySQL 安装失败
+- **选择**: 系统 MySQL 改为 3307，保留 Docker 3306
+- **配置**: 创建覆盖配置文件，避免修改主配置
+
+### 3. 域名解析策略
+- **现状**: 权威 DNS 未配置 A 记录
+- **临时方案**: 使用 hosts 文件本地解析
+- **长期方案**: 在权威 DNS 添加 A 记录
+
+## 性能优化配置详情
+
+### Nginx 全局优化
+```nginx
+# gzip 压缩增强
+gzip on;
+gzip_vary on;
+gzip_proxied any;
+gzip_comp_level 5;
+gzip_buffers 16 8k;
+gzip_http_version 1.1;
+gzip_types text/plain text/css application/json application/javascript 
+           text/xml application/xml application/xml+rss text/javascript 
+           application/font-woff application/font-woff2 image/svg+xml;
+```
+
+### 代理调优参数
+```nginx
+# 超时设置
+proxy_connect_timeout 60s;
+proxy_send_timeout 120s;
+proxy_read_timeout 120s;
+
+# 上传限制
+client_max_body_size 50m;
+
+# WebSocket 支持
+map $http_upgrade $connection_upgrade { 
+    default upgrade; 
+    '' close; 
+}
+```
+
+## 安全考虑
+
+### 当前暴露面
+- 后端服务直接暴露在公网 8199 端口
+- HTTP 协议，无加密传输
+- 无访问控制或限流
+
+### 建议改进
+1. **网络隔离**: 后端仅内网监听，通过 Nginx 反代
+2. **HTTPS 加密**: 申请 SSL 证书，强制 HTTPS
+3. **访问控制**: 配置防火墙规则，限制来源 IP
+4. **监控告警**: 设置异常访问监控
+
+## 监控与维护
+
+### 关键指标监控
+- Nginx 响应时间与错误率
+- 后端服务健康状态
+- DNS 解析成功率
+- SSL 证书有效期
+
+### 日志分析
+```bash
+# 实时监控 Nginx 访问
+tail -f /var/log/nginx/access.log | grep app.esgvisa.com
+
+# 错误日志分析
+grep "502\|500\|404" /var/log/nginx/error.log
+
+# 性能分析
+awk '{print $NF}' /var/log/nginx/access.log | sort -n | tail -10
+```
+
+## 故障恢复预案
+
+### DNS 故障
+1. 检查权威 DNS 配置
+2. 验证 TTL 设置
+3. 使用 hosts 文件临时恢复
+
+### 服务故障
+1. 检查 Nginx 配置语法
+2. 验证后端服务状态
+3. 查看错误日志定位问题
+
+### 网络故障
+1. 检查防火墙规则
+2. 验证端口监听状态
+3. 测试网络连通性
+
+## DNS 解析成功记录
+
+### 最终解决方案确认
+- **域名注册商**: DNSPod, Inc.
+- **实际 DNS 服务商**: Website Solution (NS47.WSSDNS.NET, NS48.WSSDNS.NET)
+- **A 记录配置**: `app.esgvisa.com` → `47.238.159.234` (TTL: 3600)
+
+### DNS 生效验证过程
+```bash
+# 权威 DNS 服务器验证（成功）
+dig @NS47.WSSDNS.NET app.esgvisa.com A
+# 返回: app.esgvisa.com. 3600 IN A 47.238.159.234
+
+dig @NS48.WSSDNS.NET app.esgvisa.com A  
+# 返回: app.esgvisa.com. 3600 IN A 47.238.159.234
+
+# 公共 DNS 传播验证
+dig +short @8.8.8.8 app.esgvisa.com A
+# 返回: 47.238.159.234 ✅
+
+dig +short @223.5.5.5 app.esgvisa.com A
+# 返回: 空（传播中）
+
+dig +short @1.1.1.1 app.esgvisa.com A
+# 返回: 空（传播中）
+```
+
+### 服务端最终状态确认
+- ✅ **后端服务**: 8199 端口正常监听
+- ✅ **Nginx 反代**: 配置正确，返回 200 OK
+- ✅ **域名解析**: 权威 DNS 已生效，部分公共 DNS 已传播
+- ✅ **访问测试**: 通过域名可正常访问登录页面
+
+### 关键时间节点
+- **2025-09-02**: 初始配置 Nginx 反代，发现 DNS 未配置
+- **2025-09-03 11:00**: 确认 DNS 服务商为 Website Solution
+- **2025-09-03 13:47**: 权威 DNS 服务器验证 A 记录生效
+- **2025-09-03 13:50**: Google DNS (8.8.8.8) 开始返回正确解析
+
+### 经验总结
+1. **DNS 服务商确认**: 通过 `whois` 查询确认实际 DNS 服务商，避免在错误平台配置
+2. **权威 DNS 验证**: 直接查询权威 DNS 服务器确认记录是否真正生效
+3. **传播时间**: TTL 3600 秒，全球传播需要 1-2 小时
+4. **分步验证**: 先验证权威 DNS，再验证公共 DNS 传播情况
+
+---
+**记录完成时间**: 2025-09-03 13:50
+**记录人**: AI Assistant  
+**状态**: ✅ DNS 解析成功，域名可正常访问
+**下次检查**: 24 小时后验证全球 DNS 传播完成

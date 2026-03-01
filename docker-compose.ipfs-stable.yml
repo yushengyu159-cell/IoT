@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  ipfs-node:
+    image: ipfs/kubo:latest
+    container_name: fabric-sdk-ipfs
+    restart: unless-stopped
+    ports:
+      - "4001:4001"      # P2P端口
+      - "5001:5001"      # API端口
+      - "8081:8080"      # Gateway端口
+    environment:
+      - IPFS_PROFILE=server
+      - IPFS_PATH=/data/ipfs
+    volumes:
+      - ipfs_data:/data/ipfs
+      - ipfs_staging:/export
+    entrypoint: ["sh", "-c"]
+    command: |
+      "
+      if [ ! -f /data/ipfs/config ]; then
+        echo 'Initializing IPFS...'
+        ipfs init --profile=server
+      fi
+      echo 'Starting IPFS daemon...'
+      exec ipfs daemon --migrate=true --agent-version-suffix=docker
+      "
+    networks:
+      - ipfs-network
+
+volumes:
+  ipfs_data:
+    driver: local
+  ipfs_staging:
+    driver: local
+
+networks:
+  ipfs-network:
+    driver: bridge
+
+
+
+

@@ -1,0 +1,76 @@
+# 真实邮箱配置文件模板
+# 请将此文件重命名为 email.yaml 并填入真实的邮箱信息
+
+email:
+  # QQ邮箱配置
+  qq:
+    host: "smtp.qq.com"
+    port: "587"
+    username: "tj18832045990@qq.com"  # 您的真实QQ邮箱
+    password: "REPLACE_WITH_QQ_SMTP_PASSWORD"  # 替换为QQ邮箱的SMTP授权码
+    from: "tj18832045990@qq.com"
+    enabled: true
+    use_ssl: false
+    use_tls: true
+  
+  # 163邮箱配置
+  163:
+    host: "smtp.163.com"
+    port: "465"  # 使用SSL端口
+    username: "tj18832045990@163.com"  # 您的真实163邮箱
+    password: "REPLACE_WITH_163_SMTP_PASSWORD"  # 替换为163邮箱的SMTP授权码
+    from: "tj18832045990@163.com"
+    enabled: true
+    use_ssl: true   # 使用SSL连接
+    use_tls: false
+  
+  # Gmail配置
+  gmail:
+    host: "smtp.gmail.com"
+    port: "587"
+    username: "your-gmail@gmail.com"  # 替换为真实的Gmail邮箱
+    password: "REPLACE_WITH_GMAIL_APP_PASSWORD"  # 替换为Gmail应用专用密码
+    from: "your-gmail@gmail.com"
+    enabled: false  # 暂时禁用Gmail
+    use_ssl: false
+    use_tls: true
+  
+  # 通用配置
+  common:
+    code_expire_minutes: 10
+    resend_cooldown_seconds: 60
+    max_send_per_hour: 10
+    subject: "ESG VISA - 邮箱验证码"
+    show_code_in_dev: true
+
+# ========================================
+# 配置说明和获取步骤
+# ========================================
+
+# 1. QQ邮箱SMTP授权码获取步骤：
+#    - 登录QQ邮箱网页版
+#    - 设置 → 账户 → POP3/IMAP/SMTP/Exchange/CardDAV/CalDAV服务
+#    - 开启SMTP服务，获取授权码
+#    - 将授权码填入 password 字段
+
+# 2. 163邮箱SMTP授权码获取步骤：
+#    - 登录163邮箱网页版
+#    - 设置 → POP3/SMTP/IMAP
+#    - 开启SMTP服务，设置授权码
+#    - 将授权码填入 password 字段
+
+# 3. Gmail应用专用密码获取步骤：
+#    - 开启Google账户两步验证
+#    - 应用专用密码 → 生成新的应用专用密码
+#    - 选择"邮件"应用，生成16位密码
+#    - 将密码填入 password 字段
+
+# 4. 端口说明：
+#    - 587: 通常用于STARTTLS
+#    - 465: 通常用于SSL
+#    - 25: 通常被ISP阻止，不推荐使用
+
+# 5. 配置完成后：
+#    - 重启后端服务：go run main.go
+#    - 测试邮件发送功能
+#    - 检查邮箱是否收到验证码

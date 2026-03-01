@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- 深绿色叶子渐变 -->
+    <linearGradient id="darkGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1B5E20;stop-opacity:1" />
+      <stop offset="40%" style="stop-color:#27AE60;stop-opacity:1" />
+      <stop offset="80%" style="stop-color:#2ECC71;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#4CAF50;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- 浅绿色叶子渐变 -->
+    <linearGradient id="lightGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#689F38;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#7CB342;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- 黄绿色叶子渐变 -->
+    <linearGradient id="yellowGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#AFD135;stop-opacity:1" />
+      <stop offset="60%" style="stop-color:#CDDC39;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#DCE775;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- 青绿色叶子渐变 -->
+    <linearGradient id="tealGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00838F;stop-opacity:1" />
+      <stop offset="30%" style="stop-color:#00ACC1;stop-opacity:1" />
+      <stop offset="70%" style="stop-color:#26C6DA;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#4DD0E1;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- 白色高光 -->
+    <radialGradient id="whiteHighlight" cx="40%" cy="40%">
+      <stop offset="0%" style="stop-color:rgba(255,255,255,0.9);stop-opacity:1" />
+      <stop offset="60%" style="stop-color:rgba(255,255,255,0.5);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgba(255,255,255,0);stop-opacity:0" />
+    </radialGradient>
+  </defs>
+  
+  <!-- 背景白色圆圈 -->
+  <circle cx="100" cy="100" r="85" fill="rgba(255,255,255,0.9)" opacity="0.3"/>
+  
+  <!-- 左侧深绿色大叶子 -->
+  <ellipse cx="65" cy="100" rx="28" ry="55" fill="url(#darkGreen)" transform="rotate(-25 65 100)" opacity="0.95"/>
+  
+  <!-- 上方浅绿色叶子 -->
+  <ellipse cx="100" cy="55" rx="45" ry="20" fill="url(#lightGreen)" transform="rotate(10 100 55)" opacity="0.95"/>
+  
+  <!-- 右侧黄绿色叶子 -->
+  <ellipse cx="135" cy="100" rx="22" ry="40" fill="url(#yellowGreen)" transform="rotate(65 135 100)" opacity="0.95"/>
+  
+  <!-- 下方青绿色叶子 -->
+  <ellipse cx="100" cy="145" rx="55" ry="25" fill="url(#tealGreen)" transform="rotate(-8 100 145)" opacity="0.95"/>
+  
+  <!-- 下方叶子的白色高光 -->
+  <ellipse cx="90" cy="135" rx="25" ry="12" fill="url(#whiteHighlight)" transform="rotate(-8 90 135)" opacity="0.8"/>
+  
+  <!-- 中央白色区域 -->
+  <circle cx="100" cy="100" r="25" fill="rgba(255,255,255,0.8)" opacity="0.7"/>
+</svg>
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- 深绿色叶子渐变 -->
+    <linearGradient id="darkGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1B5E20;stop-opacity:1" />
+      <stop offset="40%" style="stop-color:#27AE60;stop-opacity:1" />
+      <stop offset="80%" style="stop-color:#2ECC71;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#4CAF50;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- 浅绿色叶子渐变 -->
+    <linearGradient id="lightGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#689F38;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#7CB342;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8BC34A;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- 黄绿色叶子渐变 -->
+    <linearGradient id="yellowGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#AFD135;stop-opacity:1" />
+      <stop offset="60%" style="stop-color:#CDDC39;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#DCE775;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- 青绿色叶子渐变 -->
+    <linearGradient id="tealGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00838F;stop-opacity:1" />
+      <stop offset="30%" style="stop-color:#00ACC1;stop-opacity:1" />
+      <stop offset="70%" style="stop-color:#26C6DA;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#4DD0E1;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- 白色高光 -->
+    <radialGradient id="whiteHighlight" cx="40%" cy="40%">
+      <stop offset="0%" style="stop-color:rgba(255,255,255,0.9);stop-opacity:1" />
+      <stop offset="60%" style="stop-color:rgba(255,255,255,0.5);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgba(255,255,255,0);stop-opacity:0" />
+    </radialGradient>
+  </defs>
+  
+  <!-- 背景白色圆圈 -->
+  <circle cx="100" cy="100" r="85" fill="rgba(255,255,255,0.9)" opacity="0.3"/>
+  
+  <!-- 左侧深绿色大叶子 -->
+  <ellipse cx="65" cy="100" rx="28" ry="55" fill="url(#darkGreen)" transform="rotate(-25 65 100)" opacity="0.95"/>
+  
+  <!-- 上方浅绿色叶子 -->
+  <ellipse cx="100" cy="55" rx="45" ry="20" fill="url(#lightGreen)" transform="rotate(10 100 55)" opacity="0.95"/>
+  
+  <!-- 右侧黄绿色叶子 -->
+  <ellipse cx="135" cy="100" rx="22" ry="40" fill="url(#yellowGreen)" transform="rotate(65 135 100)" opacity="0.95"/>
+  
+  <!-- 下方青绿色叶子 -->
+  <ellipse cx="100" cy="145" rx="55" ry="25" fill="url(#tealGreen)" transform="rotate(-8 100 145)" opacity="0.95"/>
+  
+  <!-- 下方叶子的白色高光 -->
+  <ellipse cx="90" cy="135" rx="25" ry="12" fill="url(#whiteHighlight)" transform="rotate(-8 90 135)" opacity="0.8"/>
+  
+  <!-- 中央白色区域 -->
+  <circle cx="100" cy="100" r="25" fill="rgba(255,255,255,0.8)" opacity="0.7"/>
+</svg>

@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="ui-id" content="登录1">
+    <title>ESG VISA - DID身份管理</title>
+    <link rel="stylesheet" href="/static/styles.css?v=20250816-login-fix">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container" data-ui-id="login-1">
+        <!-- 顶部网格装饰 -->
+        <div class="grid-pattern"></div>
+        <!-- Language Switcher (top-right) -->
+        <div class="language-switcher" aria-label="Language switcher">
+            <button class="lang-btn" id="langBtn" type="button">
+                <i class="fas fa-globe"></i>
+                <span id="currentLang">EN</span>
+                <i class="fas fa-chevron-down"></i>
+            </button>
+            <div class="lang-menu" id="langMenu" role="menu">
+                <div class="lang-option active" data-lang="en" role="menuitem">
+                    <span class="lang-flag">🇺🇸</span>
+                    <span class="lang-name">English</span>
+                </div>
+                <div class="lang-option" data-lang="zh-cn" role="menuitem">
+                    <span class="lang-flag">🇨🇳</span>
+                    <span class="lang-name">简体</span>
+                </div>
+                <div class="lang-option" data-lang="zh-tw" role="menuitem">
+                    <span class="lang-flag">🇭🇰</span>
+                    <span class="lang-name">繁體</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="main-content-login">
+            <!-- Logo区域 -->
+            <div class="logo-container">
+                <div class="logo-image">
+                    <!-- 使用您提供的PNG格式logo -->
+                    <img src="/static/log.png" alt="ESG VISA Logo" class="logo-img">
+                </div>
+            </div>
+
+            <!-- 标题区域（严格对齐 1.Login_Defauit 文案） -->
+            <div class="header">
+                <h1>Welcome to ESG VISA</h1>
+                <p>Verified Intelligence for Sustainable Architecture</p>
+            </div>
+
+            <!-- 表单区域：仅邮箱输入 + 记住/忘记密码 + Continue -->
+            <div class="form-container">
+                <div class="form-section" id="loginForm">
+                    <form id="loginEmailForm">
+                        <div class="form-group">
+                            <input type="email" id="email" name="email" placeholder="Enter your email" required>
+                        </div>
+                        <div class="inline-row">
+                            <label class="remember">
+                                <input type="checkbox" id="remember" /> Remember for 30 days
+                            </label>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Continue</button>
+                    </form>
+
+                    <!-- 第三方登录按钮 -->
+                    <button class="social-btn social-google"><i class="fab fa-google"></i> Sign in with Google</button>
+                    <button class="social-btn social-wechat"><i class="fab fa-weixin"></i> Sign in with Wechat</button>
+                    <button class="social-btn social-apple"><i class="fab fa-apple"></i> Sign in with Apple</button>
+
+                    <div class="legal-text" style="margin-top:16px;">
+                        By continuing, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
+                    </div>
+                </div>
+            </div>
+
+            <!-- 状态消息（保留占位） -->
+            <div id="statusMessage" class="status-message hidden"></div>
+        </div>
+    </div>
+
+    <!-- 加载遮罩 -->
+    <div id="loadingOverlay" class="loading-overlay hidden">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>处理中...</p>
+        </div>
+    </div>
+
+    <script>
+        // Language data and switching
+        const languageData = {
+            en: {
+                code: 'EN', flag: '🇺🇸', name: 'English',
+                t: {
+                    title: 'Welcome to ESG VISA',
+                    subtitle: 'Verified Intelligence for Sustainable Architecture',
+                    emailPh: 'Enter your email',
+                    remember: 'Remember for 30 days',
+                    continue: 'Continue',
+                    google: 'Sign in with Google',
+                    wechat: 'Sign in with Wechat',
+                    apple: 'Sign in with Apple',
+                    legalPrefix: 'By continuing, you agree to our',
+                    terms: 'Terms of Service',
+                    privacy: 'Privacy Policy',
+                    'index.email.empty': 'Please enter your email address',
+                    'index.email.registered': 'Email already registered, redirecting to login page...',
+                    'index.email.not.registered': 'Email not registered, redirecting to registration page...',
+                    'index.check.email.failed': 'Failed to check email',
+                    'index.network.error': 'Network error, please try again',
+                    'index.redirecting.wechat': 'Redirecting to WeChat login interface...'
+                }
+            },
+            'zh-cn': {
+                code: '简体', flag: '🇨🇳', name: '简体中文',
+                t: {
+                    title: '欢迎来到 ESG VISA',
+                    subtitle: '可持续架构的验证智能',
+                    emailPh: '请输入您的邮箱',
+                    remember: '记住30天',
+                    continue: '继续',
+                    google: '使用 Google 登录',
+                    wechat: '使用 微信 登录',
+                    apple: '使用 Apple 登录',
+                    legalPrefix: '继续即表示您同意我们的',
+                    terms: '服务条款',
+                    privacy: '隐私政策',
+                    'index.email.empty': '请输入邮箱地址',
+                    'index.email.registered': '邮箱已注册，正在跳转到登录页面...',
+                    'index.email.not.registered': '邮箱未注册，正在跳转到注册页面...',
+                    'index.check.email.failed': '检查邮箱失败',
+                    'index.network.error': '网络错误，请重试',
+                    'index.redirecting.wechat': '正在跳转到微信登录界面...'
+                }
+            },
+            'zh-tw': {
+                code: '繁體', flag: '🇭🇰', name: '繁體中文',
+                t: {
+                    title: '歡迎來到 ESG VISA',
+                    subtitle: '可持續架構的驗證智能',
+                    emailPh: '請輸入您的郵箱',
+                    remember: '記住30天',
+                    continue: '繼續',
+                    google: '使用 Google 登錄',
+                    wechat: '使用 微信 登錄',
+                    apple: '使用 Apple 登錄',
+                    legalPrefix: '繼續即表示您同意我們的',
+                    terms: '服務條款',
+                    privacy: '隱私政策',
+                    'index.email.empty': '請輸入郵箱地址',
+                    'index.email.registered': '郵箱已註冊，正在跳轉到登錄頁面...',
+                    'index.email.not.registered': '郵箱未註冊，正在跳轉到註冊頁面...',
+                    'index.check.email.failed': '檢查郵箱失敗',
+                    'index.network.error': '網絡錯誤，請重試',
+                    'index.redirecting.wechat': '正在跳轉到微信登錄界面...'
+                }
+            }
+        };
+
+        let currentLanguage = 'en';
+
+        function applyTranslations(data) {
+            // Header
+            const h1 = document.querySelector('.header h1');
+            const sub = document.querySelector('.header p');
+            if (h1) h1.textContent = data.t.title;
+            if (sub) sub.textContent = data.t.subtitle;
+            // Inputs / labels
+            const emailInput = document.getElementById('email');
+            if (emailInput) emailInput.placeholder = data.t.emailPh;
+            const rememberLabel = document.querySelector('.remember');
+            if (rememberLabel) {
+                // Keep checkbox then set label text
+                const cb = rememberLabel.querySelector('input[type="checkbox"]');
+                rememberLabel.textContent = data.t.remember;
+                if (cb) rememberLabel.prepend(cb);
+            }
+            const contBtn = document.querySelector('button.btn.btn-primary');
+            if (contBtn) contBtn.textContent = data.t.continue;
+            const googleBtn = document.querySelector('.social-btn.social-google');
+            if (googleBtn) googleBtn.innerHTML = '<i class="fab fa-google"></i> ' + data.t.google;
+            const wechatBtn = document.querySelector('.social-btn.social-wechat');
+            if (wechatBtn) wechatBtn.innerHTML = '<i class="fab fa-weixin"></i> ' + data.t.wechat;
+            const appleBtn = document.querySelector('.social-btn.social-apple');
+            if (appleBtn) appleBtn.innerHTML = '<i class="fab fa-apple"></i> ' + data.t.apple;
+            // Legal
+            const legal = document.querySelector('.legal-text');
+            if (legal) legal.innerHTML = `${data.t.legalPrefix} <a href="#">${data.t.terms}</a> and <a href="#">${data.t.privacy}</a>.`;
+        }
+
+        function setActiveLangUI(lang) {
+            const btn = document.getElementById('langBtn');
+            const curr = document.getElementById('currentLang');
+            if (curr) curr.textContent = languageData[lang].code;
+            document.querySelectorAll('#langMenu .lang-option').forEach(el => {
+                el.classList.toggle('active', el.getAttribute('data-lang') === lang);
+            });
+        }
+
+        function switchLanguage(lang) {
+            if (!languageData[lang]) return;
+            currentLanguage = lang;
+            localStorage.setItem('esg_language', lang);
+            setActiveLangUI(lang);
+            applyTranslations(languageData[lang]);
+        }
+
+        function toggleLanguageMenu() {
+            const menu = document.getElementById('langMenu');
+            if (menu) menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
+        }
+
+        document.addEventListener('click', function(e) {
+            const menu = document.getElementById('langMenu');
+            const btn = document.getElementById('langBtn');
+            if (!menu || !btn) return;
+            if (btn.contains(e.target)) {
+                toggleLanguageMenu();
+            } else if (!menu.contains(e.target)) {
+                menu.style.display = 'none';
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const saved = localStorage.getItem('esg_language') || 'en';
+            switchLanguage(saved);
+            // Menu click binding
+            const menu = document.getElementById('langMenu');
+            if (menu) {
+                menu.querySelectorAll('.lang-option').forEach(opt => {
+                    opt.addEventListener('click', () => {
+                        const lang = opt.getAttribute('data-lang');
+                        switchLanguage(lang);
+                        menu.style.display = 'none';
+                    });
+                });
+            }
+        });
+
+        // 邮箱验证和登录分流功能
+        document.getElementById('loginEmailForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value.trim();
+            const remember = document.getElementById('remember').checked;
+            
+            if (!email) {
+                showStatusMessage(tr('index.email.empty', '请输入邮箱地址'), 'error');
+                return;
+            }
+            
+            // 显示加载状态
+            showLoading(true);
+            
+            try {
+                // 检查邮箱是否已注册
+                const response = await fetch('/api/email/check-email-exists', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email })
+                });
+                
+                const result = await response.json();
+                
+                if (result.code === 200) {
+                    if (result.data.exists) {
+                        // 邮箱已注册，进入登录流程
+                        showStatusMessage(tr('index.email.registered', '邮箱已注册，正在跳转到登录页面...'), 'success');
+                        
+                        // 存储邮箱和记住状态
+                        localStorage.setItem('esg_login_email', email);
+                        localStorage.setItem('esg_remember', remember);
+                        
+                        // 跳转到登录页面（密码输入界面）
+                        setTimeout(() => {
+                            window.location.href = '/static/register1.html#login';
+                        }, 1500);
+                    } else {
+                        // 邮箱未注册，进入注册流程
+                        showStatusMessage(tr('index.email.not.registered', '邮箱未注册，正在跳转到注册页面...'), 'info');
+                        
+                        // 存储邮箱到localStorage
+                        localStorage.setItem('esg_email', email);
+                        
+                        // 跳转到注册页面（直接进入注册表单）
+                        setTimeout(() => {
+                            window.location.href = '/static/register1.html#register';
+                        }, 1500);
+                    }
+                } else {
+                    showStatusMessage(result.message || tr('index.check.email.failed', '检查邮箱失败'), 'error');
+                }
+            } catch (error) {
+                console.error('邮箱检查错误:', error);
+                showStatusMessage(tr('index.network.error', '网络错误，请重试'), 'error');
+            } finally {
+                showLoading(false);
+            }
+        });
+        
+        // 翻译函数
+        function tr(key, fallback) {
+            try {
+                let lang = localStorage.getItem('esg_language') || 'en';
+                // 兼容语言代码映射
+                if (lang === 'zh') lang = 'zh-cn';
+                const langData = languageData[lang];
+                if (langData && langData.t && langData.t[key]) {
+                    return langData.t[key];
+                }
+            } catch (e) {
+                console.error('Translation error:', e);
+            }
+            return fallback || key;
+        }
+
+        // 显示状态消息
+        function showStatusMessage(message, type = 'info') {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.textContent = message;
+            statusDiv.className = `status-message ${type}`;
+            statusDiv.classList.remove('hidden');
+            
+            // 5秒后自动隐藏
+            setTimeout(() => {
+                statusDiv.classList.add('hidden');
+            }, 5000);
+        }
+        
+        // 显示/隐藏加载遮罩
+        function showLoading(show) {
+            const overlay = document.getElementById('loadingOverlay');
+            if (show) {
+                overlay.classList.remove('hidden');
+            } else {
+                overlay.classList.add('hidden');
+            }
+        }
+        
+        // 页面加载时预填充邮箱（如果有）
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedEmail = localStorage.getItem('esg_login_email');
+            if (savedEmail) {
+                document.getElementById('email').value = savedEmail;
+            }
+        });
+
+        // Google登录按钮点击事件
+        document.querySelector('.social-btn.social-google')?.addEventListener('click', async function() {
+            const email = document.getElementById('email').value.trim();
+            
+            if (!email) {
+                showStatusMessage(tr('index.email.empty', '请输入邮箱地址'), 'error');
+                return;
+            }
+            
+            // 显示加载状态
+            showLoading(true);
+            
+            try {
+                // 检查邮箱是否已注册
+                const response = await fetch('/api/email/check-email-exists', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email })
+                });
+                
+                const result = await response.json();
+                
+                if (result.code === 200) {
+                    if (result.data.exists) {
+                        // 邮箱已注册，进入登录流程
+                        showStatusMessage(tr('index.email.registered', '邮箱已注册，正在跳转到登录页面...'), 'success');
+                        
+                        // 存储邮箱
+                        localStorage.setItem('esg_login_email', email);
+                        
+                        // 跳转到登录页面
+                        setTimeout(() => {
+                            window.location.href = '/static/register1.html#login';
+                        }, 1500);
+                    } else {
+                        // 邮箱未注册，进入注册流程
+                        showStatusMessage(tr('index.email.not.registered', '邮箱未注册，正在跳转到注册页面...'), 'info');
+                        
+                        // 存储邮箱到localStorage
+                        localStorage.setItem('esg_email', email);
+                        
+                        // 跳转到注册页面
+                        setTimeout(() => {
+                            window.location.href = '/static/register1.html#register';
+                        }, 1500);
+                    }
+                } else {
+                    showStatusMessage(result.message || tr('index.check.email.failed', '检查邮箱失败'), 'error');
+                }
+            } catch (error) {
+                console.error('邮箱检查错误:', error);
+                showStatusMessage(tr('index.network.error', '网络错误，请重试'), 'error');
+            } finally {
+                showLoading(false);
+            }
+        });
+
+        // 微信登录按钮点击事件
+        document.querySelector('.social-btn.social-wechat')?.addEventListener('click', async function() {
+            const email = document.getElementById('email').value.trim();
+            
+            if (!email) {
+                showStatusMessage(tr('index.email.empty', '请输入邮箱地址'), 'error');
+                return;
+            }
+            
+            showLoading(true);
+            
+            try {
+                const response = await fetch('/api/email/check-email-exists', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email })
+                });
+                
+                const result = await response.json();
+                
+                if (result.code === 200) {
+                    if (result.data.exists) {
+                        // 跳转到微信登录界面
+                        showStatusMessage(tr('index.redirecting.wechat', '正在跳转到微信登录界面...'), 'success');
+                        localStorage.setItem('esg_login_email', email);
+                        setTimeout(() => {
+                            window.location.href = '/static/login1.html';
+                        }, 1000);
+                    } else {
+                        // 跳转到注册页面
+                        showStatusMessage(tr('index.email.not.registered', '邮箱未注册，正在跳转到注册页面...'), 'info');
+                        localStorage.setItem('esg_email', email);
+                        setTimeout(() => {
+                            window.location.href = '/static/register1.html#register';
+                        }, 1500);
+                    }
+                } else {
+                    showStatusMessage(result.message || tr('index.check.email.failed', '检查邮箱失败'), 'error');
+                }
+            } catch (error) {
+                console.error('邮箱检查错误:', error);
+                showStatusMessage(tr('index.network.error', '网络错误，请重试'), 'error');
+            } finally {
+                showLoading(false);
+            }
+        });
+
+    </script>
+</body>
+</html>

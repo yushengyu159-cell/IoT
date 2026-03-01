@@ -1,0 +1,82 @@
+name: "fabric-sdk-config"
+version: 1.0.0
+
+client:
+  organization: Org1
+  credentialStore:
+    path: "/tmp/fabric-sdk-go/credentialStore"
+    cryptoStore:
+      path: "/tmp/fabric-sdk-go/cryptoStore"
+  BCCSP:
+    security:
+      enabled: true
+      default:
+        provider: "SW"
+      hashAlgorithm: "SHA2"
+      softVerify: true
+      level: 256
+
+channels:
+  mychannel:
+    orderers:
+      - orderer.example.com
+    peers:
+      peer0.org1.example.com:
+        endorsingPeer: true
+        chaincodeQuery: true
+        ledgerQuery: true
+        eventSource: true
+      peer0.org2.example.com:
+        endorsingPeer: true
+        chaincodeQuery: true
+        ledgerQuery: true
+        eventSource: true
+
+organizations:
+  Org1:
+    mspid: Org1MSP
+    cryptoPath: peerOrganizations/org1.example.com/users/{username}@org1.example.com/msp
+    peers:
+      - peer0.org1.example.com
+    certificateAuthorities:
+      - ca.org1.example.com
+
+  Org2:
+    mspid: Org2MSP
+    cryptoPath: peerOrganizations/org2.example.com/users/{username}@org2.example.com/msp
+    peers:
+      - peer0.org2.example.com
+    certificateAuthorities:
+      - ca.org2.example.com
+
+orderers:
+  orderer.example.com:
+    url: grpc://localhost:7050
+    grpcOptions:
+      ssl-target-name-override: orderer.example.com
+      hostnameOverride: orderer.example.com
+
+peers:
+  peer0.org1.example.com:
+    url: grpc://localhost:7051
+    grpcOptions:
+      ssl-target-name-override: peer0.org1.example.com
+      hostnameOverride: peer0.org1.example.com
+
+  peer0.org2.example.com:
+    url: grpc://localhost:9051
+    grpcOptions:
+      ssl-target-name-override: peer0.org2.example.com
+      hostnameOverride: peer0.org2.example.com
+
+certificateAuthorities:
+  ca.org1.example.com:
+    url: http://localhost:7054
+    caName: ca-org1
+    tlsCACerts:
+      path: organizations/peerOrganizations/org1.example.com/ca/ca.org1.example.com-cert.pem
+    registrar:
+      enrollId: admin
+      enrollSecret: adminpw
+    httpOptions:
+      verify: false 

@@ -1,0 +1,182 @@
+-- 位置信息相关表结构
+-- 创建时间: 2025-09-17
+
+-- 1. 省份表
+CREATE TABLE IF NOT EXISTS provinces (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    code VARCHAR(10) NOT NULL UNIQUE COMMENT '省份代码',
+    name VARCHAR(50) NOT NULL COMMENT '省份名称',
+    name_en VARCHAR(100) COMMENT '英文名称',
+    name_tw VARCHAR(100) COMMENT '繁体名称',
+    country_code VARCHAR(10) DEFAULT 'CN' COMMENT '国家代码',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_country (country_code),
+    INDEX idx_code (code)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='省份表';
+
+-- 2. 城市表
+CREATE TABLE IF NOT EXISTS cities (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    code VARCHAR(10) NOT NULL UNIQUE COMMENT '城市代码',
+    name VARCHAR(50) NOT NULL COMMENT '城市名称',
+    name_en VARCHAR(100) COMMENT '英文名称',
+    name_tw VARCHAR(100) COMMENT '繁体名称',
+    province_id INT NOT NULL COMMENT '省份ID',
+    latitude DECIMAL(10,7) COMMENT '纬度',
+    longitude DECIMAL(10,7) COMMENT '经度',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (province_id) REFERENCES provinces(id) ON DELETE CASCADE,
+    INDEX idx_province (province_id),
+    INDEX idx_code (code),
+    INDEX idx_location (latitude, longitude)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='城市表';
+
+-- 3. 区县表
+CREATE TABLE IF NOT EXISTS districts (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    code VARCHAR(10) NOT NULL UNIQUE COMMENT '区县代码',
+    name VARCHAR(50) NOT NULL COMMENT '区县名称',
+    name_en VARCHAR(100) COMMENT '英文名称',
+    name_tw VARCHAR(100) COMMENT '繁体名称',
+    city_id INT NOT NULL COMMENT '城市ID',
+    latitude DECIMAL(10,7) COMMENT '纬度',
+    longitude DECIMAL(10,7) COMMENT '经度',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (city_id) REFERENCES cities(id) ON DELETE CASCADE,
+    INDEX idx_city (city_id),
+    INDEX idx_code (code),
+    INDEX idx_location (latitude, longitude)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='区县表';
+
+-- 4. 用户位置信息表
+CREATE TABLE IF NOT EXISTS user_locations (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_email VARCHAR(128) NOT NULL COMMENT '用户邮箱',
+    country VARCHAR(64) DEFAULT '中国' COMMENT '国家',
+    country_code VARCHAR(10) DEFAULT 'CN' COMMENT '国家代码',
+    province_id INT COMMENT '省份ID',
+    province_name VARCHAR(50) COMMENT '省份名称',
+    city_id INT COMMENT '城市ID',
+    city_name VARCHAR(50) COMMENT '城市名称',
+    district_id INT COMMENT '区县ID',
+    district_name VARCHAR(50) COMMENT '区县名称',
+    metro_station VARCHAR(128) COMMENT '地铁站',
+    business_district VARCHAR(128) COMMENT '商圈',
+    latitude DECIMAL(10,7) COMMENT '纬度',
+    longitude DECIMAL(10,7) COMMENT '经度',
+    address_detail TEXT COMMENT '详细地址',
+    formatted_address TEXT COMMENT '格式化地址',
+    building_name VARCHAR(128) COMMENT '建筑名称',
+    building_type VARCHAR(64) COMMENT '建筑类型',
+    is_primary BOOLEAN DEFAULT TRUE COMMENT '是否为主要位置',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (province_id) REFERENCES provinces(id) ON DELETE SET NULL,
+    FOREIGN KEY (city_id) REFERENCES cities(id) ON DELETE SET NULL,
+    FOREIGN KEY (district_id) REFERENCES districts(id) ON DELETE SET NULL,
+    INDEX idx_user (user_email),
+    INDEX idx_location (latitude, longitude),
+    INDEX idx_province (province_id),
+    INDEX idx_city (city_id),
+    INDEX idx_district (district_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户位置信息表';
+
+-- 5. POI兴趣点表
+CREATE TABLE IF NOT EXISTS pois (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(128) NOT NULL COMMENT 'POI名称',
+    name_en VARCHAR(128) COMMENT '英文名称',
+    name_tw VARCHAR(128) COMMENT '繁体名称',
+    type VARCHAR(50) NOT NULL COMMENT 'POI类型(metro_station, business_district, landmark等)',
+    city_id INT COMMENT '所属城市ID',
+    district_id INT COMMENT '所属区县ID',
+    latitude DECIMAL(10,7) NOT NULL COMMENT '纬度',
+    longitude DECIMAL(10,7) NOT NULL COMMENT '经度',
+    address VARCHAR(256) COMMENT '地址',
+    description TEXT COMMENT '描述',
+    is_active BOOLEAN DEFAULT TRUE COMMENT '是否启用',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (city_id) REFERENCES cities(id) ON DELETE SET NULL,
+    FOREIGN KEY (district_id) REFERENCES districts(id) ON DELETE SET NULL,
+    INDEX idx_city (city_id),
+    INDEX idx_district (district_id),
+    INDEX idx_type (type),
+    INDEX idx_location (latitude, longitude),
+    INDEX idx_name (name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='兴趣点表';
+
+-- 插入基础数据
+INSERT INTO provinces (code, name, name_en, name_tw) VALUES
+('110000', '北京市', 'Beijing', '北京市'),
+('120000', '天津市', 'Tianjin', '天津市'),
+('130000', '河北省', 'Hebei', '河北省'),
+('140000', '山西省', 'Shanxi', '山西省'),
+('150000', '内蒙古自治区', 'Inner Mongolia', '內蒙古自治區'),
+('210000', '辽宁省', 'Liaoning', '遼寧省'),
+('220000', '吉林省', 'Jilin', '吉林省'),
+('230000', '黑龙江省', 'Heilongjiang', '黑龍江省'),
+('310000', '上海市', 'Shanghai', '上海市'),
+('320000', '江苏省', 'Jiangsu', '江蘇省'),
+('330000', '浙江省', 'Zhejiang', '浙江省'),
+('340000', '安徽省', 'Anhui', '安徽省'),
+('350000', '福建省', 'Fujian', '福建省'),
+('360000', '江西省', 'Jiangxi', '江西省'),
+('370000', '山东省', 'Shandong', '山東省'),
+('410000', '河南省', 'Henan', '河南省'),
+('420000', '湖北省', 'Hubei', '湖北省'),
+('430000', '湖南省', 'Hunan', '湖南省'),
+('440000', '广东省', 'Guangdong', '廣東省'),
+('450000', '广西壮族自治区', 'Guangxi', '廣西壯族自治區'),
+('460000', '海南省', 'Hainan', '海南省'),
+('500000', '重庆市', 'Chongqing', '重慶市'),
+('510000', '四川省', 'Sichuan', '四川省'),
+('520000', '贵州省', 'Guizhou', '貴州省'),
+('530000', '云南省', 'Yunnan', '雲南省'),
+('540000', '西藏自治区', 'Tibet', '西藏自治區'),
+('610000', '陕西省', 'Shaanxi', '陝西省'),
+('620000', '甘肃省', 'Gansu', '甘肅省'),
+('630000', '青海省', 'Qinghai', '青海省'),
+('640000', '宁夏回族自治区', 'Ningxia', '寧夏回族自治區'),
+('650000', '新疆维吾尔自治区', 'Xinjiang', '新疆維吾爾自治區'),
+('710000', '台湾省', 'Taiwan', '台灣省'),
+('810000', '香港特别行政区', 'Hong Kong', '香港特別行政區'),
+('820000', '澳门特别行政区', 'Macau', '澳門特別行政區');
+
+-- 插入主要城市数据
+INSERT INTO cities (code, name, name_en, name_tw, province_id, latitude, longitude) VALUES
+('110100', '北京市', 'Beijing', '北京市', 1, 39.9042, 116.4074),
+('120100', '天津市', 'Tianjin', '天津市', 2, 39.3434, 117.3616),
+('130100', '石家庄市', 'Shijiazhuang', '石家莊市', 3, 38.0428, 114.5149),
+('140100', '太原市', 'Taiyuan', '太原市', 4, 37.8706, 112.5489),
+('150100', '呼和浩特市', 'Hohhot', '呼和浩特市', 5, 40.8414, 111.7519),
+('210100', '沈阳市', 'Shenyang', '瀋陽市', 6, 41.8057, 123.4315),
+('220100', '长春市', 'Changchun', '長春市', 7, 43.8171, 125.3235),
+('230100', '哈尔滨市', 'Harbin', '哈爾濱市', 8, 45.7732, 126.6577),
+('310100', '上海市', 'Shanghai', '上海市', 9, 31.2304, 121.4737),
+('320100', '南京市', 'Nanjing', '南京市', 10, 32.0603, 118.7969),
+('330100', '杭州市', 'Hangzhou', '杭州市', 11, 30.2741, 120.1551),
+('340100', '合肥市', 'Hefei', '合肥市', 12, 31.8206, 117.2272),
+('350100', '福州市', 'Fuzhou', '福州市', 13, 26.0745, 119.2965),
+('360100', '南昌市', 'Nanchang', '南昌市', 14, 28.6820, 115.8579),
+('370100', '济南市', 'Jinan', '濟南市', 15, 36.6512, 117.1201),
+('410100', '郑州市', 'Zhengzhou', '鄭州市', 16, 34.7466, 113.6254),
+('420100', '武汉市', 'Wuhan', '武漢市', 17, 30.5928, 114.3055),
+('430100', '长沙市', 'Changsha', '長沙市', 18, 28.2278, 112.9388),
+('440100', '广州市', 'Guangzhou', '廣州市', 19, 23.1291, 113.2644),
+('440300', '深圳市', 'Shenzhen', '深圳市', 19, 22.5431, 114.0579),
+('450100', '南宁市', 'Nanning', '南寧市', 20, 22.8170, 108.3669),
+('460100', '海口市', 'Haikou', '海口市', 21, 20.0444, 110.1999),
+('500100', '重庆市', 'Chongqing', '重慶市', 22, 29.4316, 106.9123),
+('510100', '成都市', 'Chengdu', '成都市', 23, 30.5728, 104.0668),
+('520100', '贵阳市', 'Guiyang', '貴陽市', 24, 26.6470, 106.6302),
+('530100', '昆明市', 'Kunming', '昆明市', 25, 25.0389, 102.7183),
+('540100', '拉萨市', 'Lhasa', '拉薩市', 26, 29.6520, 91.1721),
+('610100', '西安市', 'Xian', '西安市', 27, 34.3416, 108.9398),
+('620100', '兰州市', 'Lanzhou', '蘭州市', 28, 36.0611, 103.8343),
+('630100', '西宁市', 'Xining', '西寧市', 29, 36.6232, 101.7782),
+('640100', '银川市', 'Yinchuan', '銀川市', 30, 38.4872, 106.2309),
+('650100', '乌鲁木齐市', 'Urumqi', '烏魯木齊市', 31, 43.8256, 87.6168);

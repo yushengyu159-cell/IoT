@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="ui-id" content="注册2">
+    <title>ESG VISA - Verification required</title>
+    <link rel="stylesheet" href="/static/styles.css?v=20250819-register-2">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container" data-ui-id="register-2">
+        <div class="grid-pattern"></div>
+        
+
+        <div class="main-content-login">
+            <!-- 顶部图标 -->
+            <div class="logo-container" style="margin-bottom:24px;">
+                <div class="logo-image" style="width:64px;height:64px;">
+                    <img src="/static/log.png" alt="ESG VISA Logo" class="logo-img" style="width:50px;height:50px;">
+                </div>
+            </div>
+
+            <div class="header" style="margin-bottom:22px;">
+                <h1 data-translate="verification.title">Verification required</h1>
+                <p data-translate="verification.subtitle">We sent a verification code to<br><span id="verifyEmail" style="color:#666;">user@example.com</span></p>
+            </div>
+
+            <div class="form-container">
+                <div class="form-section" id="verificationForm">
+                    <form id="codeForm">
+                        <div class="inline-row" style="gap:8px; justify-content:center; margin:0 0 10px;">
+                            <input class="otp-input" type="text" inputmode="numeric" maxlength="1" pattern="[0-9]*" aria-label="OTP 1">
+                            <input class="otp-input" type="text" inputmode="numeric" maxlength="1" pattern="[0-9]*" aria-label="OTP 2">
+                            <input class="otp-input" type="text" inputmode="numeric" maxlength="1" pattern="[0-9]*" aria-label="OTP 3">
+                            <input class="otp-input" type="text" inputmode="numeric" maxlength="1" pattern="[0-9]*" aria-label="OTP 4">
+                            <input class="otp-input" type="text" inputmode="numeric" maxlength="1" pattern="[0-9]*" aria-label="OTP 5">
+                            <input class="otp-input" type="text" inputmode="numeric" maxlength="1" pattern="[0-9]*" aria-label="OTP 6">
+                        </div>
+                        
+                        <!-- 倒计时显示 -->
+                        <div style="text-align: center; margin: 10px 0; font-size: 14px; color: #666;">
+                            <span data-translate="verification.expires">验证码有效期：</span><span id="countdown" style="color: #00BCD4; font-weight: bold;">10:00</span>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary" id="verifyBtn" data-translate="verification.verify">Verify</button>
+                    </form>
+
+                    <!-- 状态消息显示 -->
+                    <div id="statusMessage" class="status-message hidden"></div>
+
+                    <button class="social-btn social-google" data-translate="google.login"><i class="fab fa-google"></i> Sign in with Google</button>
+                    <button class="social-btn social-wechat" data-translate="wechat.login"><i class="fab fa-weixin"></i> Sign in with Wechat</button>
+                    <button class="social-btn social-apple" data-translate="apple.login"><i class="fab fa-apple"></i> Sign in with Apple</button>
+
+                    <div style="margin-top:10px; font-size:0.95rem; color:#666;">
+                        <span data-translate="verification.resend">Didn't get a code? <a href="#" id="resendLink" style="color:#00BCD4;">Click to resend</a>.</span>
+                    </div>
+
+                    <div class="legal-text" style="margin-top:16px;">
+                        <span data-translate="terms.prefix">By continuing, you agree to our</span> <a href="#" data-translate="terms.service">Terms of Service</a> and <a href="#" data-translate="privacy.policy">Privacy Policy</a>.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* 简单的 OTP 输入框样式，复用表单控件风格 */
+        .otp-input {
+            width: 44px;
+            height: 48px;
+            text-align: center;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1.1rem;
+        }
+        .otp-input:focus { outline:none; border-color:#00BCD4; box-shadow:0 0 0 3px rgba(0,188,212,0.1); }
+        
+        /* 状态消息样式 */
+        .status-message {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+            font-size: 14px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .status-message.hidden {
+            display: none;
+        }
+        
+        .status-message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status-message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status-message.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        /* 按钮加载状态 */
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+    </style>
+
+    <script>
+        // 邮箱验证功能
+        let verificationTimer = null;
+        let timeRemaining = 600; // 10分钟 = 600秒
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 从localStorage获取用户邮箱
+            const userEmail = localStorage.getItem('esg_email');
+            if (userEmail) {
+                document.getElementById('verifyEmail').textContent = userEmail;
+            } else {
+                // 如果没有邮箱信息，返回注册页面
+                alert('未找到邮箱信息，请重新注册');
+                window.location.href = '/static/register1.html';
+                return;
+            }
+            
+            // 启动倒计时
+            startCountdown();
+            
+            // 自动发送验证码
+            sendVerificationCode();
+        });
+        
+        // 启动倒计时
+        function startCountdown() {
+            const countdownElement = document.getElementById('countdown');
+            if (!countdownElement) return;
+            
+            verificationTimer = setInterval(() => {
+                timeRemaining--;
+                
+                if (timeRemaining <= 0) {
+                    // 时间到，停止倒计时
+                    clearInterval(verificationTimer);
+                    countdownElement.textContent = '验证码已过期';
+                    countdownElement.style.color = '#ff4444';
+                    
+                    // 禁用验证按钮
+                    document.getElementById('verifyBtn').disabled = true;
+                    document.getElementById('verifyBtn').textContent = '验证码已过期';
+                } else {
+                    // 显示剩余时间
+                    const minutes = Math.floor(timeRemaining / 60);
+                    const seconds = timeRemaining % 60;
+                    countdownElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                }
+            }, 1000);
+        }
+        
+        // 发送验证码
+        async function sendVerificationCode() {
+            const email = localStorage.getItem('esg_email');
+            if (!email) return;
+            
+            try {
+                const response = await fetch('/api/email/send-code', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        email: email,
+                        language: window.LanguageConfig?.currentLanguage || 'zh'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.code === 200) {
+                    showStatusMessage('验证码已发送到您的邮箱', 'success');
+                    console.log('开发环境验证码:', result.data.code);
+                } else {
+                    showStatusMessage(result.message || '验证码发送失败', 'error');
+                }
+            } catch (error) {
+                console.error('发送验证码错误:', error);
+                showStatusMessage('网络错误，请重试', 'error');
+            }
+        }
+        
+        // 验证码输入框自动跳转焦点
+        const codeInputs = document.querySelectorAll('.otp-input');
+        codeInputs.forEach((input, index) => {
+            input.addEventListener('input', function() {
+                if (this.value.length === 1) {
+                    if (index < codeInputs.length - 1) {
+                        codeInputs[index + 1].focus();
+                    }
+                }
+            });
+            
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Backspace' && this.value.length === 0) {
+                    if (index > 0) {
+                        codeInputs[index - 1].focus();
+                    }
+                }
+            });
+        });
+        
+        // 验证码验证表单提交
+        document.getElementById('codeForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // 获取所有验证码输入框的值
+            const codeInputs = document.querySelectorAll('.otp-input');
+            const code = Array.from(codeInputs).map(input => input.value).join('');
+            
+            console.log('验证码输入:', code, '长度:', code.length);
+            
+            if (code.length !== 6) {
+                showStatusMessage('请输入完整的6位验证码', 'error');
+                return;
+            }
+            
+            const email = localStorage.getItem('esg_email');
+            if (!email) {
+                showStatusMessage('未找到邮箱信息，请重新注册', 'error');
+                return;
+            }
+            
+            // 检查验证码是否过期
+            if (timeRemaining <= 0) {
+                showStatusMessage('验证码已过期，请重新发送', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/email/verify-code', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, code })
+                });
+                
+                const result = await response.json();
+                
+                if (result.code === 200 && result.data.valid) {
+                    // 验证成功，停止倒计时
+                    if (verificationTimer) {
+                        clearInterval(verificationTimer);
+                    }
+                    
+                    showStatusMessage('邮箱验证成功，正在跳转...', 'success');
+                    
+                    // 延迟跳转到角色选择页面
+                    setTimeout(() => {
+                        window.location.href = '/static/register-3.html';
+                    }, 1500);
+                    
+                } else {
+                    // 验证失败
+                    showStatusMessage(result.message || '验证码不正确', 'error');
+                    
+                    // 清空输入框
+                    const codeInputs = document.querySelectorAll('.otp-input');
+                    codeInputs.forEach(input => input.value = '');
+                    codeInputs[0].focus();
+                }
+            } catch (error) {
+                console.error('验证错误:', error);
+                showStatusMessage('网络错误，请重试', 'error');
+            }
+        });
+        
+        // 重新发送验证码
+        document.getElementById('resendLink').addEventListener('click', async function(e) {
+        e.preventDefault();
+            
+            // 检查是否在冷却期内
+            if (timeRemaining > 0 && timeRemaining < 600) {
+                showStatusMessage('验证码仍在有效期内，请稍后再试', 'info');
+                return;
+            }
+            
+            // 重新发送验证码
+            await sendVerificationCode();
+            
+            // 重置倒计时
+            if (verificationTimer) {
+                clearInterval(verificationTimer);
+            }
+            timeRemaining = 600;
+            startCountdown();
+        });
+        
+        // 显示状态消息
+        function showStatusMessage(message, type = 'info') {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.textContent = message;
+            statusDiv.className = `status-message ${type}`;
+            statusDiv.style.display = 'block';
+            
+            // 自动隐藏消息
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+    <script>
+    (function(){
+        if (window.__esgLangInit_v2) return; window.__esgLangInit_v2 = true;
+        window.languageData = window.languageData || {
+            en:{code:'EN',flag:'🇺🇸',t:{
+                title:'Verification required',
+                subtitlePrefix:'We sent a verification code to',
+                verify:'Verify',
+                resend:'Resend code',
+                back:'Back to log in',
+                processing:'Processing...',
+                success:'Verification successful!',
+                error:'Verification failed, please try again.'
+            }},
+            'zh-cn':{code:'简体',flag:'🇨🇳',t:{
+                title:'需要验证',
+                subtitlePrefix:'我们已发送验证码至',
+                verify:'验证',
+                resend:'重新发送',
+                back:'返回登录',
+                processing:'处理中...',
+                success:'验证成功！',
+                error:'验证失败，请重试。'
+            }},
+            'zh-tw':{code:'繁體',flag:'🇭🇰',t:{
+                title:'需要驗證',
+                subtitlePrefix:'我們已發送驗證碼至',
+                verify:'驗證',
+                resend:'重新發送',
+                back:'返回登錄',
+                processing:'處理中...',
+                success:'驗證成功！',
+                error:'驗證失敗，請重試。'
+            }}
+        };
+        function apply(lang){
+            var d=languageData[lang]; if(!d) return;
+            var h1=document.querySelector('.header h1'); if(h1) h1.textContent=d.t.title;
+            var sub=document.querySelector('.header p'); if(sub){
+                var mail=document.getElementById('verifyEmail'); var mailText=mail?mail.textContent:'user@example.com';
+                sub.innerHTML = d.t.subtitlePrefix + '<br><span id="verifyEmail" style="color:#666;">' + mailText + '</span>';
+            }
+            var btn=document.getElementById('verifyBtn'); if(btn) btn.textContent=d.t.verify;
+            var resend=document.querySelector('.resend-link'); if(resend) resend.textContent=d.t.resend;
+            var back=document.querySelector('.back-link'); if(back) back.textContent=d.t.back;
+            var loading=document.querySelector('.loading-spinner p'); if(loading) loading.textContent=d.t.processing;
+        }
+        document.addEventListener('DOMContentLoaded',function(){ 
+            var lang=localStorage.getItem('esg_language')||'en'; 
+            apply(lang); 
+        });
+    })();
+    </script>
+    
+    <!-- 引入统一语言配置和自动翻译 -->
+    <script src="/static/language-config.js"></script>
+    <script src="/static/auto-translate.js"></script>
+</body>
+</html>
+
+
+

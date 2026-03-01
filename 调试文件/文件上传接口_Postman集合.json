@@ -1,0 +1,665 @@
+{
+	"info": {
+		"_postman_id": "esg-file-upload-001",
+		"name": "ESG文件上传接口测试集合",
+		"description": "ESG文件上传接口测试集合\n\n测试接口: POST https://app.esgvisa.com/api/esg/upload-encrypted\n测试账号: 18027473816@163.com\n\n包含以下测试用例:\n1. 正常上传PDF文件\n2. 上传图片文件\n3. 上传大文件\n4. 缺少文件参数测试\n5. 仅上传文件（无描述）\n6. 查询文件详情\n7. 下载加密文件",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "esg-visa-api"
+	},
+	"item": [
+		{
+			"name": "1. 正常上传PDF文件",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"HTTP状态码为200\", function() {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"业务状态码为200\", function() {",
+							"    const responseBody = pm.response.json();",
+							"    pm.expect(responseBody.code).to.eql(200);",
+							"});",
+							"",
+							"pm.test(\"返回文件CID\", function() {",
+							"    const responseBody = pm.response.json();",
+							"    pm.expect(responseBody.data.meta.cids).to.be.an('array');",
+							"    pm.expect(responseBody.data.meta.cids.length).to.be.greaterThan(0);",
+							"    ",
+							"    // 保存CID到环境变量",
+							"    if (responseBody.data.meta.cids && responseBody.data.meta.cids.length > 0) {",
+							"        pm.environment.set(\"file_cid\", responseBody.data.meta.cids[0]);",
+							"    }",
+							"});",
+							"",
+							"pm.test(\"返回加密密钥\", function() {",
+							"    const responseBody = pm.response.json();",
+							"    pm.expect(responseBody.data.key).to.not.be.null;",
+							"    pm.expect(responseBody.data.key).to.not.be.empty;",
+							"    ",
+							"    // 保存密钥到环境变量",
+							"    if (responseBody.data.key) {",
+							"        pm.environment.set(\"file_key\", responseBody.data.key);",
+							"    }",
+							"});",
+							"",
+							"pm.test(\"返回文件元数据\", function() {",
+							"    const responseBody = pm.response.json();",
+							"    pm.expect(responseBody.data.meta.fileName).to.not.be.null;",
+							"    pm.expect(responseBody.data.meta.fileSize).to.be.a('number');",
+							"    pm.expect(responseBody.data.meta.uploadAt).to.not.be.null;",
+							"});",
+							"",
+							"pm.test(\"返回分片信息\", function() {",
+							"    const responseBody = pm.response.json();",
+							"    pm.expect(responseBody.data.chunkCount).to.be.a('number');",
+							"    pm.expect(responseBody.data.chunkCount).to.be.greaterThan(0);",
+							"});",
+							"",
+							"pm.test(\"返回时间统计\", function() {",
+							"    const responseBody = pm.response.json();",
+							"    pm.expect(responseBody.data.timeStats).to.not.be.null;",
+							"    pm.expect(responseBody.data.timeStats.totalTime).to.not.be.null;",
+							"});",
+							"",
+							"// 打印关键信息",
+							"const responseBody = pm.response.json();",
+							"if (responseBody.code === 200) {",
+							"    console.log(\"✅ 上传成功!\");",
+							"    console.log(\"文件CID:\", responseBody.data.meta.cids[0]);",
+							"    console.log(\"加密密钥:\", responseBody.data.key);",
+							"    console.log(\"文件大小:\", responseBody.data.meta.fileSize, \"字节\");",
+							"    console.log(\"分片数量:\", responseBody.data.chunkCount);",
+							"    console.log(\"上传耗时:\", responseBody.data.timeStats.totalTime);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"strictSSL": true
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": [],
+							"description": "要上传的PDF文件"
+						},
+						{
+							"key": "desc",
+							"value": "测试PDF文件上传 - Postman自动化测试",
+							"type": "text",
+							"description": "文件描述"
+						},
+						{
+							"key": "uploader",
+							"value": "18027473816@163.com",
+							"type": "text",
+							"description": "上传者账号"
+						}
+					]
+				},
+				"url": {
+					"raw": "https://app.esgvisa.com/api/esg/upload-encrypted",
+					"protocol": "https",
+					"host": [
+						"app",
+						"esgvisa",
+						"com"
+					],
+					"path": [
+						"api",
+						"esg",
+						"upload-encrypted"
+					]
+				},
+				"description": "正常上传PDF文件测试用例\n\n**测试步骤:**\n1. 选择一个PDF文件\n2. 填写文件描述\n3. 使用测试账号上传\n\n**预期结果:**\n- HTTP状态码: 200\n- 业务状态码: 200\n- 返回文件CID和加密密钥\n- 返回完整的文件元数据"
+			},
+			"response": []
+		},
+		{
+			"name": "2. 上传图片文件",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"HTTP状态码为200\", function() {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"业务状态码为200\", function() {",
+							"    const responseBody = pm.response.json();",
+							"    pm.expect(responseBody.code).to.eql(200);",
+							"});",
+							"",
+							"pm.test(\"返回文件CID\", function() {",
+							"    const responseBody = pm.response.json();",
+							"    pm.expect(responseBody.data.meta.cids).to.be.an('array');",
+							"    pm.expect(responseBody.data.meta.cids.length).to.be.greaterThan(0);",
+							"});",
+							"",
+							"pm.test(\"返回加密密钥\", function() {",
+							"    const responseBody = pm.response.json();",
+							"    pm.expect(responseBody.data.key).to.not.be.null;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": [],
+							"description": "要上传的图片文件（JPG/PNG等）"
+						},
+						{
+							"key": "desc",
+							"value": "测试图片文件上传 - Postman自动化测试",
+							"type": "text"
+						},
+						{
+							"key": "uploader",
+							"value": "18027473816@163.com",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "https://app.esgvisa.com/api/esg/upload-encrypted",
+					"protocol": "https",
+					"host": [
+						"app",
+						"esgvisa",
+						"com"
+					],
+					"path": [
+						"api",
+						"esg",
+						"upload-encrypted"
+					]
+				},
+				"description": "上传图片文件测试用例"
+			},
+			"response": []
+		},
+		{
+			"name": "3. 上传大文件",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"HTTP状态码为200\", function() {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"业务状态码为200\", function() {",
+							"    const responseBody = pm.response.json();",
+							"    pm.expect(responseBody.code).to.eql(200);",
+							"});",
+							"",
+							"pm.test(\"大文件上传成功\", function() {",
+							"    const responseBody = pm.response.json();",
+							"    pm.expect(responseBody.data.meta.fileSize).to.be.greaterThan(10 * 1024 * 1024); // 大于10MB",
+							"});",
+							"",
+							"// 打印性能信息",
+							"const responseBody = pm.response.json();",
+							"if (responseBody.code === 200) {",
+							"    console.log(\"文件大小:\", (responseBody.data.meta.fileSize / 1024 / 1024).toFixed(2), \"MB\");",
+							"    console.log(\"上传耗时:\", responseBody.data.timeStats.totalTime);",
+							"    console.log(\"分片数量:\", responseBody.data.chunkCount);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": [],
+							"description": "要上传的大文件（>10MB）"
+						},
+						{
+							"key": "desc",
+							"value": "大文件上传测试 - Postman自动化测试",
+							"type": "text"
+						},
+						{
+							"key": "uploader",
+							"value": "18027473816@163.com",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "https://app.esgvisa.com/api/esg/upload-encrypted",
+					"protocol": "https",
+					"host": [
+						"app",
+						"esgvisa",
+						"com"
+					],
+					"path": [
+						"api",
+						"esg",
+						"upload-encrypted"
+					]
+				},
+				"description": "大文件上传测试用例（>10MB）"
+			},
+			"response": []
+		},
+		{
+			"name": "4. 缺少文件参数测试",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"HTTP状态码为200\", function() {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"业务状态码为400\", function() {",
+							"    const responseBody = pm.response.json();",
+							"    pm.expect(responseBody.code).to.eql(400);",
+							"});",
+							"",
+							"pm.test(\"返回错误消息\", function() {",
+							"    const responseBody = pm.response.json();",
+							"    pm.expect(responseBody.message).to.include(\"未上传文件\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "desc",
+							"value": "测试缺少文件参数",
+							"type": "text"
+						},
+						{
+							"key": "uploader",
+							"value": "18027473816@163.com",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "https://app.esgvisa.com/api/esg/upload-encrypted",
+					"protocol": "https",
+					"host": [
+						"app",
+						"esgvisa",
+						"com"
+					],
+					"path": [
+						"api",
+						"esg",
+						"upload-encrypted"
+					]
+				},
+				"description": "测试缺少文件参数时的错误处理\n\n**预期结果:**\n- HTTP状态码: 200\n- 业务状态码: 400\n- 错误消息: \"未上传文件\""
+			},
+			"response": []
+		},
+		{
+			"name": "5. 仅上传文件（无描述和上传者）",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"HTTP状态码为200\", function() {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"业务状态码为200\", function() {",
+							"    const responseBody = pm.response.json();",
+							"    pm.expect(responseBody.code).to.eql(200);",
+							"});",
+							"",
+							"pm.test(\"即使没有描述也能上传成功\", function() {",
+							"    const responseBody = pm.response.json();",
+							"    pm.expect(responseBody.data.meta.cids).to.be.an('array');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": [],
+							"description": "仅上传文件，不提供描述和上传者"
+						}
+					]
+				},
+				"url": {
+					"raw": "https://app.esgvisa.com/api/esg/upload-encrypted",
+					"protocol": "https",
+					"host": [
+						"app",
+						"esgvisa",
+						"com"
+					],
+					"path": [
+						"api",
+						"esg",
+						"upload-encrypted"
+					]
+				},
+				"description": "测试仅提供文件参数，不提供描述和上传者时的行为"
+			},
+			"response": []
+		},
+		{
+			"name": "6. 查询文件详情",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// 如果没有设置CID，使用默认值",
+							"if (!pm.environment.get(\"file_cid\")) {",
+							"    pm.environment.set(\"file_cid\", \"QmXXX...\");",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"HTTP状态码为200\", function() {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"业务状态码为200\", function() {",
+							"    const responseBody = pm.response.json();",
+							"    pm.expect(responseBody.code).to.eql(200);",
+							"});",
+							"",
+							"pm.test(\"返回文件详情\", function() {",
+							"    const responseBody = pm.response.json();",
+							"    pm.expect(responseBody.data.CID).to.not.be.null;",
+							"    pm.expect(responseBody.data.Filename).to.not.be.null;",
+							"    pm.expect(responseBody.data.UploadAt).to.not.be.null;",
+							"});",
+							"",
+							"// 打印文件信息",
+							"const responseBody = pm.response.json();",
+							"if (responseBody.code === 200) {",
+							"    console.log(\"文件CID:\", responseBody.data.CID);",
+							"    console.log(\"文件名:\", responseBody.data.Filename);",
+							"    console.log(\"文件大小:\", responseBody.data.FileSize, \"字节\");",
+							"    console.log(\"上传时间:\", responseBody.data.UploadAt);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://app.esgvisa.com/api/esg/query?cid={{file_cid}}",
+					"protocol": "https",
+					"host": [
+						"app",
+						"esgvisa",
+						"com"
+					],
+					"path": [
+						"api",
+						"esg",
+						"query"
+					],
+					"query": [
+						{
+							"key": "cid",
+							"value": "{{file_cid}}",
+							"description": "文件CID（从上传接口返回）"
+						}
+					]
+				},
+				"description": "查询文件详情\n\n**使用说明:**\n1. 先执行上传接口，会自动保存CID到环境变量\n2. 然后执行此接口查询文件详情\n\n**参数说明:**\n- cid: 文件CID（从上传接口返回的data.meta.cids[0]）"
+			},
+			"response": []
+		},
+		{
+			"name": "7. 下载加密文件",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// 如果没有设置CID和KEY，使用默认值",
+							"if (!pm.environment.get(\"file_cid\")) {",
+							"    pm.environment.set(\"file_cid\", \"QmXXX...\");",
+							"}",
+							"if (!pm.environment.get(\"file_key\")) {",
+							"    pm.environment.set(\"file_key\", \"base64_encoded_key\");",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"HTTP状态码为200\", function() {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"返回文件内容\", function() {",
+							"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/octet-stream\");",
+							"    pm.expect(pm.response.body).to.not.be.empty;",
+							"});",
+							"",
+							"// 打印下载信息",
+							"console.log(\"文件大小:\", pm.response.headers.get(\"Content-Length\"), \"字节\");",
+							"console.log(\"内容类型:\", pm.response.headers.get(\"Content-Type\"));"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"cid\": \"{{file_cid}}\",\n    \"key\": \"{{file_key}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://app.esgvisa.com/api/esg/download-encrypted",
+					"protocol": "https",
+					"host": [
+						"app",
+						"esgvisa",
+						"com"
+					],
+					"path": [
+						"api",
+						"esg",
+						"download-encrypted"
+					]
+				},
+				"description": "下载加密文件\n\n**使用说明:**\n1. 先执行上传接口，会自动保存CID和KEY到环境变量\n2. 然后执行此接口下载文件\n\n**参数说明:**\n- cid: 文件CID（从上传接口返回）\n- key: 加密密钥（从上传接口返回）\n\n**注意:** 下载的文件是二进制流，Postman会显示为Base64编码"
+			},
+			"response": []
+		},
+		{
+			"name": "8. 普通上传接口（不加密）",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"HTTP状态码为200\", function() {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"业务状态码为200\", function() {",
+							"    const responseBody = pm.response.json();",
+							"    pm.expect(responseBody.code).to.eql(200);",
+							"});",
+							"",
+							"pm.test(\"返回CID\", function() {",
+							"    const responseBody = pm.response.json();",
+							"    pm.expect(responseBody.data.cid).to.not.be.null;",
+							"});",
+							"",
+							"pm.test(\"返回上链状态\", function() {",
+							"    const responseBody = pm.response.json();",
+							"    pm.expect(responseBody.data.onChain).to.be.true;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": [],
+							"description": "要上传的文件（不加密）"
+						},
+						{
+							"key": "desc",
+							"value": "普通上传测试 - Postman自动化测试",
+							"type": "text"
+						},
+						{
+							"key": "uploader",
+							"value": "18027473816@163.com",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "https://app.esgvisa.com/api/esg/upload",
+					"protocol": "https",
+					"host": [
+						"app",
+						"esgvisa",
+						"com"
+					],
+					"path": [
+						"api",
+						"esg",
+						"upload"
+					]
+				},
+				"description": "普通上传接口测试（不进行加密和分片）\n\n**接口地址:** POST /api/esg/upload\n\n**功能特点:**\n- 直接上传到IPFS\n- 区块链存证\n- 数据库记录\n- 不进行加密和分片处理"
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// 设置全局变量",
+					"pm.globals.set(\"api_base_url\", \"https://app.esgvisa.com\");",
+					"pm.globals.set(\"test_uploader\", \"18027473816@163.com\");",
+					"",
+					"// 设置环境变量（如果不存在）",
+					"if (!pm.environment.get(\"file_cid\")) {",
+					"    pm.environment.set(\"file_cid\", \"\");",
+					"}",
+					"if (!pm.environment.get(\"file_key\")) {",
+					"    pm.environment.set(\"file_key\", \"\");",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// 全局测试脚本",
+					"console.log(\"测试集合: ESG文件上传接口测试\");",
+					"console.log(\"测试账号:\", pm.globals.get(\"test_uploader\"));",
+					"console.log(\"API地址:\", pm.globals.get(\"api_base_url\"));"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "api_base_url",
+			"value": "https://app.esgvisa.com",
+			"type": "string"
+		},
+		{
+			"key": "test_uploader",
+			"value": "18027473816@163.com",
+			"type": "string"
+		}
+	]
+}
+
+

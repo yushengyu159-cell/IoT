@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  # Fabric SDK 主服务
+  fabric-sdk:
+    build: .
+    container_name: fabric-sdk-app
+    restart: unless-stopped
+    ports:
+      - "8199:8199"
+    environment:
+      - GF_GERROR_BRIEF=true
+      - GF_GERROR_STACK=false
+      - FABRIC_SDK_GO_LOG_LEVEL=FATAL
+      - FABRIC_SDK_GO_MSP_VERIFY=false
+      - MYSQL_DSN=root:Test@123456@tcp(fabric-sdk-mysql:3306)/esg?charset=utf8mb4&parseTime=True&loc=Local
+      - IPFS_API=http://fabric-sdk-ipfs:5001
+    volumes:
+      - ./configs:/app/configs:ro
+      - ./keystore:/app/keystore:ro
+      - ./manifest:/app/manifest:ro
+      - ./logs:/app/logs
+      - ./manifest/config/config.yaml:/app/manifest/config/config.yaml:ro
+    networks:
+      - fabric-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8199/api/index"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  fabric-network:
+    external: true
+    name: fabric-sdk_fabric-network

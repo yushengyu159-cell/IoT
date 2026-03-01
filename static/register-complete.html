@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="ui-id" content="注册完成">
+    <title>ESG VISA - Registration Complete</title>
+    <link rel="stylesheet" href="/static/styles.css?v=20250819-register-complete">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container" data-ui-id="register-complete">
+        <div class="grid-pattern"></div>
+        
+        <!-- Language Switcher (top-right) -->
+        <div class="language-switcher" aria-label="Language switcher" style="position: fixed; top: 20px; right: 20px; z-index: 1000;">
+            <button class="lang-btn" id="langBtn" type="button" style="background: white; border: 1px solid #ddd; border-radius: 8px; padding: 8px 12px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-globe"></i>
+                <span id="currentLang">EN</span>
+                <i class="fas fa-chevron-down"></i>
+            </button>
+            <div class="lang-menu" id="langMenu" role="menu" style="position: absolute; top: 100%; right: 0; background: white; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: none; min-width: 120px;">
+                <div class="lang-option active" data-lang="en" role="menuitem" style="padding: 8px 12px; cursor: pointer; display: flex; align-items: center; gap: 8px; border-radius: 4px;">
+                    <span class="lang-flag">🇺🇸</span>
+                    <span class="lang-name">English</span>
+                </div>
+                <div class="lang-option" data-lang="zh-cn" role="menuitem" style="padding: 8px 12px; cursor: pointer; display: flex; align-items: center; gap: 8px; border-radius: 4px;">
+                    <span class="lang-flag">🇨🇳</span>
+                    <span class="lang-name">简体</span>
+                </div>
+                <div class="lang-option" data-lang="zh-tw" role="menuitem" style="padding: 8px 12px; cursor: pointer; display: flex; align-items: center; gap: 8px; border-radius: 4px;">
+                    <span class="lang-flag">🇭🇰</span>
+                    <span class="lang-name">繁體</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content-login">
+            <div class="logo-container">
+                <div class="logo-image">
+                    <img src="/static/log.png" alt="ESG VISA Logo" class="logo-img">
+                </div>
+            </div>
+
+            <div class="header">
+                <h1>🎉 Registration Complete!</h1>
+                <p>Welcome to ESG VISA - Verified Intelligence for Sustainable Architecture</p>
+            </div>
+
+            <div class="form-container">
+                <div class="form-section" id="completionSection">
+                    <div style="text-align: center; margin: 30px 0;">
+                        <div style="font-size: 64px; color: #00BCD4; margin-bottom: 20px;">
+                            ✅
+                        </div>
+                        <h2 style="color: #333; margin-bottom: 15px;">Account Created Successfully</h2>
+                        <p style="color: #666; line-height: 1.6;">
+                            Your account has been successfully created and verified.<br>
+                            You can now access all ESG VISA features and services.
+                        </p>
+                    </div>
+
+                    <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; margin: 20px 0;">
+                        <h3 style="color: #333; margin-bottom: 15px;">Account Details</h3>
+                        <div id="accountDetails" style="text-align: left;">
+                            <p><strong>Email:</strong> <span id="userEmail">user@example.com</span></p>
+                            <p><strong>Role:</strong> <span id="userRole">Owner</span></p>
+                            <p><strong>Status:</strong> <span style="color: #28a745;">Active</span></p>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; margin: 30px 0;">
+                        <div id="autoRedirect" style="margin-bottom: 20px;">
+                            <p style="color: #00BCD4; font-weight: bold;">
+                                🚀 正在自动跳转到文件管理界面...
+                            </p>
+                            <p style="color: #666; font-size: 14px;">
+                                倒计时: <span id="countdown">5</span> 秒
+                            </p>
+                        </div>
+                        
+                        <div id="manualRedirect" style="display: none;">
+                            <a href="/static/file-management.html" class="btn btn-primary" style="text-decoration: none; display: inline-block;">
+                                📁 进入文件管理
+                            </a>
+                            <a href="/static/index.html" class="btn" style="text-decoration: none; display: inline-block; margin-left: 10px; background: #6c757d;">
+                                🔐 返回登录
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="legal-text" style="margin-top: 20px;">
+                        Need help? Contact our support team at <a href="mailto:support@esgvisa.com">support@esgvisa.com</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // 从URL参数或localStorage获取用户信息
+    function displayUserInfo() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const email = urlParams.get('email') || localStorage.getItem('esg_email') || 'user@example.com';
+        const role = urlParams.get('role') || localStorage.getItem('esg_role') || 'Owner';
+        
+        document.getElementById('userEmail').textContent = email;
+        document.getElementById('userRole').textContent = role;
+        
+        // 清理localStorage中的临时数据
+        localStorage.removeItem('esg_email');
+        localStorage.removeItem('esg_role');
+        localStorage.removeItem('esg_building_name');
+        localStorage.removeItem('esg_building_addr');
+        localStorage.removeItem('esg_btype');
+    }
+
+    // 页面加载完成后显示用户信息
+    document.addEventListener('DOMContentLoaded', function() {
+        displayUserInfo();
+        
+        // 添加一些动画效果
+        setTimeout(() => {
+            document.querySelector('.form-section').style.opacity = '1';
+        }, 100);
+        
+        // 启动自动跳转倒计时
+        startAutoRedirect();
+    });
+
+    // 自动跳转倒计时
+    function startAutoRedirect() {
+        let countdown = 5;
+        const countdownElement = document.getElementById('countdown');
+        const autoRedirectDiv = document.getElementById('autoRedirect');
+        const manualRedirectDiv = document.getElementById('manualRedirect');
+        
+        const timer = setInterval(() => {
+            countdown--;
+            countdownElement.textContent = countdown;
+            
+            if (countdown <= 0) {
+                clearInterval(timer);
+                
+                // 隐藏自动跳转提示
+                autoRedirectDiv.style.display = 'none';
+                
+                // 显示手动跳转按钮
+                manualRedirectDiv.style.display = 'block';
+                
+                // 自动跳转到文件管理界面
+                setTimeout(() => {
+                    window.location.href = '/static/file-management.html';
+                }, 500);
+            }
+        }, 1000);
+    }
+
+    // 添加一些样式
+    document.querySelector('.form-section').style.opacity = '0';
+    document.querySelector('.form-section').style.transition = 'opacity 0.5s ease-in-out';
+    </script>
+    <script>
+    (function(){
+        if (window.__esgLangInit_complete) return; window.__esgLangInit_complete = true;
+        window.languageData = window.languageData || {
+            en:{code:'EN',flag:'🇺🇸',t:{
+                title:'🎉 Registration Complete!',
+                subtitle:'Welcome to ESG VISA - Verified Intelligence for Sustainable Architecture',
+                success:'Your account has been successfully created!',
+                next:'What\'s next?',
+                step1:'Complete your profile',
+                step2:'Add your first building',
+                step3:'Start tracking sustainability metrics',
+                dashboard:'Go to Dashboard',
+                profile:'Complete Profile',
+                processing:'Processing...'
+            }},
+            'zh-cn':{code:'简体',flag:'🇨🇳',t:{
+                title:'🎉 注册完成！',
+                subtitle:'欢迎来到 ESG VISA - 可持续架构的验证智能',
+                success:'您的账户已成功创建！',
+                next:'接下来做什么？',
+                step1:'完善您的个人资料',
+                step2:'添加您的第一栋建筑',
+                step3:'开始跟踪可持续性指标',
+                dashboard:'进入仪表板',
+                profile:'完善资料',
+                processing:'处理中...'
+            }},
+            'zh-tw':{code:'繁體',flag:'🇭🇰',t:{
+                title:'🎉 註冊完成！',
+                subtitle:'歡迎來到 ESG VISA - 可持續架構的驗證智能',
+                success:'您的賬戶已成功創建！',
+                next:'接下來做什麼？',
+                step1:'完善您的個人資料',
+                step2:'添加您的第一棟建築',
+                step3:'開始跟蹤可持續性指標',
+                dashboard:'進入儀表板',
+                profile:'完善資料',
+                processing:'處理中...'
+            }}
+        };
+        function apply(lang){ 
+            var d=languageData[lang]; if(!d) return; 
+            var h1=document.querySelector('.header h1'); if(h1) h1.textContent=d.t.title; 
+            var sub=document.querySelector('.header p'); if(sub) sub.textContent=d.t.subtitle;
+            // 更新成功消息和步骤
+            var success=document.querySelector('.success-message'); if(success) success.textContent=d.t.success;
+            var next=document.querySelector('.next-steps h3'); if(next) next.textContent=d.t.next;
+            var steps=document.querySelectorAll('.step-item');
+            if(steps.length>=3){
+                steps[0].textContent=d.t.step1;
+                steps[1].textContent=d.t.step2;
+                steps[2].textContent=d.t.step3;
+            }
+            var dashboard=document.querySelector('.btn-dashboard'); if(dashboard) dashboard.textContent=d.t.dashboard;
+            var profile=document.querySelector('.btn-profile'); if(profile) profile.textContent=d.t.profile;
+            var loading=document.querySelector('.loading-spinner p'); if(loading) loading.textContent=d.t.processing;
+        }
+        document.addEventListener('DOMContentLoaded',function(){ 
+            var lang=localStorage.getItem('esg_language')||'en'; 
+            apply(lang); 
+        });
+    })();
+    </script>
+</body>
+</html>

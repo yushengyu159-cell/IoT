@@ -1,0 +1,48 @@
+name: "test-network"
+version: 1.0.0
+
+client:
+  organization: Org1
+  cryptoconfig:
+    path: /home/ubuntu/go/fabric-samples/test-network/organizations
+  tlsCerts:
+    systemCertPool: false
+
+organizations:
+  Org1:
+    mspid: Org1MSP
+    cryptoPath: /home/ubuntu/go/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/users/{username}@org1.example.com/msp
+    peers:
+      - peer0.org1.example.com
+    certificateAuthorities:
+      - ca.org1.example.com
+
+peers:
+  peer0.org1.example.com:
+    url: grpcs://localhost:7051
+    tlsCACerts:
+      path: /home/ubuntu/go/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt
+    grpcOptions:
+      ssl-target-name-override: peer0.org1.example.com
+      hostnameOverride: peer0.org1.example.com
+      verify: false
+      allow-insecure: true
+
+orderers:
+  orderer.example.com:
+    url: grpcs://localhost:7050
+    tlsCACerts:
+      path: /home/ubuntu/go/fabric-samples/test-network/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
+    grpcOptions:
+      ssl-target-name-override: orderer.example.com
+      verify: false
+      allow-insecure: true
+
+channels:
+  mychannel:
+    peers:
+      peer0.org1.example.com:
+        endorsingPeer: true
+        chaincodeQuery: true
+        ledgerQuery: true
+        eventSource: true

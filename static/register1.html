@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="ui-id" content="登录页面">
+    <title>ESG VISA - Login</title>
+    <link rel="stylesheet" href="/static/styles.css?v=20250921-login-update">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <meta name="description" content="Login - Verified Intelligence for Sustainable Architecture">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="format-detection" content="telephone=no,email=no,address=no">
+</head>
+<body>
+    <div class="container" data-ui-id="login-page">
+        <div class="grid-pattern"></div>
+
+        <div class="main-content-login">
+            <div class="logo-container">
+                <div class="logo-image">
+                    <img src="/static/log.png" alt="ESG VISA Logo" class="logo-img">
+                </div>
+            </div>
+
+            <div class="header">
+                <h1 id="pageTitle" data-translate="login.account">Login your account</h1>
+                <p data-translate="sustainable.architecture">Verified Intelligence for Sustainable Architecture</p>
+            </div>
+
+            <div class="form-container">
+                <!-- 登录表单 -->
+                <div class="form-section" id="loginForm">
+                    <form id="loginFormElement">
+                        <div class="form-group">
+                            <input type="email" id="loginEmailDisplay" name="email" placeholder="e.g. user@example.com" data-translate="email.placeholder" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="password" id="loginPassword" name="password" placeholder="Enter your password" data-translate="password.placeholder" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="loginBtn" data-translate="loginBtn">Login</button>
+                    </form>
+                    <div class="form-links">
+                        <a href="/static/register12.html" id="loginForgotLink" data-translate="forgot.password">Forgot your password?</a>
+                    </div>
+                </div>
+
+                <!-- 注册表单（初始隐藏） -->
+                <div class="form-section hidden" id="registerForm">
+                    <form id="registerEmailForm">
+                        <div class="form-group">
+                            <input type="email" id="regEmailDisplay" name="email" readonly>
+                        </div>
+                        <div class="form-group">
+                            <input type="password" id="regPassword" name="password" placeholder="Create a password (8–16 characters)" data-translate="password.placeholder" minlength="8" maxlength="16" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" id="regFullName" name="fullName" placeholder="Enter your full name" data-translate="name.placeholder" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="tel" id="regPhone" name="phone" placeholder="Enter your phone number" data-translate="phone.placeholder" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="submitBtn" data-translate="continue">Continue</button>
+                    </form>
+                    <div class="form-links">
+                        <a href="/static/register1.html#login" data-translate="back.to.login">Back to login</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="status-message" id="statusMessage"></div>
+        </div>
+
+    </div>
+
+    <style>
+    .status-message {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 500;
+        z-index: 1000;
+        max-width: 90%;
+        text-align: center;
+        font-size: 14px;
+        display: none;
+        transition: all 0.3s ease;
+    }
+    
+    .status-message.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .status-message.error   { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    .status-message.info    { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+    .status-message.hidden  { display: none; }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    </style>
+
+    <script>
+    // 页面状态管理
+    let isLoginMode = true;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        initializePage();
+        
+        // 根据哈希强制展示对应界面：#login → 登录；#register → 注册；默认登录
+        try {
+            var hash = (location.hash || '').toLowerCase();
+            if (hash === '#register') {
+                var regEmail = localStorage.getItem('esg_email') || '';
+                showRegisterForm(regEmail);
+                // 延迟执行翻译，确保在翻译系统之后
+                setTimeout(() => {
+                    if (window.LanguageConfig) {
+                        window.LanguageConfig.applyLanguageToAllPages();
+                    }
+                    // 确保注册界面标题正确
+                    document.getElementById('pageTitle').textContent = 'Create your account';
+                }, 100);
+                return;
+            }
+        } catch(_) {}
+        
+        // 延迟执行翻译，确保在翻译系统之后
+        setTimeout(() => {
+            if (window.LanguageConfig) {
+                window.LanguageConfig.applyLanguageToAllPages();
+            }
+        }, 100);
+    });
+
+    function initializePage() {
+        // 从URL参数或localStorage获取邮箱
+        const urlParams = new URLSearchParams(window.location.search);
+        const emailFromUrl = urlParams.get('email');
+        const savedEmail = localStorage.getItem('esg_login_email') || localStorage.getItem('esg_email') || emailFromUrl || '';
+        
+        if (savedEmail) {
+            document.getElementById('loginEmailDisplay').value = savedEmail;
+        }
+        
+        document.getElementById('loginFormElement').addEventListener('submit', handleLogin);
+        document.getElementById('registerEmailForm').addEventListener('submit', handleRegister);
+    }
+
+    function showRegisterForm(email) {
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        
+        loginForm.style.display = 'none';
+        loginForm.classList.add('hidden');
+        registerForm.style.display = 'block';
+        registerForm.classList.remove('hidden');
+        
+        // 设置注册界面标题
+        document.getElementById('pageTitle').textContent = 'Create your account';
+        document.getElementById('pageTitle').setAttribute('data-translate', 'create.account');
+        document.getElementById('regEmailDisplay').value = email;
+        
+        // 延迟确保标题正确设置
+        setTimeout(() => {
+            document.getElementById('pageTitle').textContent = 'Create your account';
+        }, 50);
+    }
+
+    async function handleLogin(event) {
+        if (event && event.preventDefault) event.preventDefault();
+        
+        const email = document.getElementById('loginEmailDisplay').value;
+        const password = document.getElementById('loginPassword').value;
+        
+        if (!email || !password) {
+            showStatusMessage('请填写邮箱和密码', 'error');
+            return;
+        }
+        
+        try {
+            const response = await fetch('/api/did/verify', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email, password })
+            });
+            
+            const result = await response.json();
+            
+            if (result.code === 200) {
+                showStatusMessage('DID验证成功，正在跳转...', 'success');
+                
+                const userInfo = {
+                    Email: email,
+                    Name: result.data.FullName || email,
+                    Role: result.data.Role || 'user',
+                    Phone: result.data.Phone || '',
+                    Age: result.data.Age || 20,
+                    DID: result.data.did || '',
+                    RegisterTime: result.data.RegisterTime || '',
+                    isLoggedIn: true
+                };
+                
+                localStorage.setItem('userInfo', JSON.stringify(userInfo));
+                localStorage.setItem('isLoggedIn', 'true');
+                
+                // 根据用户邮箱决定跳转页面
+                let redirectUrl = '/static/dashboard.html'; // 默认跳转到仪表板
+                
+                // 只有 esgvisa@gmail.com 可以进入权限管理界面
+                if (email === 'esgvisa@gmail.com') {
+                    redirectUrl = '/static/control1.html';
+                    console.log('管理员用户，跳转到权限管理界面');
+                } else {
+                    console.log('普通用户，跳转到仪表板界面');
+                }
+                
+                try {
+                    history.replaceState(null, '', redirectUrl);
+                } catch (_) {}
+                
+                try {
+                    window.location.replace(redirectUrl);
+                } catch (_) {}
+                
+                setTimeout(() => {
+                    if (!redirectUrl.includes(window.location.pathname)) {
+                        window.location.href = redirectUrl;
+                    }
+                }, 120);
+                
+            } else {
+                throw new Error(result.message || 'DID验证失败');
+            }
+        } catch (err) {
+            showStatusMessage(err.message || '登录失败，请重试', 'error');
+        }
+    }
+
+    async function handleRegister(event) {
+        if (event && event.preventDefault) event.preventDefault();
+        
+        const email = document.getElementById('regEmailDisplay').value;
+        const password = document.getElementById('regPassword').value;
+        const fullName = document.getElementById('regFullName').value;
+        const phone = document.getElementById('regPhone').value;
+        
+        if (!email || !password || !fullName || !phone) {
+                showStatusMessage('请填写所有必填字段', 'error');
+                return;
+            }
+        
+            if (password.length < 8 || password.length > 16) {
+                showStatusMessage('密码长度必须在8-16位之间', 'error');
+                return;
+            }
+        
+        try {
+            showStatusMessage('正在注册...', 'info');
+            
+            // 调用注册API - 使用Step1接口
+            const response = await fetch('/api/register/step1', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    email: email,
+                    password: password,
+                    fullName: fullName
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.code === 200) {
+                showStatusMessage('基础信息验证成功，正在跳转...', 'success');
+                
+                // 存储第一步信息到localStorage
+                localStorage.setItem('esg_email', email);
+                localStorage.setItem('esg_password', password);
+                localStorage.setItem('esg_fullName', fullName);
+                localStorage.setItem('esg_phone', phone);
+                
+                // 直接跳转到验证码验证页面
+                setTimeout(() => {
+                    window.location.href = '/static/register-2.html';
+                }, 1000);
+                
+            } else {
+                throw new Error(result.message || '注册失败');
+            }
+        } catch (err) {
+            showStatusMessage(err.message || '注册失败，请重试', 'error');
+        }
+    }
+
+    function showStatusMessage(message, type = 'info') {
+        const s = document.getElementById('statusMessage');
+        s.textContent = message;
+        s.className = `status-message ${type}`;
+        s.style.display = 'block';
+        setTimeout(() => {
+            s.style.display = 'none';
+        }, 5000);
+    }
+
+    // 记住邮箱给忘记密码页面
+    document.addEventListener('click', function(ev) {
+        var a = ev.target.closest && ev.target.closest('#loginForgotLink');
+        if (a) {
+            try {
+                var email = document.getElementById('loginEmailDisplay').value || '';
+                if (email) {
+                    localStorage.setItem('esg_email', email);
+                }
+            } catch (_) {}
+        }
+    });
+    </script>
+    
+    <!-- 引入统一语言配置 -->
+    <script src="/static/language-config.js"></script>
+    <script src="/static/auto-translate.js"></script>
+    
+</body>
+</html>

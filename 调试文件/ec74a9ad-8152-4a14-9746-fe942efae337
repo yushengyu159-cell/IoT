@@ -1,0 +1,182 @@
+{
+	"info": {
+		"_postman_id": "cd3619cf-9639-4f08-88b4-d7b2c076aa84",
+		"name": "Belucks Api",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "6403861",
+		"_collection_link": "https://livesense.postman.co/workspace/Team-Workspace~62ebe963-1b6c-42e6-8097-5a58121a8706/collection/6403861-cd3619cf-9639-4f08-88b4-d7b2c076aa84?action=share&source=collection_link&creator=6403861"
+	},
+	"item": [
+		{
+			"name": "authenticate",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(responseBody);",
+							"postman.setEnvironmentVariable(\"accessToken\", jsonData.token);",
+							"",
+							"pm.test(\"status code 200\", function() {",
+							"    pm.response.to.have.status(200);",
+							"})",
+							"",
+							"pm.test(\"authentication response\", function() {",
+							"    const responseBody = pm.response.json();",
+							"    pm.expect(responseBody.token).not.null;",
+							"    pm.expect(responseBody.responseBody).not.null;",
+							"    pm.expect(responseBody.contextId).not.null;",
+							"    pm.expect(responseBody.permissions).not.null;",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"strictSSL": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"belucksapi\",\n    \"password\": \"i6a6LKS783W7ffsr#\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://graphql-api.livesense.com.au/authenticate",
+					"protocol": "https",
+					"host": [
+						"graphql-api",
+						"livesense",
+						"com",
+						"au"
+					],
+					"path": [
+						"authenticate"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "values",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"status code 200\", function() {",
+							"    pm.response.to.have.status(200);",
+							"})",
+							"",
+							"pm.test(\"no errors on response\", function() {",
+							"    const responseBody = pm.response.json();",
+							"    pm.expect(responseBody.errors).is.undefined;  ",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJraWQiOiJEd1YyN3Q1ZXEyZ0FOSSs2aUlNK2sxcXRiRGgydnVlcXUwRjRuUFRcL09DUT0iLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJmZTRkNmU1MC00ZjljLTQzNjAtYjU5ZC0xNWYyN2RkNjg4ODciLCJhdWQiOiIydm1tNmxsYTY3cGVpa3M4NGE4cDV1MjFlOSIsImV2ZW50X2lkIjoiNzRmMjdmYjQtMmY3MS00MDlmLTk2ZmEtNmQzMzdlMmE5YzQ0IiwidG9rZW5fdXNlIjoiaWQiLCJhdXRoX3RpbWUiOjE3Njk0MTQwNzYsImlzcyI6Imh0dHBzOlwvXC9jb2duaXRvLWlkcC5hcC1zb3V0aGVhc3QtMi5hbWF6b25hd3MuY29tXC9hcC1zb3V0aGVhc3QtMl9UZTBUdmRsYTAiLCJjb2duaXRvOnVzZXJuYW1lIjoiYmVsdWNrc2FwaSIsImV4cCI6MTc2OTQ0Mjg3NiwidXNlcklkIjoiODMwNiIsImlhdCI6MTc2OTQxNDA3Nn0.XzdwH-QaLvzxcmJLWJKj8y1d4Ezoulf_FmIDCrVFkT1qjvZYI7aZK9c2-4ifNvuTQcTMabmyk0AZa7FFy_78pggK89Tpq52EfKPvqLmu6_YubtMl5YS2kTY4-IoxKqNvZR_W2zTYAlmaLauPXkwe-nFILF8gNMLHdUlrTZDsJhoO-hBlDEqV5GGgiZndHagj28XRgIxzKngC6cDWa33ktFVWLLwgvyWaMPixF4gVFbpuoM3HwfXfeNfCfDTgVuUVM0_lynF1WKghYJdDnZH9sGKcFvDJgL9xuUD1C6kCN7hirQwCTRUkoFEDgjyomPOtPKcfYlF0-4BFKhNTJnc94A",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "query values ($id: String, $from: String, $to: String, $aggregation: String, $group: String, $limit: String) {\n    values (id: $id, from: $from, to: $to, aggregation: $aggregation, group: $group, limit: $limit) {\n        sensor\n        timezone\n        dataPoints {\n            value\n            timestampUtc\n        }\n    }\n}",
+						"variables": "{\n  \"id\": \"27732\",\n  \"from\": \"1769327847000\",\n  \"to\": \"1769414247000\",\n  \"aggregation\": \"\",\n  \"group\": \"allValues\",\n  \"limit\": \"\"\n}"
+					}
+				},
+				"url": {
+					"raw": "https://graphql-api.livesense.com.au/graphql",
+					"protocol": "https",
+					"host": [
+						"graphql-api",
+						"livesense",
+						"com",
+						"au"
+					],
+					"path": [
+						"graphql"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "sensorsUnderContext",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"status code 200\", function() {",
+							"    pm.response.to.have.status(200);",
+							"})",
+							"",
+							"",
+							"pm.test(\"no errors on response\", function() {",
+							"    const responseBody = pm.response.json();",
+							"    pm.expect(responseBody.errors).is.undefined;  ",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJraWQiOiJEd1YyN3Q1ZXEyZ0FOSSs2aUlNK2sxcXRiRGgydnVlcXUwRjRuUFRcL09DUT0iLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJmZTRkNmU1MC00ZjljLTQzNjAtYjU5ZC0xNWYyN2RkNjg4ODciLCJhdWQiOiIydm1tNmxsYTY3cGVpa3M4NGE4cDV1MjFlOSIsImV2ZW50X2lkIjoiNzRmMjdmYjQtMmY3MS00MDlmLTk2ZmEtNmQzMzdlMmE5YzQ0IiwidG9rZW5fdXNlIjoiaWQiLCJhdXRoX3RpbWUiOjE3Njk0MTQwNzYsImlzcyI6Imh0dHBzOlwvXC9jb2duaXRvLWlkcC5hcC1zb3V0aGVhc3QtMi5hbWF6b25hd3MuY29tXC9hcC1zb3V0aGVhc3QtMl9UZTBUdmRsYTAiLCJjb2duaXRvOnVzZXJuYW1lIjoiYmVsdWNrc2FwaSIsImV4cCI6MTc2OTQ0Mjg3NiwidXNlcklkIjoiODMwNiIsImlhdCI6MTc2OTQxNDA3Nn0.XzdwH-QaLvzxcmJLWJKj8y1d4Ezoulf_FmIDCrVFkT1qjvZYI7aZK9c2-4ifNvuTQcTMabmyk0AZa7FFy_78pggK89Tpq52EfKPvqLmu6_YubtMl5YS2kTY4-IoxKqNvZR_W2zTYAlmaLauPXkwe-nFILF8gNMLHdUlrTZDsJhoO-hBlDEqV5GGgiZndHagj28XRgIxzKngC6cDWa33ktFVWLLwgvyWaMPixF4gVFbpuoM3HwfXfeNfCfDTgVuUVM0_lynF1WKghYJdDnZH9sGKcFvDJgL9xuUD1C6kCN7hirQwCTRUkoFEDgjyomPOtPKcfYlF0-4BFKhNTJnc94A",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "query sensorsUnderContext($id: Int, $contextTypeId: String, $groupByTypeId: String) {\n  sensorsUnderContext(id: $id, contextTypeId: $contextTypeId, groupByTypeId: $groupByTypeId) {\n    id\n    name\n    sensors {\n      id\n      name\n    }\n  }\n}\n",
+						"variables": "{\n  \"id\": 7286,\n  \"contextTypeId\": \"502\",\n  \"groupByTypeId\": \"599\"\n}"
+					}
+				},
+				"url": {
+					"raw": "https://graphql-api.livesense.com.au/graphql",
+					"protocol": "https",
+					"host": [
+						"graphql-api",
+						"livesense",
+						"com",
+						"au"
+					],
+					"path": [
+						"graphql"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

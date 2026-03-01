@@ -1,0 +1,72 @@
+# 邮箱验证配置
+# 生产环境请修改为真实的邮箱和密码
+
+email:
+  # QQ邮箱配置
+  qq:
+    host: "smtp.qq.com"
+    port: "465"  # 使用SSL端口，通常更稳定
+    username: "esgvisa@gmail.com"  # 您的真实QQ邮箱
+    password: "klrq gpkc szaf mozx"  # 🔐 QQ邮箱SMTP授权码已更新
+    from: "esgvisa@gmail.com"
+    enabled: true   # 启用QQ邮箱
+    use_ssl: true   # 使用SSL连接
+    use_tls: false  # 不使用TLS
+  
+  # 163邮箱配置
+  163:
+    host: "smtp.163.com"
+    port: "465"  # 使用SSL端口
+    username: "esgvisa@gmail.com"  # 您的真实163邮箱
+    password: "klrq gpkc szaf mozx"  # 🔐 163邮箱SMTP授权码已配置
+    from: "esgvisa@gmail.com"
+    enabled: true
+    use_ssl: true   # 使用SSL连接
+    use_tls: false
+  
+  # Gmail配置
+  gmail:
+     host: "smtp.gmail.com"
+     port: "587"  # Gmail使用587端口
+     username: "esgvisa@gmail.com"  # 您的Gmail邮箱
+     password: "klrq gpkc szaf mozx"  # 🔐 Gmail应用专用密码
+     from: "esgvisa@gmail.com"
+     enabled: true   # 启用Gmail
+     use_ssl: false  # 不使用SSL
+     use_tls: true   # 使用TLS连接
+  
+  # 通用配置
+  common:
+    # 验证码有效期（分钟）
+    code_expire_minutes: 10
+    # 重新发送冷却期（秒）
+    resend_cooldown_seconds: 60
+    # 最大发送次数（防止滥用）
+    max_send_per_hour: 10
+    # 邮件模板
+    subject: "ESG VISA - 邮箱验证码"
+    # 是否在开发环境显示验证码
+    show_code_in_dev: true
+
+# ========================================
+# 🔐 SMTP授权码获取步骤
+# ========================================
+
+# 1️⃣ 163邮箱SMTP授权码获取：
+#    - 登录163邮箱网页版：https://mail.163.com
+#    - 设置 → POP3/SMTP/IMAP
+#    - 开启SMTP服务，设置授权码
+#    - 将授权码填入上面的 password 字段
+
+# 2️⃣ QQ邮箱SMTP授权码获取：
+#    - 登录QQ邮箱网页版：https://mail.qq.com
+#    - 设置 → 账户 → POP3/IMAP/SMTP/Exchange/CardDAV/CalDAV服务
+#    - 开启SMTP服务，获取授权码
+#    - 将授权码填入上面的 password 字段
+
+# 3️⃣ 配置完成后：
+#    - 重启后端服务：go run main.go
+#    - 测试邮件发送功能
+#    - 检查邮箱是否收到验证码
+
+# ⚠️  注意：配置真实授权码后，系统将自动发送邮件到邮箱，不再显示在日志中

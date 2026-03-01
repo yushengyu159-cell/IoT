@@ -1,0 +1,289 @@
+🚀 启动 fabric-sdk 服务...
+
+2025/10/19 23:16:48 [32m/root/home/go/fabric-sdk/internal/service/mysql.go:39
+[0m[33m[0.207ms] [34;1m[rows:-][0m SELECT DATABASE()
+
+2025/10/19 23:16:48 [32m/root/home/go/fabric-sdk/internal/service/mysql.go:39
+[0m[33m[1.293ms] [34;1m[rows:1][0m SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'esg%' ORDER BY SCHEMA_NAME='esg' DESC,SCHEMA_NAME limit 1
+
+2025/10/19 23:16:48 [32m/root/home/go/fabric-sdk/internal/service/mysql.go:39
+[0m[33m[1.031ms] [34;1m[rows:-][0m SELECT count(*) FROM information_schema.tables WHERE table_schema = 'esg' AND table_name = 'esg_files' AND table_type = 'BASE TABLE'
+
+2025/10/19 23:16:48 [32m/root/home/go/fabric-sdk/internal/service/mysql.go:39
+[0m[33m[0.195ms] [34;1m[rows:-][0m SELECT DATABASE()
+
+2025/10/19 23:16:48 [32m/root/home/go/fabric-sdk/internal/service/mysql.go:39
+[0m[33m[0.754ms] [34;1m[rows:1][0m SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'esg%' ORDER BY SCHEMA_NAME='esg' DESC,SCHEMA_NAME limit 1
+
+2025/10/19 23:16:48 [32m/root/home/go/fabric-sdk/internal/service/mysql.go:39
+[0m[33m[0.405ms] [34;1m[rows:-][0m SELECT * FROM `esg_files` LIMIT 1
+
+2025/10/19 23:16:48 [32m/root/home/go/fabric-sdk/internal/service/mysql.go:39
+[0m[33m[1.035ms] [34;1m[rows:-][0m SELECT column_name, column_default, is_nullable = 'YES', data_type, character_maximum_length, column_type, column_key, extra, column_comment, numeric_precision, numeric_scale , datetime_precision FROM information_schema.columns WHERE table_schema = 'esg' AND table_name = 'esg_files' ORDER BY ORDINAL_POSITION
+
+2025/10/19 23:16:48 [32m
+[0m[33m[0.166ms] [34;1m[rows:-][0m SELECT DATABASE()
+
+2025/10/19 23:16:48 [32m
+[0m[33m[0.812ms] [34;1m[rows:1][0m SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'esg%' ORDER BY SCHEMA_NAME='esg' DESC,SCHEMA_NAME limit 1
+
+2025/10/19 23:16:48 [32m/root/home/go/fabric-sdk/internal/service/mysql.go:39
+[0m[33m[1.090ms] [34;1m[rows:6][0m 
+SELECT
+	TABLE_NAME,
+	COLUMN_NAME,
+	INDEX_NAME,
+	NON_UNIQUE 
+FROM
+	information_schema.STATISTICS 
+WHERE
+	TABLE_SCHEMA = 'esg' 
+	AND TABLE_NAME = 'esg_files' 
+ORDER BY
+	INDEX_NAME,
+	SEQ_IN_INDEX
+
+2025/10/19 23:16:48 [32m
+[0m[33m[0.179ms] [34;1m[rows:-][0m SELECT DATABASE()
+
+2025/10/19 23:16:48 [32m
+[0m[33m[0.519ms] [34;1m[rows:1][0m SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'esg%' ORDER BY SCHEMA_NAME='esg' DESC,SCHEMA_NAME limit 1
+
+2025/10/19 23:16:48 [32m
+[0m[33m[0.834ms] [34;1m[rows:-][0m SELECT count(*) FROM INFORMATION_SCHEMA.table_constraints WHERE constraint_schema = 'esg' AND table_name = 'esg_files' AND constraint_name = 'uni_esg_files_c_id'
+
+2025/10/19 23:16:48 [32m
+[0m[33m[0.189ms] [34;1m[rows:-][0m SELECT DATABASE()
+
+2025/10/19 23:16:48 [32m
+[0m[33m[0.529ms] [34;1m[rows:1][0m SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'esg%' ORDER BY SCHEMA_NAME='esg' DESC,SCHEMA_NAME limit 1
+
+2025/10/19 23:16:48 [32m
+[0m[33m[0.745ms] [34;1m[rows:-][0m SELECT count(*) FROM information_schema.statistics WHERE table_schema = 'esg' AND table_name = 'esg_files' AND index_name = 'idx_esg_files_c_id'
+
+2025/10/19 23:16:48 [32m/root/home/go/fabric-sdk/internal/service/mysql.go:39
+[0m[33m[0.172ms] [34;1m[rows:-][0m SELECT DATABASE()
+
+2025/10/19 23:16:48 [32m/root/home/go/fabric-sdk/internal/service/mysql.go:39
+[0m[33m[0.503ms] [34;1m[rows:1][0m SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'esg%' ORDER BY SCHEMA_NAME='esg' DESC,SCHEMA_NAME limit 1
+
+2025/10/19 23:16:48 [32m/root/home/go/fabric-sdk/internal/service/mysql.go:39
+[0m[33m[0.781ms] [34;1m[rows:-][0m SELECT count(*) FROM information_schema.statistics WHERE table_schema = 'esg' AND table_name = 'esg_files' AND index_name = 'idx_esg_files_c_id'
+
+2025/10/19 23:16:48 [32m/root/home/go/fabric-sdk/internal/service/mysql.go:39
+[0m[33m[0.185ms] [34;1m[rows:-][0m SELECT DATABASE()
+
+2025/10/19 23:16:48 [32m/root/home/go/fabric-sdk/internal/service/mysql.go:39
+[0m[33m[0.477ms] [34;1m[rows:1][0m SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'esg%' ORDER BY SCHEMA_NAME='esg' DESC,SCHEMA_NAME limit 1
+
+2025/10/19 23:16:48 [32m/root/home/go/fabric-sdk/internal/service/mysql.go:39
+[0m[33m[0.766ms] [34;1m[rows:-][0m SELECT count(*) FROM information_schema.tables WHERE table_schema = 'esg' AND table_name = 'dids' AND table_type = 'BASE TABLE'
+
+2025/10/19 23:16:48 [32m/root/home/go/fabric-sdk/internal/service/mysql.go:39
+[0m[33m[0.184ms] [34;1m[rows:-][0m SELECT DATABASE()
+
+2025/10/19 23:16:48 [32m/root/home/go/fabric-sdk/internal/service/mysql.go:39
+[0m[33m[0.518ms] [34;1m[rows:1][0m SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'esg%' ORDER BY SCHEMA_NAME='esg' DESC,SCHEMA_NAME limit 1
+
+2025/10/19 23:16:48 [32m/root/home/go/fabric-sdk/internal/service/mysql.go:39
+[0m[33m[0.364ms] [34;1m[rows:-][0m SELECT * FROM `dids` LIMIT 1
+
+2025/10/19 23:16:48 [32m/root/home/go/fabric-sdk/internal/service/mysql.go:39
+[0m[33m[0.940ms] [34;1m[rows:-][0m SELECT column_name, column_default, is_nullable = 'YES', data_type, character_maximum_length, column_type, column_key, extra, column_comment, numeric_precision, numeric_scale , datetime_precision FROM information_schema.columns WHERE table_schema = 'esg' AND table_name = 'dids' ORDER BY ORDINAL_POSITION
+
+2025/10/19 23:16:48 [32m
+[0m[33m[0.169ms] [34;1m[rows:-][0m SELECT DATABASE()
+
+2025/10/19 23:16:48 [32m
+[0m[33m[0.530ms] [34;1m[rows:1][0m SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'esg%' ORDER BY SCHEMA_NAME='esg' DESC,SCHEMA_NAME limit 1
+
+2025/10/19 23:16:48 [32m/root/home/go/fabric-sdk/internal/service/mysql.go:39
+[0m[33m[0.873ms] [34;1m[rows:6][0m 
+SELECT
+	TABLE_NAME,
+	COLUMN_NAME,
+	INDEX_NAME,
+	NON_UNIQUE 
+FROM
+	information_schema.STATISTICS 
+WHERE
+	TABLE_SCHEMA = 'esg' 
+	AND TABLE_NAME = 'dids' 
+ORDER BY
+	INDEX_NAME,
+	SEQ_IN_INDEX
+
+2025/10/19 23:16:48 [32m
+[0m[33m[0.183ms] [34;1m[rows:-][0m SELECT DATABASE()
+
+2025/10/19 23:16:48 [32m
+[0m[33m[0.506ms] [34;1m[rows:1][0m SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'esg%' ORDER BY SCHEMA_NAME='esg' DESC,SCHEMA_NAME limit 1
+
+2025/10/19 23:16:48 [32m
+[0m[33m[0.703ms] [34;1m[rows:-][0m SELECT count(*) FROM INFORMATION_SCHEMA.table_constraints WHERE constraint_schema = 'esg' AND table_name = 'dids' AND constraint_name = 'uni_dids_did'
+
+2025/10/19 23:16:48 [32m
+[0m[33m[0.141ms] [34;1m[rows:-][0m SELECT DATABASE()
+
+2025/10/19 23:16:48 [32m
+[0m[33m[0.487ms] [34;1m[rows:1][0m SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'esg%' ORDER BY SCHEMA_NAME='esg' DESC,SCHEMA_NAME limit 1
+
+2025/10/19 23:16:48 [32m
+[0m[33m[0.775ms] [34;1m[rows:-][0m SELECT count(*) FROM information_schema.statistics WHERE table_schema = 'esg' AND table_name = 'dids' AND index_name = 'idx_dids_d_id'
+
+2025/10/19 23:16:48 [32m/root/home/go/fabric-sdk/internal/service/mysql.go:39
+[0m[33m[0.174ms] [34;1m[rows:-][0m SELECT DATABASE()
+
+2025/10/19 23:16:48 [32m/root/home/go/fabric-sdk/internal/service/mysql.go:39
+[0m[33m[0.530ms] [34;1m[rows:1][0m SELECT SCHEMA_NAME from Information_schema.SCHEMATA where SCHEMA_NAME LIKE 'esg%' ORDER BY SCHEMA_NAME='esg' DESC,SCHEMA_NAME limit 1
+
+2025/10/19 23:16:48 [32m/root/home/go/fabric-sdk/internal/service/mysql.go:39
+[0m[33m[0.712ms] [34;1m[rows:-][0m SELECT count(*) FROM information_schema.statistics WHERE table_schema = 'esg' AND table_name = 'dids' AND index_name = 'idx_dids_d_id'
+2025-10-19T23:16:48.397+08:00 [INFO] {90a5878f67ed6f18a3260369812f0375} 🔧 开始初始化纯Gateway链码服务...
+2025-10-19T23:16:48.398+08:00 [INFO] {90a5878f67ed6f18a3260369812f0375} ✅ 纯Gateway链码服务初始化成功(Org1 Peer)
+2025-10-19T23:16:48.405+08:00 [INFO] pid[149797]: http server started listening on [:8199]
+2025-10-19T23:16:48.405+08:00 [INFO] swagger ui is serving at address: http://127.0.0.1:8199/swagger/
+2025-10-19T23:16:48.405+08:00 [INFO] openapi specification is serving at address: http://127.0.0.1:8199/api.json
+
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| ADDRESS | METHOD |             ROUTE             |                                 HANDLER                                 |    MIDDLEWARE     |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | ALL    | /                             | fabric-sdk/internal/cmd.init.func1.1                                    |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | ALL    | /*                            | fabric-sdk/internal/cmd.init.func1.11                                   | GLOBAL MIDDLEWARE |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | ALL    | /api                          | fabric-sdk/internal/controller.(*HelloController).Index                 |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | ALL    | /api.json                     | github.com/gogf/gf/v2/net/ghttp.(*Server).openapiSpec                   |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | POST   | /api/admin/review-approve     | fabric-sdk/internal/controller.(*AdminController).ReviewApprove         |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | POST   | /api/admin/review-reject      | fabric-sdk/internal/controller.(*AdminController).ReviewReject          |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | ALL    | /api/chaincode/asset-history  | fabric-sdk/internal/controller.(*ChaincodeController).GetAssetHistory   |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | ALL    | /api/chaincode/close          | fabric-sdk/internal/controller.(*ChaincodeController).Close             |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | ALL    | /api/chaincode/create-asset   | fabric-sdk/internal/controller.(*ChaincodeController).CreateAsset       |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | ALL    | /api/chaincode/get-all-assets | fabric-sdk/internal/controller.(*ChaincodeController).GetAllAssets      |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | ALL    | /api/chaincode/init           | fabric-sdk/internal/controller.(*ChaincodeController).Init              |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | ALL    | /api/chaincode/read-asset     | fabric-sdk/internal/controller.(*ChaincodeController).ReadAsset         |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | ALL    | /api/chaincode/read-record    | fabric-sdk/internal/controller.(*ChaincodeController).ReadRecord        |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | ALL    | /api/chaincode/test           | fabric-sdk/internal/controller.(*ChaincodeController).TestFunctions     |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | ALL    | /api/chaincode/transfer-asset | fabric-sdk/internal/controller.(*ChaincodeController).TransferAsset     |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | ALL    | /api/chaincode/write-record   | fabric-sdk/internal/controller.(*ChaincodeController).WriteRecord       |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | POST   | /api/did/register             | fabric-sdk/internal/controller.(*DIDController).RegisterDID             |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | POST   | /api/did/verify               | fabric-sdk/internal/controller.(*DIDController).VerifyDID               |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | POST   | /api/email/check-email-exists | fabric-sdk/internal/controller.(*EmailController).CheckEmailExists      |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | POST   | /api/email/resend-code        | fabric-sdk/internal/controller.(*EmailController).ResendCode            |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | POST   | /api/email/send-code          | fabric-sdk/internal/controller.(*EmailController).SendVerificationCode  |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | GET    | /api/email/status             | fabric-sdk/internal/controller.(*EmailController).GetVerificationStatus |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | POST   | /api/email/test-connection    | fabric-sdk/internal/controller.(*EmailController).TestConnection        |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | POST   | /api/email/verify-code        | fabric-sdk/internal/controller.(*EmailController).VerifyCode            |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | POST   | /api/esg/batch-list           | fabric-sdk/internal/controller.(*ESGController).BatchListFiles          |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | POST   | /api/esg/download-encrypted   | fabric-sdk/internal/controller.(*ESGController).DownloadEncrypted       |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | GET    | /api/esg/list                 | fabric-sdk/internal/controller.(*ESGController).ListFiles               |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | GET    | /api/esg/query                | fabric-sdk/internal/controller.(*ESGController).QueryFile               |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | POST   | /api/esg/upload               | fabric-sdk/internal/controller.(*ESGController).UploadFile              |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | POST   | /api/esg/upload-encrypted     | fabric-sdk/internal/controller.(*ESGController).UploadEncrypted         |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | ALL    | /api/index                    | fabric-sdk/internal/controller.(*HelloController).Index                 |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | GET    | /api/ipfs/download            | fabric-sdk/internal/controller.(*IpfsController).Download               |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | POST   | /api/ipfs/download-decrypted  | fabric-sdk/internal/controller.(*IpfsController).DownloadDecrypted      |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | POST   | /api/ipfs/upload              | fabric-sdk/internal/controller.(*IpfsController).Upload                 |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | POST   | /api/ipfs/upload-encrypted    | fabric-sdk/internal/controller.(*IpfsController).UploadEncrypted        |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | GET    | /api/location/cities          | fabric-sdk/internal/controller.(*LocationController).GetCities          |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | GET    | /api/location/districts       | fabric-sdk/internal/controller.(*LocationController).GetDistricts       |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | GET    | /api/location/geocode         | fabric-sdk/internal/controller.(*LocationController).GeocodeAddress     |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | GET    | /api/location/nearby          | fabric-sdk/internal/controller.(*LocationController).GetNearbyPOIs      |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | GET    | /api/location/pois            | fabric-sdk/internal/controller.(*LocationController).SearchPOI          |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | GET    | /api/location/provinces       | fabric-sdk/internal/controller.(*LocationController).GetProvinces       |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | GET    | /api/location/reverse-geocode | fabric-sdk/internal/controller.(*LocationController).ReverseGeocode     |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | POST   | /api/location/save            | fabric-sdk/internal/controller.(*LocationController).SaveLocation       |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | GET    | /api/location/user            | fabric-sdk/internal/controller.(*LocationController).GetUserLocation    |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | POST   | /api/register/check-email     | fabric-sdk/internal/controller.(*RegisterController).CheckEmail         |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | POST   | /api/register/clear-cache     | fabric-sdk/internal/controller.(*RegisterController).ClearCache         |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | POST   | /api/register/complete        | fabric-sdk/internal/controller.(*RegisterController).Complete           |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | GET    | /api/register/emails          | fabric-sdk/internal/controller.(*RegisterController).GetAllEmails       |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | POST   | /api/register/reset-password  | fabric-sdk/internal/controller.(*RegisterController).ResetPassword      |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | GET    | /api/register/status          | fabric-sdk/internal/controller.(*RegisterController).GetStatus          |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | POST   | /api/register/step1           | fabric-sdk/internal/controller.(*RegisterController).Step1              |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | POST   | /api/register/step2           | fabric-sdk/internal/controller.(*RegisterController).Step2              |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | POST   | /api/register/step3           | fabric-sdk/internal/controller.(*RegisterController).Step3              |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | POST   | /api/register/update          | fabric-sdk/internal/controller.(*RegisterController).Update             |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | GET    | /api/register/user-detail     | fabric-sdk/internal/controller.(*RegisterController).GetUserDetail      |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | POST   | /api/register/verify          | fabric-sdk/internal/controller.(*RegisterController).Verify             |                   |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+| :8199   | ALL    | /swagger/*                    | github.com/gogf/gf/v2/net/ghttp.(*Server).swaggerUI                     | HOOK_BEFORE_SERVE |
+----------|--------|-------------------------------|-------------------------------------------------------------------------|--------------------
+
+2025-10-19T23:16:58.910+08:00 [INFO] 获取系统信息成功
+2025-10-19T23:17:02.756+08:00 [INFO] 📧 准备发送验证码到邮箱: test@example.com 验证码: 199726
+2025-10-19T23:17:02.756+08:00 [INFO] ✅ 获取邮箱配置成功: smtp.gmail.com 端口: 587 SSL: false TLS: true
+2025-10-19T23:17:02.756+08:00 [INFO] 📤 开始发送邮件...
+2025-10-19T23:17:04.274+08:00 [ERRO] ❌ 发送邮件失败: 535 5.7.8 Username and Password not accepted. For more information, go to
+5.7.8  https://support.google.com/mail/?p=BadCredentials 41be03b00d2f7-b6a76676c01sm5434801a12.16 - gsmtp 
+Stack:
+1.  fabric-sdk/internal/service.SendVerificationEmail
+    /root/home/go/fabric-sdk/internal/service/email.go:251
+2.  fabric-sdk/internal/controller.(*EmailController).SendVerificationCode
+    /root/home/go/fabric-sdk/internal/controller/email.go:29
+3.  fabric-sdk/internal/cmd.init.func1.11
+    /root/home/go/fabric-sdk/internal/cmd/cmd.go:137
+
+2025-10-19T23:33:55.098+08:00 [DEBU] {00e52c9d56ee6f18a926036988cfcd8c} [  2 ms] [default] [esg] [rows:3  ] SHOW TABLES
+2025-10-19T23:33:55.099+08:00 [DEBU] {f45d499d56ee6f18aa2603691af416b7} [  1 ms] [default] [esg] [rows:19 ] SHOW FULL COLUMNS FROM `dids`
+2025-10-19T23:33:55.100+08:00 [DEBU] {78685e9d56ee6f18ab260369ac681f3b} [  1 ms] [default] [esg] [rows:1  ] SELECT `email` FROM `dids` WHERE status IN ('pending_review','completed','verified') ORDER BY `created_at` DESC
+2025-10-19T23:33:55.100+08:00 [INFO] ✅ 成功获取邮箱列表，总数: 1
+
+2025/10/19 23:34:08 [32m/root/home/go/fabric-sdk/internal/service/email.go:459
+[0m[33m[0.670ms] [34;1m[rows:1][0m SELECT * FROM `dids` WHERE email = 'esgvisa@gmail.com' ORDER BY `dids`.`id` LIMIT 1
+
+2025/10/19 23:34:16 [31;1m/root/home/go/fabric-sdk/internal/service/email.go:459 [35;1mrecord not found
+[0m[33m[0.758ms] [34;1m[rows:0][0m SELECT * FROM `dids` WHERE email = 'test@example.com' ORDER BY `dids`.`id` LIMIT 1

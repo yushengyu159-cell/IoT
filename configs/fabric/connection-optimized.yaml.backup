@@ -1,0 +1,199 @@
+---
+name: test-network-fixed-certs
+version: 1.0.0
+client:
+  organization: Org1
+  connection:
+    timeout:
+      peer:
+        endorser: '300'
+      orderer: '300'
+  cryptoconfig:
+    path: ${PWD}/configs/fabric/organizations/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp
+  credentialStore:
+    path: /tmp/hfc-kvs
+    cryptoStore:
+      path: /tmp/hfc-cvs
+  BCCSP:
+    default: SW
+    SW:
+      hash: SHA2
+      security: 256
+      fileKeyStore:
+        keyStore:
+          path: /tmp/msp/keystore
+  tlsCerts:
+    systemCertPool: false  # 强制禁用系统证书池
+    client:
+      key:
+        path: /home/ubuntu/go/fabric-sdk/configs/fabric/organizations/peerOrganizations/org1.example.com/users/Admin@org1.example.com/tls/client.key
+      cert:
+        path: /home/ubuntu/go/fabric-sdk/configs/fabric/organizations/peerOrganizations/org1.example.com/users/Admin@org1.example.com/tls/client.crt
+    # 显式嵌入CA证书，确保SDK使用正确的CA
+    caCerts:
+      - |
+        -----BEGIN CERTIFICATE-----
+        MIICUjCCAfigAwIBAgIRAJ+sUuzFqOFICdYEZil8+4EwCgYIKoZIzj0EAwIwczEL
+        MAkGA1UEBhMCVVMxEzARBgNVBAgTCkNhbGlmb3JuaWExFjAUBgNVBAcTDVNhbiBG
+        cmFuY2lzY28xGTAXBgNVBAoTEG9yZzEuZXhhbXBsZS5jb20xHDAaBgNVBAMTE2Nh
+        Lm9yZzEuZXhhbXBsZS5jb20wHhcNMjUwNzE3MTA0MzAwWhcNMzUwNzE1MTA0MzAw
+        WjBzMQswCQYDVQQGEwJVUzETMBEGA1UECBMKQ2FsaWZvcm5pYTEWMBQGA1UEBxMN
+        U2FuIEZyYW5jaXNjbzEZMBcGA1UEChMQb3JnMS5leGFtcGxlLmNvbTEcMBoGA1UE
+        AxMTY2Eub3JnMS5leGFtcGxlLmNvbTBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IA
+        BIcgnz/2e7r1QypPK9RcVLa24NjsOukYbY9tvRivZW4kgMObnPdwNKDXe0v3eSMP
+        umUY97rBNcxO/x0XCKWbQayjbTBrMA4GA1UdDwEB/wQEAwIBpjAdBgNVHSUEFjAU
+        BggrBgEFBQcDAgYIKwYBBQUHAwEwDwYDVR0TAQH/BAUwAwEB/zApBgNVHQ4EIgQg
+        C00VUtNAfjaSHc95WBQ3d40Nt8uQFPQCt3ZVka2QpzowCgYIKoZIzj0EAwIDSAAw
+        RQIhAJLhrPxod+6s//lLiqQKGuodjsXEgtsDqBT0iTzn6oQfAiAjaQ/wunThClj+
+        C7as7s+TP6tsFTLkZxStDSB6157V+g==
+        -----END CERTIFICATE-----
+  verify: false  # ⚠️ 仅开发/测试环境使用
+  msp:
+    verify: false  # 关闭MSP证书验证
+
+organizations:
+  Org1:
+    mspid: Org1MSP
+    cryptoPath: peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp
+    # 显式指定MSP的CA证书，确保SDK使用正确的CA
+    msp:
+      verify: false  # 关闭MSP证书验证
+      caCerts:
+        - |
+          -----BEGIN CERTIFICATE-----
+          MIICUjCCAfigAwIBAgIRAJ+sUuzFqOFICdYEZil8+4EwCgYIKoZIzj0EAwIwczEL
+          MAkGA1UEBhMCVVMxEzARBgNVBAgTCkNhbGlmb3JuaWExFjAUBgNVBAcTDVNhbiBG
+          cmFuY2lzY28xGTAXBgNVBAoTEG9yZzEuZXhhbXBsZS5jb20xHDAaBgNVBAMTE2Nh
+          Lm9yZzEuZXhhbXBsZS5jb20wHhcNMjUwNzE3MTA0MzAwWhcNMzUwNzE1MTA0MzAw
+          WjBzMQswCQYDVQQGEwJVUzETMBEGA1UECBMKQ2FsaWZvcm5pYTEWMBQGA1UEBxMN
+          U2FuIEZyYW5jaXNjbzEZMBcGA1UEChMQb3JnMS5leGFtcGxlLmNvbTEcMBoGA1UE
+          AxMTY2Eub3JnMS5leGFtcGxlLmNvbTBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IA
+          BIcgnz/2e7r1QypPK9RcVLa24NjsOukYbY9tvRivZW4kgMObnPdwNKDXe0v3eSMP
+          umUY97rBNcxO/x0XCKWbQayjbTBrMA4GA1UdDwEB/wQEAwIBpjAdBgNVHSUEFjAU
+          BggrBgEFBQcDAgYIKwYBBQUHAwEwDwYDVR0TAQH/BAUwAwEB/zApBgNVHQ4EIgQg
+          C00VUtNAfjaSHc95WBQ3d40Nt8uQFPQCt3ZVka2QpzowCgYIKoZIzj0EAwIDSAAw
+          RQIhAJLhrPxod+6s//lLiqQKGuodjsXEgtsDqBT0iTzn6oQfAiAjaQ/wunThClj+
+          C7as7s+TP6tsFTLkZxStDSB6157V+g==
+          -----END CERTIFICATE-----
+    peers:
+    - peer0.org1.example.com
+    certificateAuthorities:
+    - ca.org1.example.com
+
+peers:
+  peer0.org1.example.com:
+    url: grpcs://localhost:7051
+    tlsCACerts:
+      pem: |
+        -----BEGIN CERTIFICATE-----
+        MIICVzCCAf2gAwIBAgIQea5aDykeepLNVWxS2i2n0zAKBggqhkjOPQQDAjB2MQsw
+        CQYDVQQGEwJVUzETMBEGA1UECBMKQ2FsaWZvcm5pYTEWMBQGA1UEBxMNU2FuIEZy
+        YW5jaXNjbzEZMBcGA1UEChMQb3JnMS5leGFtcGxlLmNvbTEfMB0GA1UEAxMWdGxz
+        Y2Eub3JnMS5leGFtcGxlLmNvbTAeFw0yNTA3MTcxMDQzMDBaFw0zNTA3MTUxMDQz
+        MDBaMHYxCzAJBgNVBAYTAlVTMRMwEQYDVQQIEwpDYWxpZm9ybmlhMRYwFAYDVQQH
+        Ew1TYW4gRnJhbmNpc2NvMRkwFwYDVQQKExBvcmcxLmV4YW1wbGUuY29tMR8wHQYD
+        VQQDExZ0bHNjYS5vcmcxLmV4YW1wbGUuY29tMFkwEwYHKoZIzj0CAQYIKoZIzj0D
+        AQcDQgAE+56Xl9tMVTe5yCsPxldVgJdBzuxoh/JXSD5VspoVXqGKnlZ8ZlH4/pax
+        RmjyL1Z45bxkQkCJB7vGpwvh3yYym6NtMGswDgYDVR0PAQH/BAQDAgGmMB0GA1Ud
+        JQQWMBQGCCsGAQUFBwMCBggrBgEFBQcDATAPBgNVHRMBAf8EBTADAQH/MCkGA1Ud
+        DgQiBCCYUJinbLe2/ydSKdkzUuF4a6aZRCgguR9nSNMbyChJOzAKBggqhkjOPQQD
+        AgNIADBFAiEAmAkXTD7MfC8jpVO49nHesEbzzntB3VxUJnC13VpxYg8CIBsRwRA3
+        Ic53jttFfENNNMw/NQ7bRWcETj0sGRC7jZRz
+        -----END CERTIFICATE-----
+    grpcOptions:
+      ssl-target-name-override: peer0.org1.example.com
+      allow-insecure: false
+      keep-alive-time: 0s
+      keep-alive-timeout: 20s
+      keep-alive-permit: false
+      fail-fast: false
+
+orderers:
+  orderer.example.com:
+    url: grpcs://localhost:7050
+    tlsCACerts:
+      pem: |
+        -----BEGIN CERTIFICATE-----
+        MIICQzCCAeqgAwIBAgIRAPFgl7QPzFoT4/fxu7zyP5YwCgYIKoZIzj0EAwIwbDEL
+        MAkGA1UEBhMCVVMxEzARBgNVBAgTCkNhbGlmb3JuaWExFjAUBgNVBAcTDVNhbiBG
+        cmFuY2lzY28xFDASBgNVBAoTC2V4YW1wbGUuY29tMRowGAYDVQQDExF0bHNjYS5l
+        eGFtcGxlLmNvbTAeFw0yNTA3MTcxMDQzMDBaFw0zNTA3MTUxMDQzMDBaMGwxCzAJ
+        BgNVBAYTAlVTMRMwEQYDVQQIEwpDYWxpZm9ybmlhMRYwFAYDVQQHEw1TYW4gRnJh
+        bmNpc2NvMRQwEgYDVQQKEwtleGFtcGxlLmNvbTEaMBgGA1UEAxMRdGxzY2EuZXhh
+        bXBsZS5jb20wWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAASXfUCZOCS+ysXeDdzl
+        rNbbVFr8H662be3smUrkkeaDYT/JYQyvmoDv9uIG/NwrVK0Z0CCWuj1BTwfy+Zev
+        xi8Eo20wazAOBgNVHQ8BAf8EBAMCAaYwHQYDVR0lBBYwFAYIKwYBBQUHAwIGCCsG
+        AQUFBwMBMA8GA1UdEwEB/wQFMAMBAf8wKQYDVR0OBCIEIKhgUc3RH0/tQyt+yZfj
+        5eG5lKkFFbh9ciXLUkQGnUDPMAoGCCqGSM49BAMCA0cAMEQCID4wkLi+fEopAaGy
+        lIK5OpqYRAuY+GJVOaCAuonQ5J7BAiA2EcP+0JYyIBxDFH5xBg66bJ/Y5of0bgek
+        ZG55B/pvLA==
+        -----END CERTIFICATE-----
+    grpcOptions:
+      ssl-target-name-override: orderer.example.com
+      allow-insecure: false
+      keep-alive-time: 0s
+      keep-alive-timeout: 20s
+      keep-alive-permit: false
+      fail-fast: false
+
+certificateAuthorities:
+  ca.org1.example.com:
+    url: https://localhost:7054
+    caName: ca-org1
+    tlsCACerts:
+      pem:
+        - |
+          -----BEGIN CERTIFICATE-----
+          MIICUjCCAfigAwIBAgIRAJ+sUuzFqOFICdYEZil8+4EwCgYIKoZIzj0EAwIwczEL
+          MAkGA1UEBhMCVVMxEzARBgNVBAgTCkNhbGlmb3JuaWExFjAUBgNVBAcTDVNhbiBG
+          cmFuY2lzY28xGTAXBgNVBAoTEG9yZzEuZXhhbXBsZS5jb20xHDAaBgNVBAMTE2Nh
+          Lm9yZzEuZXhhbXBsZS5jb20wHhcNMjUwNzE3MTA0MzAwWhcNMzUwNzE1MTA0MzAw
+          WjBzMQswCQYDVQQGEwJVUzETMBEGA1UECBMKQ2FsaWZvcm5pYTEWMBQGA1UEBxMN
+          U2FuIEZyYW5jaXNjbzEZMBcGA1UEChMQb3JnMS5leGFtcGxlLmNvbTEcMBoGA1UE
+          AxMTY2Eub3JnMS5leGFtcGxlLmNvbTBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IA
+          BIcgnz/2e7r1QypPK9RcVLa24NjsOukYbY9tvRivZW4kgMObnPdwNKDXe0v3eSMP
+          umUY97rBNcxO/x0XCKWbQayjbTBrMA4GA1UdDwEB/wQEAwIBpjAdBgNVHSUEFjAU
+          BggrBgEFBQcDAgYIKwYBBQUHAwEwDwYDVR0TAQH/BAUwAwEB/zApBgNVHQ4EIgQg
+          C00VUtNAfjaSHc95WBQ3d40Nt8uQFPQCt3ZVka2QpzowCgYIKoZIzj0EAwIDSAAw
+          RQIhAJLhrPxod+6s//lLiqQKGuodjsXEgtsDqBT0iTzn6oQfAiAjaQ/wunThClj+
+          C7as7s+TP6tsFTLkZxStDSB6157V+g==
+          -----END CERTIFICATE-----
+    httpOptions:
+      verify: false
+    registrar:
+      enrollId: admin
+      enrollSecret: adminpw
+
+channels:
+  mychannel:
+    orderers:
+      - orderer.example.com
+    peers:
+      peer0.org1.example.com:
+        endorsingPeer: true
+        chaincodeQuery: true
+        ledgerQuery: true
+        eventSource: true
+        discoverAsLocalhost: true
+
+entityMatchers:
+  peer:
+    - pattern: peer0.org1.example.com
+      urlSubstitutionExp: localhost:7051
+      sslTargetOverrideUrlSubstitutionExp: peer0.org1.example.com
+      mappedHost: peer0.org1.example.com
+      tlsCACerts:
+        path: /home/ubuntu/go/fabric-sdk/configs/fabric/organizations/peerOrganizations/org1.example.com/tlsca/tlsca.org1.example.com-cert.pem
+      grpcOptions:
+        allow-insecure: true  # ⚠️ 仅开发/测试环境使用
+  orderer:
+    - pattern: orderer.example.com
+      urlSubstitutionExp: localhost:7050
+      sslTargetOverrideUrlSubstitutionExp: orderer.example.com
+      mappedHost: orderer.example.com
+      grpcOptions:
+        allow-insecure: true  # ⚠️ 仅开发/测试环境使用
+  certificateAuthority:
+    - pattern: ca.org1.example.com
+      urlSubstitutionExp: localhost:7054
+      mappedHost: ca.org1.example.com

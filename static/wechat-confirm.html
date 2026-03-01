@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="ui-id" content="wechat-confirm">
+    <title>ESG VISA - Confirm Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .confirm-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 20px;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .info-text {
+            color: #333;
+            font-size: 16px;
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        button {
+            flex: 1;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .btn-confirm {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-confirm:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-cancel {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-cancel:hover {
+            background: #e0e0e0;
+        }
+
+        .status-message {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="confirm-container" data-ui-id="wechat-confirm">
+        <img src="/static/log.png" alt="ESG VISA" class="logo">
+        <div id="confirmContent" style="display: none;">
+            <h1 data-translate="wechat.confirm.title">确认登录</h1>
+            <p class="subtitle" data-translate="wechat.confirm.subtitle">请在手机上确认登录</p>
+
+            <div class="info-text">
+                <p data-translate="wechat.confirm.info.title">您即将登录 ESG VISA 系统</p>
+                <p style="margin-top: 10px; font-size: 14px; color: #666;" data-translate="wechat.confirm.info.desc">
+                    登录后您可以管理您的文件和身份信息
+                </p>
+            </div>
+        </div>
+        
+        <div id="successContent" style="display: block;">
+            <h1 style="color: #28a745; font-size: 28px; margin-bottom: 20px;">✓</h1>
+            <h2 style="color: #28a745; margin-bottom: 10px;" data-translate="wechat.confirm.success.title">登录成功</h2>
+            <p class="subtitle" data-translate="wechat.confirm.success.desc">您可以在电脑上继续使用系统</p>
+            <p style="margin-top: 20px; font-size: 14px; color: #999;" data-translate="wechat.confirm.success.close">可以关闭此页面</p>
+        </div>
+
+        <div class="btn-group" id="actionButtons" style="display: none;">
+            <button class="btn-cancel" onclick="cancelLogin()" data-translate="wechat.confirm.cancel">取消</button>
+            <button class="btn-confirm" onclick="confirmLogin()">
+                <span id="confirmText" data-translate="wechat.confirm.button">确认登录</span>
+            </button>
+        </div>
+
+        <div id="statusMessage" class="status-message hidden"></div>
+    </div>
+
+    <script>
+        // 从URL获取token
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+
+        // 翻译函数
+        function tr(key, fallback) {
+            try {
+                let lang = localStorage.getItem('esg_language') || 'zh-cn';
+                // 兼容语言代码映射
+                if (lang === 'zh') lang = 'zh-cn';
+                const langData = window.LanguageConfig?.data[lang];
+                if (langData && langData.translations && langData.translations[key]) {
+                    return langData.translations[key];
+                }
+            } catch (e) {
+                console.error('Translation error:', e);
+            }
+            return fallback || key;
+        }
+
+        if (!token) {
+            showStatus(tr('wechat.confirm.error.token', '缺少登录令牌'), 'error');
+            setTimeout(() => {
+                window.close();
+            }, 2000);
+        } else {
+            // 页面加载时立即隐藏确认界面，显示成功界面（因为后端已自动确认）
+            document.addEventListener('DOMContentLoaded', function() {
+                // 确保确认界面隐藏，成功界面显示
+                const confirmContent = document.getElementById('confirmContent');
+                const successContent = document.getElementById('successContent');
+                
+                if (confirmContent) confirmContent.style.display = 'none';
+                if (successContent) successContent.style.display = 'block';
+                
+                // 自动执行确认登录（确保状态同步）
+                setTimeout(() => {
+                    autoConfirmLogin();
+                }, 100);
+            });
+        }
+
+        // 自动确认登录（页面加载时自动执行）
+        async function autoConfirmLogin() {
+            if (!token) {
+                return;
+            }
+
+            try {
+                // 直接调用扫码接口，现在它会自动设置为confirmed状态
+                const scanResponse = await fetch('/api/wechat/scan-qrcode', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token: token })
+                });
+
+                if (scanResponse.ok) {
+                    const result = await scanResponse.json();
+                    if (result.code === 200) {
+                        // 隐藏确认界面，显示成功界面
+                        const confirmContent = document.getElementById('confirmContent');
+                        const successContent = document.getElementById('successContent');
+                        
+                        if (confirmContent) confirmContent.style.display = 'none';
+                        if (successContent) successContent.style.display = 'block';
+                        
+                        // 隐藏状态消息（因为已经显示成功界面了）
+                        const statusMsg = document.getElementById('statusMessage');
+                        if (statusMsg) statusMsg.classList.add('hidden');
+                        
+                        // 3秒后尝试关闭窗口
+                        setTimeout(() => {
+                            if (window.opener) {
+                                window.close();
+                            }
+                        }, 3000);
+                    }
+                }
+            } catch (error) {
+                console.error('自动确认登录失败:', error);
+                // 如果自动确认失败，显示确认界面和按钮让用户手动确认
+                const confirmContent = document.getElementById('confirmContent');
+                const btnGroup = document.getElementById('actionButtons');
+                if (confirmContent) confirmContent.style.display = 'block';
+                if (btnGroup) {
+                    btnGroup.style.display = 'flex';
+                }
+            }
+        }
+
+        // 确认登录（手动确认，保留用于兼容性）
+        async function confirmLogin() {
+            if (!token) {
+                showStatus(tr('wechat.confirm.error.token', '缺少登录令牌'), 'error');
+                return;
+            }
+
+            // 先调用扫码接口
+            try {
+                const scanResponse = await fetch('/api/wechat/scan-qrcode', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token: token })
+                });
+
+                if (scanResponse.ok) {
+                    // 调用确认登录接口
+                    const confirmResponse = await fetch('/api/wechat/confirm-login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ token: token })
+                    });
+
+                    const result = await confirmResponse.json();
+
+                    if (result.code === 200) {
+                        document.getElementById('confirmText').innerHTML = '<span class="loading-spinner"></span> ' + tr('wechat.confirm.success.title', '登录成功');
+                        showStatus(tr('wechat.confirm.success', '登录成功！请在电脑上查看'), 'success');
+                        
+                        // 显示成功信息2秒后，尝试关闭窗口
+                        setTimeout(() => {
+                            // 尝试关闭窗口，如果无法关闭则留在当前页面
+                            if (window.opener) {
+                                window.close();
+                            } else {
+                                // 显示成功界面
+                                const confirmContent = document.getElementById('confirmContent');
+                                const successContent = document.getElementById('successContent');
+                                
+                                if (confirmContent) confirmContent.style.display = 'none';
+                                if (successContent) successContent.style.display = 'block';
+                            }
+                        }, 2000);
+                    } else {
+                        showStatus(result.message || tr('wechat.confirm.error.failed', '登录失败'), 'error');
+                    }
+                } else {
+                    showStatus(tr('wechat.confirm.error.failed', '登录失败，请重试'), 'error');
+                }
+            } catch (error) {
+                console.error('登录错误:', error);
+                showStatus(tr('wechat.confirm.error.network', '网络错误，请重试'), 'error');
+            }
+        }
+
+        // 取消登录
+        function cancelLogin() {
+            if (window.opener) {
+                window.close();
+            } else {
+                window.history.back();
+            }
+        }
+
+        // 显示状态消息
+        function showStatus(message, type) {
+            const statusEl = document.getElementById('statusMessage');
+            if (statusEl) {
+                statusEl.textContent = message;
+                statusEl.className = `status-message status-${type}`;
+                statusEl.classList.remove('hidden');
+            }
+        }
+    </script>
+    
+    <!-- 引入统一语言配置和自动翻译 -->
+    <script src="/static/language-config.js"></script>
+    <script src="/static/auto-translate.js"></script>
+</body>
+</html>
+

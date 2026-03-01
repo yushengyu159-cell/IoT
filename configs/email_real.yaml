@@ -1,0 +1,58 @@
+# 真实邮箱配置文件模板
+# 请将此文件重命名为 email.yaml 并填入真实的邮箱信息
+
+email:
+  # QQ邮箱配置
+  qq:
+    host: "smtp.qq.com"
+    port: "587"
+    username: "your-real-email@qq.com"  # 替换为真实的QQ邮箱
+    password: "your-real-smtp-password"  # 替换为QQ邮箱的SMTP授权码
+    from: "your-real-email@qq.com"
+    enabled: true
+    use_ssl: false
+    use_tls: true
+  
+  # 163邮箱配置
+  163:
+    host: "smtp.163.com"
+    port: "465"  # 使用SSL端口
+    username: "your-real-email@163.com"  # 替换为真实的163邮箱
+    password: "your-real-smtp-password"  # 替换为163邮箱的SMTP授权码
+    from: "your-real-email@163.com"
+    enabled: true
+    use_ssl: true   # 使用SSL连接
+    use_tls: false
+  
+  # Gmail配置
+  gmail:
+    host: "smtp.gmail.com"
+    port: "587"
+    username: "your-real-email@gmail.com"  # 替换为真实的Gmail邮箱
+    password: "your-real-app-password"     # 替换为Gmail应用专用密码
+    from: "your-real-email@gmail.com"
+    enabled: true
+    use_ssl: false
+    use_tls: true
+  
+  # 通用配置
+  common:
+    # 验证码有效期（分钟）
+    code_expire_minutes: 10
+    # 重新发送冷却期（秒）
+    resend_cooldown_seconds: 60
+    # 最大发送次数（防止滥用）
+    max_send_per_hour: 10
+    # 邮件模板
+    subject: "ESG VISA - 邮箱验证码"
+    # 是否在开发环境显示验证码
+    show_code_in_dev: true
+
+# 配置说明：
+# 1. QQ邮箱：需要开启SMTP服务，获取授权码
+# 2. 163邮箱：需要开启SMTP服务，获取授权码
+# 3. Gmail：需要开启两步验证，生成应用专用密码
+# 4. 端口说明：
+#    - 587: 通常用于STARTTLS
+#    - 465: 通常用于SSL
+#    - 25: 通常被ISP阻止，不推荐使用

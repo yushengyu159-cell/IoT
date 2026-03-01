@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESG VISA - Forgot Password</title>
+    <link rel="stylesheet" href="/static/styles.css?v=20250917-register12">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container" data-ui-id="register-12">
+        <div class="grid-pattern"></div>
+        
+        
+        <div class="main-content-login">
+            <div class="logo-container">
+                <div class="logo-image">
+                    <img src="/static/log.png" alt="ESG VISA Logo" class="logo-img">
+                </div>
+            </div>
+
+            <div class="header">
+                <h1 id="title" data-translate="forgot.password">Forgot your password</h1>
+                <p id="subtitle" data-translate="verification.subtitle">Verify your email to reset password</p>
+            </div>
+
+            <div class="form-container">
+                <form id="forgotForm">
+                    <div class="form-group">
+                        <input type="email" id="fpEmail" placeholder="e.g. user@example.com" data-translate="email.placeholder" required>
+                    </div>
+                    <div class="form-group inline-row">
+                        <input type="text" id="fpCode" placeholder="Verification code" data-translate="verification.code.placeholder" maxlength="6" style="flex:1;">
+                        <button type="button" class="btn btn-secondary" id="sendCodeBtn" style="margin-left:8px; min-width:140px;" data-translate="verification.send">發送驗證碼</button>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" id="newPassword" placeholder="New password (8–16)" data-translate="password.placeholder" minlength="8" maxlength="16" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="verifyBtn" data-translate="verification.verify">Verify & Reset</button>
+                </form>
+
+                <div class="form-footer" style="margin-top: 14px;">
+                    <a class="back-link" href="/static/register1.html#login">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        <span id="back" data-translate="back">Back to log in</span>
+                    </a>
+                </div>
+            </div>
+
+            <div id="statusMessage" class="status-message hidden"></div>
+        </div>
+    </div>
+
+    <!-- 引入统一语言配置 -->
+    <script src="/static/language-config.js"></script>
+    <script src="/static/auto-translate.js"></script>
+    
+
+    <script>
+    // 翻译函数
+    function tr(key) {
+        if (window.LanguageConfig) {
+            return window.LanguageConfig.getText(key);
+        }
+        return key;
+    }
+    
+    function show(msg, type) {
+        const s = document.getElementById('statusMessage');
+        s.textContent = msg;
+        s.className = 'status-message ' + (type || 'info');
+        s.classList.remove('hidden');
+        setTimeout(() => s.classList.add('hidden'), 5000);
+    }
+
+
+        document.addEventListener('DOMContentLoaded', function(){
+            // 确保语言配置已加载，然后手动触发翻译
+            function translateButton() {
+                if (window.LanguageConfig && window.LanguageConfig.currentLanguage) {
+                    console.log('当前语言:', window.LanguageConfig.currentLanguage);
+                    // 手动翻译按钮
+                    const sendCodeBtn = document.getElementById('sendCodeBtn');
+                    if (sendCodeBtn) {
+                        // 直接使用翻译键获取翻译
+                        const langData = window.LanguageConfig.data[window.LanguageConfig.currentLanguage];
+                        if (langData && langData.translations) {
+                            const translation = langData.translations['verification.send'];
+                            if (translation) {
+                                sendCodeBtn.textContent = translation;
+                                console.log('按钮文本已更新为:', translation);
+                            } else {
+                                console.log('未找到翻译键 verification.send');
+                            }
+                        } else {
+                            console.log('语言数据未找到:', window.LanguageConfig.currentLanguage);
+                        }
+                    }
+                } else {
+                    // 如果语言配置还没加载，再等一会儿
+                    setTimeout(translateButton, 200);
+                }
+            }
+            
+            // 立即尝试翻译
+            translateButton();
+            
+            const saved = localStorage.getItem('esg_email') || '';
+            if(saved) document.getElementById('fpEmail').value = saved;
+            
+            function tryParseJson(text) {
+                try { 
+                    return JSON.parse(text); 
+                } catch(_) { 
+                    return null; 
+                }
+            }
+            
+            document.getElementById('sendCodeBtn').addEventListener('click', async function(){
+                const email = document.getElementById('fpEmail').value.trim();
+                if(!email) { 
+                    show(tr('email.required'), 'error'); 
+                    return; 
+                }
+                
+                // 立即显示按钮已点击的反馈
+                const originalText = this.textContent;
+                this.disabled = true;
+                this.textContent = '發送中...';
+                this.style.backgroundColor = '#6c757d'; // 灰色表示处理中
+                this.style.cursor = 'not-allowed';
+                
+                // 显示点击确认消息
+                show('正在發送驗證碼，請稍候...', 'info');
+                
+                try {
+                    
+                    const resp = await fetch('/api/email/send-password-reset', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            email: email,
+                            language: window.LanguageConfig?.currentLanguage || 'zh'
+                        })
+                    });
+                    
+                    const raw = await resp.text();
+                    const json = tryParseJson(raw);
+                    
+                    if(json && json.code === 200) {
+                        show('驗證碼發送成功', 'success');
+                        localStorage.setItem('esg_email', email);
+                        console.log('验证码发送成功，开发环境验证码:', json.data?.code);
+                        
+                        // 成功后的按钮状态
+                        this.textContent = '已發送';
+                        this.style.backgroundColor = '#28a745'; // 绿色表示成功
+                        this.style.cursor = 'default';
+                        
+                        // 3秒后恢复按钮
+                        setTimeout(() => {
+                            this.disabled = false;
+                            this.textContent = originalText;
+                            this.style.backgroundColor = '';
+                            this.style.cursor = '';
+                        }, 3000);
+                    } else {
+                        throw new Error((json && json.message) || ('send failed: ' + raw.slice(0, 80)));
+                    }
+                } catch(err) {
+                    show(tr('verification.failed') + (err.message || ''), 'error');
+                    console.error('发送验证码错误:', err);
+                    
+                    // 失败后立即恢复按钮
+                    this.disabled = false;
+                    this.textContent = originalText;
+                    this.style.backgroundColor = '';
+                    this.style.cursor = '';
+                }
+            });
+            
+            document.getElementById('forgotForm').addEventListener('submit', async function(e){
+                e.preventDefault();
+                
+                const email = document.getElementById('fpEmail').value.trim();
+                const code = document.getElementById('fpCode').value.trim();
+                const password = document.getElementById('newPassword').value;
+                
+                if(!email || !password) {
+                    show(tr('email.required'), 'error');
+                    return;
+                }
+                
+                try {
+                    console.log('开始验证验证码:', email, code);
+                    
+                    // 验证验证码
+                    const checkResp = await fetch('/api/email/verify-code', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, code })
+                    });
+                    
+                    const checkRaw = await checkResp.text();
+                    const check = tryParseJson(checkRaw);
+                    
+                    console.log('验证码验证结果:', check);
+                    
+                    if(!(check && check.code === 200 && check.data && check.data.valid)) {
+                        throw new Error('验证码无效');
+                    }
+
+                    console.log('开始重置密码:', email);
+                    
+                    // 重置密码
+                    let resetResp = await fetch('/api/register/reset-password', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, password })
+                    });
+                    
+                    let resetRaw = await resetResp.text();
+                    let reset = tryParseJson(resetRaw);
+                    
+                    console.log('密码重置结果:', reset);
+                    
+                    if(!(reset && reset.code === 200)) {
+                        // 备用路径
+                        resetResp = await fetch('/api/did/reset-password', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email, password })
+                        });
+                        resetRaw = await resetResp.text();
+                        reset = tryParseJson(resetRaw);
+                    }
+                    
+                    if(reset && reset.code === 200) {
+                        show(tr('password.reset.success'), 'success');
+                        
+                        // 自动登录
+                        try {
+                            console.log('开始自动登录:', email);
+                            
+                            const vResp = await fetch('/api/did/verify', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ email, password })
+                            });
+                            
+                            const vRaw = await vResp.text();
+                            const v = tryParseJson(vRaw);
+                            
+                            console.log('登录验证结果:', v);
+                            
+                            if(v && v.code === 200) {
+                                const userInfo = {
+                                    Email: email,
+                                    Name: (v.data && (v.data.FullName || v.data.fullName)) || email,
+                                    Role: (v.data && (v.data.Role || v.data.role)) || 'user',
+                                    Phone: (v.data && (v.data.Phone || v.data.phone)) || '',
+                                    Age: (v.data && (v.data.Age || v.data.age)) || 20,
+                                    DID: (v.data && (v.data.did || v.data.DID)) || '',
+                                    RegisterTime: (v.data && (v.data.RegisterTime || v.data.register_time)) || '',
+                                    isLoggedIn: true
+                                };
+                                
+                                localStorage.setItem('userInfo', JSON.stringify(userInfo));
+                                localStorage.setItem('isLoggedIn', 'true');
+                                
+                                // 根据用户邮箱决定跳转页面
+                                let redirectUrl = '/static/dashboard.html'; // 默认跳转到仪表板
+                                
+                                // 只有 esgvisa@gmail.com 可以进入权限管理界面
+                                if (email === 'esgvisa@gmail.com') {
+                                    redirectUrl = '/static/control1.html';
+                                    console.log('管理员用户，跳转到权限管理界面');
+                                } else {
+                                    console.log('普通用户，跳转到仪表板界面');
+                                }
+                                
+                                setTimeout(() => {
+                                    window.location.href = redirectUrl;
+                                }, 1000);
+                                return;
+                            }
+                        } catch(_) { }
+                        
+                        // 登录失败，返回登录页
+                        setTimeout(() => {
+                            window.location.href = '/static/register1.html#login';
+                        }, 2000);
+                    } else {
+                        throw new Error((reset && reset.message) || ('reset failed: ' + (resetRaw || 'N/A').slice(0, 80)));
+                    }
+                } catch(err) {
+                    show(tr('password.reset.failed') + (err.message || ''), 'error');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+
+

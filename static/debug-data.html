@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESG VISA - 数据调试页面</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .data-item { margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        .missing { background-color: #ffe6e6; border-color: #ff9999; }
+        .present { background-color: #e6ffe6; border-color: #99ff99; }
+        .status { font-weight: bold; margin-bottom: 20px; }
+        .fix-btn { background: #00BCD4; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 5px; }
+        .fix-btn:hover { background: #0097a7; }
+    </style>
+</head>
+<body>
+    <h1>🔍 ESG VISA 注册数据调试页面</h1>
+    
+    <div id="status" class="status"></div>
+    
+    <h2>📊 当前存储的数据：</h2>
+    <div id="dataContainer"></div>
+    
+    <h2>🔧 修复选项：</h2>
+    <button class="fix-btn" onclick="clearAllData()">清空所有数据</button>
+    <button class="fix-btn" onclick="goToRegister()">返回注册页面</button>
+    <button class="fix-btn" onclick="refreshPage()">刷新页面</button>
+    
+    <script>
+        // 检查所有必需的数据字段
+        const requiredFields = [
+            'esg_email',
+            'esg_password', 
+            'esg_fullName',
+            'esg_role',
+            'esg_building_name',
+            'esg_building_addr',
+            'esg_btype'
+        ];
+        
+        // 页面加载时检查数据
+        document.addEventListener('DOMContentLoaded', function() {
+            checkData();
+        });
+        
+        function checkData() {
+            const dataContainer = document.getElementById('dataContainer');
+            const statusDiv = document.getElementById('status');
+            
+            let missingCount = 0;
+            let presentCount = 0;
+            let html = '';
+            
+            requiredFields.forEach(field => {
+                const value = localStorage.getItem(field);
+                const isMissing = !value || value.trim() === '';
+                
+                if (isMissing) {
+                    missingCount++;
+                    html += `<div class="data-item missing">
+                        <strong>❌ ${field}:</strong> <span style="color: red;">缺失</span>
+                        <br><small>预期值: ${getExpectedValue(field)}</small>
+                    </div>`;
+                } else {
+                    presentCount++;
+                    html += `<div class="data-item present">
+                        <strong>✅ ${field}:</strong> ${value}
+                    </div>`;
+                }
+            });
+            
+            dataContainer.innerHTML = html;
+            
+            if (missingCount === 0) {
+                statusDiv.innerHTML = `<span style="color: green;">✅ 所有数据完整，可以继续注册流程</span>`;
+            } else {
+                statusDiv.innerHTML = `<span style="color: red;">❌ 发现 ${missingCount} 个缺失字段，需要补充</span>`;
+            }
+        }
+        
+        function getExpectedValue(field) {
+            const expectedValues = {
+                'esg_email': '用户邮箱地址',
+                'esg_password': '用户密码',
+                'esg_fullName': '用户全名',
+                'esg_role': '用户角色 (owner/property_manager/institution)',
+                'esg_building_name': '建筑名称',
+                'esg_building_addr': '建筑地址',
+                'esg_btype': '建筑类型'
+            };
+            return expectedValues[field] || '未知';
+        }
+        
+        function clearAllData() {
+            if (confirm('确定要清空所有注册数据吗？这将需要重新开始注册流程。')) {
+                requiredFields.forEach(field => {
+                    localStorage.removeItem(field);
+                });
+                alert('数据已清空，请重新开始注册');
+                checkData();
+            }
+        }
+        
+        function goToRegister() {
+    window.location.href = '/static/register1.html';
+        }
+        
+        function refreshPage() {
+            location.reload();
+        }
+        
+        // 实时监控localStorage变化
+        window.addEventListener('storage', function(e) {
+            if (requiredFields.includes(e.key)) {
+                checkData();
+            }
+        });
+    </script>
+</body>
+</html>

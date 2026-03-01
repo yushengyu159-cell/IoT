@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESG VISA - Create your account</title>
+    <link rel="stylesheet" href="/static/styles.css?v=20250819-fix">
+    <style>
+        .fix-container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .data-form { background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0; }
+        .form-group { margin: 15px 0; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        .btn { background: #00BCD4; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; margin: 5px; }
+        .btn:hover { background: #0097a7; }
+        .status { padding: 10px; border-radius: 5px; margin: 10px 0; }
+        .status.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .status.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    </style>
+</head>
+<body>
+    <div class="fix-container">
+        <h1>Create your account</h1>
+        
+        <div id="status" class="status" style="display: none;"></div>
+        
+        <div class="data-form">
+            <h3>Complete your registration</h3>
+            
+            <form id="fixForm">
+                <div class="form-group">
+                    <label for="email">邮箱地址 *</label>
+                    <input type="email" id="email" placeholder="请输入邮箱地址" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">密码 *</label>
+                    <input type="password" id="password" placeholder="请输入密码" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="fullName">全名 *</label>
+                    <input type="text" id="fullName" placeholder="请输入您的全名" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="role">用户角色 *</label>
+                    <select id="role" required>
+                        <option value="">请选择角色</option>
+                        <option value="owner">Owner (业主)</option>
+                        <option value="property_manager">Property Manager (物业经理)</option>
+                        <option value="institution">Institution (机构)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" id="buildingFields" style="display: none;">
+                    <label for="buildingName">建筑名称 *</label>
+                    <input type="text" id="buildingName" placeholder="请输入建筑名称">
+                </div>
+                
+                <div class="form-group" id="buildingAddrFields" style="display: none;">
+                    <label for="buildingAddr">建筑地址 *</label>
+                    <input type="text" id="buildingAddr" placeholder="请输入建筑地址">
+                </div>
+                
+                <div class="form-group" id="buildingTypeFields" style="display: none;">
+                    <label for="buildingType">建筑类型 *</label>
+                    <select id="buildingType">
+                        <option value="">请选择建筑类型</option>
+                        <option value="Private Residence">Private Residence</option>
+                        <option value="Village / Ding-style House">Village / Ding-style House</option>
+                        <option value="Subsidized Housing">Subsidized Housing</option>
+                        <option value="Retail Shop">Retail Shop</option>
+                        <option value="Office Building">Office Building</option>
+                        <option value="Industrial Unit">Industrial Unit</option>
+                        <option value="Serviced Apartment">Serviced Apartment</option>
+                        <option value="Shopping Mall">Shopping Mall</option>
+                        <option value="Mixed-Use Building">Mixed-Use Building</option>
+                    </select>
+                </div>
+                
+                <div style="text-align: center; margin-top: 20px;">
+                    <button type="submit" class="btn">💾 保存数据</button>
+                    <button type="button" class="btn" onclick="checkCurrentData()">🔍 检查当前数据</button>
+                    <button type="button" class="btn" onclick="clearAllData()">🗑️ 清空所有数据</button>
+                </div>
+            </form>
+        </div>
+        
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="/static/register-3-2.html" class="btn">🔄 返回注册页面</a>
+            <a href="/static/register1.html" class="btn">🏠 返回首页</a>
+        </div>
+    </div>
+
+    <script>
+        // 页面加载时检查当前数据
+        document.addEventListener('DOMContentLoaded', function() {
+            checkCurrentData();
+            setupRoleChange();
+        });
+        
+        // 设置角色变化监听
+        function setupRoleChange() {
+            document.getElementById('role').addEventListener('change', function() {
+                const role = this.value;
+                const buildingFields = document.getElementById('buildingFields');
+                const buildingAddrFields = document.getElementById('buildingAddrFields');
+                const buildingTypeFields = document.getElementById('buildingTypeFields');
+                
+                if (role === 'owner') {
+                    buildingFields.style.display = 'block';
+                    buildingAddrFields.style.display = 'block';
+                    buildingTypeFields.style.display = 'block';
+                    
+                    // 设置必填
+                    document.getElementById('buildingName').required = true;
+                    document.getElementById('buildingAddr').required = true;
+                    document.getElementById('buildingType').required = true;
+                } else {
+                    buildingFields.style.display = 'none';
+                    buildingAddrFields.style.display = 'none';
+                    buildingTypeFields.style.display = 'none';
+                    
+                    // 取消必填
+                    document.getElementById('buildingName').required = false;
+                    document.getElementById('buildingAddr').required = false;
+                    document.getElementById('buildingType').required = false;
+                }
+            });
+        }
+        
+        // 检查当前数据
+        function checkCurrentData() {
+            const fields = ['esg_email', 'esg_password', 'esg_fullName', 'esg_role', 'esg_building_name', 'esg_building_addr', 'esg_btype'];
+            
+            fields.forEach(field => {
+                const value = localStorage.getItem(field);
+                if (value) {
+                    const inputId = field.replace('esg_', '');
+                    const input = document.getElementById(inputId);
+                    if (input) {
+                        input.value = value;
+                        if (inputId === 'role') {
+                            input.dispatchEvent(new Event('change'));
+                        }
+                    }
+                }
+            });
+            
+            showStatus('当前数据已加载到表单中', 'success');
+        }
+        
+        // 保存数据
+        document.getElementById('fixForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value,
+                fullName: document.getElementById('fullName').value,
+                role: document.getElementById('role').value
+            };
+            
+            // 如果是Owner角色，还需要建筑信息
+            if (formData.role === 'owner') {
+                formData.buildingName = document.getElementById('buildingName').value;
+                formData.buildingAddr = document.getElementById('buildingAddr').value;
+                formData.buildingType = document.getElementById('buildingType').value;
+                
+                if (!formData.buildingName || !formData.buildingAddr || !formData.buildingType) {
+                    showStatus('Owner角色需要填写完整的建筑信息', 'error');
+                    return;
+                }
+            }
+            
+            // 保存到localStorage
+            localStorage.setItem('esg_email', formData.email);
+            localStorage.setItem('esg_password', formData.password);
+            localStorage.setItem('esg_fullName', formData.fullName);
+            localStorage.setItem('esg_role', formData.role);
+            
+            if (formData.role === 'owner') {
+                localStorage.setItem('esg_building_name', formData.buildingName);
+                localStorage.setItem('esg_building_addr', formData.buildingAddr);
+                localStorage.setItem('esg_building_type', formData.buildingType);
+            }
+            
+            showStatus('数据保存成功！现在可以返回注册页面继续流程', 'success');
+        });
+        
+        // 清空所有数据
+        function clearAllData() {
+            if (confirm('确定要清空所有注册数据吗？这将需要重新开始注册流程。')) {
+                const fields = ['esg_email', 'esg_password', 'esg_fullName', 'esg_role', 'esg_building_name', 'esg_building_addr', 'esg_btype'];
+                fields.forEach(field => localStorage.removeItem(field));
+                showStatus('所有数据已清空', 'success');
+                document.getElementById('fixForm').reset();
+            }
+        }
+        
+        // 显示状态消息
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

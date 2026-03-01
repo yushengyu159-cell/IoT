@@ -1,0 +1,162 @@
+name: transient-failure-fixed
+version: 1.0.0
+
+client:
+  organization: Org1
+  cryptoconfig:
+    path: /home/ubuntu/go/fabric-sdk/configs/fabric/organizations
+  tlsCerts:
+    systemCertPool: false
+    verify: false
+  msp:
+    verify: false
+  BCCSP:
+    security:
+      default:
+        provider: SW
+        hashFamily: SHA2
+        secLevel: 256
+        ephemeral: false
+        fileKeystore:
+          keyStorePath: /tmp/msp/keystore
+
+organizations:
+  Org1:
+    mspid: Org1MSP
+    cryptoPath: /home/ubuntu/go/fabric-sdk/configs/fabric/organizations/peerOrganizations/org1.example.com/users/{username}@org1.example.com/msp
+    msp:
+      caCerts:
+        - /home/ubuntu/go/fabric-sdk/configs/fabric/organizations/peerOrganizations/org1.example.com/msp/cacerts/ca.org1.example.com-cert.pem
+      tlsCACerts:
+        - /home/ubuntu/go/fabric-sdk/configs/fabric/organizations/peerOrganizations/org1.example.com/msp/tlscacerts/tlsca.org1.example.com-cert.pem
+    peers:
+      - peer0.org1.example.com
+    certificateAuthorities:
+      - ca.org1.example.com
+
+peers:
+  peer0.org1.example.com:
+    url: grpcs://localhost:7051
+    tlsCACerts:
+      path: /home/ubuntu/go/fabric-sdk/configs/fabric/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt
+    grpcOptions:
+      ssl-target-name-override: peer0.org1.example.com
+      hostnameOverride: peer0.org1.example.com
+      verify: false
+      allow-insecure: true
+      keep-alive-time: 0s
+      keep-alive-timeout: 20s
+      keep-alive-permit: false
+      fail-fast: false
+      # TRANSIENT_FAILURE修复配置
+      max-recv-msg-size: 100
+      max-send-msg-size: 100
+      tls: false
+      # 连接重试配置
+      retry-policy:
+        maxAttempts: 10
+        initialBackoff: 1s
+        maxBackoff: 10s
+        backoffMultiplier: 1.2
+      # 连接稳定性配置
+      connection:
+        timeout: 30s
+        keepalive:
+          time: 30s
+          timeout: 5s
+          permitWithoutStream: true
+        # 禁用连接池
+        pool:
+          enabled: false
+
+orderers:
+  orderer.example.com:
+    url: grpcs://localhost:7050
+    tlsCACerts:
+      path: /home/ubuntu/go/fabric-sdk/configs/fabric/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
+    grpcOptions:
+      ssl-target-name-override: orderer.example.com
+      verify: false
+      allow-insecure: true
+      keep-alive-time: 0s
+      keep-alive-timeout: 20s
+      keep-alive-permit: false
+      fail-fast: false
+      # TRANSIENT_FAILURE修复配置
+      max-recv-msg-size: 100
+      max-send-msg-size: 100
+      tls: false
+      # 连接重试配置
+      retry-policy:
+        maxAttempts: 10
+        initialBackoff: 1s
+        maxBackoff: 10s
+        backoffMultiplier: 1.2
+
+certificateAuthorities:
+  ca.org1.example.com:
+    url: https://localhost:7054
+    caName: ca-org1
+    tlsCACerts:
+      path: /home/ubuntu/go/fabric-sdk/configs/fabric/organizations/peerOrganizations/org1.example.com/ca/ca.org1.example.com-cert.pem
+    httpOptions:
+      verify: false
+    registrar:
+      enrollId: admin
+      enrollSecret: adminpw
+
+# TRANSIENT_FAILURE修复的entityMatchers配置
+entityMatchers:
+  peer:
+    - pattern: peer0\.org1\.example\.com
+      urlSubstitutionExp: localhost:7051
+      sslTargetOverrideUrlSubstitutionExp: peer0.org1.example.com
+      mappedHost: peer0.org1.example.com
+      tlsCACerts:
+        path: /home/ubuntu/go/fabric-sdk/configs/fabric/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt
+      verify: false
+      grpcOptions:
+        verify: false
+        allow-insecure: true
+        tls: false
+        # TRANSIENT_FAILURE修复配置
+        retry-policy:
+          maxAttempts: 10
+          initialBackoff: 1s
+          maxBackoff: 10s
+          backoffMultiplier: 1.2
+        connection:
+          timeout: 30s
+          keepalive:
+            time: 30s
+            timeout: 5s
+            permitWithoutStream: true
+          pool:
+            enabled: false
+
+  orderer:
+    - pattern: orderer\.example\.com
+      urlSubstitutionExp: localhost:7050
+      sslTargetOverrideUrlSubstitutionExp: orderer.example.com
+      mappedHost: orderer.example.com
+      tlsCACerts:
+        path: /home/ubuntu/go/fabric-sdk/configs/fabric/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
+      verify: false
+      grpcOptions:
+        verify: false
+        allow-insecure: true
+        tls: false
+        # TRANSIENT_FAILURE修复配置
+        retry-policy:
+          maxAttempts: 10
+          initialBackoff: 1s
+          maxBackoff: 10s
+          backoffMultiplier: 1.2
+
+  certificateAuthority:
+    - pattern: ca\.org1\.example\.com
+      urlSubstitutionExp: localhost:7054
+      mappedHost: ca.org1.example.com
+      tlsCACerts:
+        path: /home/ubuntu/go/fabric-sdk/configs/fabric/organizations/peerOrganizations/org1.example.com/ca/ca.org1.example.com-cert.pem
+      verify: false
