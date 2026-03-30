@@ -195,14 +195,14 @@ async function handleLogin(event) {
             
             // 根据用户邮箱决定跳转页面
             const userEmail = result.data.email;
-            let redirectUrl = '/static/dashboard.html'; // 默认跳转到仪表板
+            let redirectUrl = '/static/esg-dashboard.html'; // 默认跳转到仪表板
             
             // 只有 esgvisa@gmail.com 可以进入权限管理界面
             if (userEmail === 'esgvisa@gmail.com') {
                 redirectUrl = '/static/control1.html';
                 console.log('管理员用户，跳转到权限管理界面');
             } else {
-                redirectUrl = '/static/dashboard.html';
+                redirectUrl = '/static/esg-dashboard.html';
                 console.log('普通用户，跳转到仪表板界面');
             }
             

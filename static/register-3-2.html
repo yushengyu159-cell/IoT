@@ -237,7 +237,7 @@
                 localStorage.setItem('isLoggedIn', 'true');
                 
                 // 使用后端返回的跳转地址
-                const redirectUrl = result.data?.redirect_url || '/static/dashboard.html';
+                const redirectUrl = result.data?.redirect_url || '/static/esg-dashboard.html';
                 showStatusMessage('注册成功，正在跳转...', 'success');
                 setTimeout(() => {
                     window.location.href = redirectUrl;
