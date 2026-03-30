@@ -137,7 +137,7 @@
 <body>
     <div class="confirm-container" data-ui-id="wechat-confirm">
         <img src="/static/log.png" alt="ESG VISA" class="logo">
-        <div id="confirmContent" style="display: none;">
+        <div id="confirmContent" style="display: block;">
             <h1 data-translate="wechat.confirm.title">确认登录</h1>
             <p class="subtitle" data-translate="wechat.confirm.subtitle">请在手机上确认登录</p>
 
@@ -149,14 +149,14 @@
             </div>
         </div>
         
-        <div id="successContent" style="display: block;">
+        <div id="successContent" style="display: none;">
             <h1 style="color: #28a745; font-size: 28px; margin-bottom: 20px;">✓</h1>
             <h2 style="color: #28a745; margin-bottom: 10px;" data-translate="wechat.confirm.success.title">登录成功</h2>
             <p class="subtitle" data-translate="wechat.confirm.success.desc">您可以在电脑上继续使用系统</p>
             <p style="margin-top: 20px; font-size: 14px; color: #999;" data-translate="wechat.confirm.success.close">可以关闭此页面</p>
         </div>
 
-        <div class="btn-group" id="actionButtons" style="display: none;">
+        <div class="btn-group" id="actionButtons" style="display: flex;">
             <button class="btn-cancel" onclick="cancelLogin()" data-translate="wechat.confirm.cancel">取消</button>
             <button class="btn-confirm" onclick="confirmLogin()">
                 <span id="confirmText" data-translate="wechat.confirm.button">确认登录</span>
@@ -193,7 +193,6 @@
                 window.close();
             }, 2000);
         } else {
-            // 页面加载时立即隐藏确认界面，显示成功界面（因为后端已自动确认）
             document.addEventListener('DOMContentLoaded', function() {
                 // 确保确认界面隐藏，成功界面显示
                 const confirmContent = document.getElementById('confirmContent');
@@ -202,7 +201,6 @@
                 if (confirmContent) confirmContent.style.display = 'none';
                 if (successContent) successContent.style.display = 'block';
                 
-                // 自动执行确认登录（确保状态同步）
                 setTimeout(() => {
                     autoConfirmLogin();
                 }, 100);

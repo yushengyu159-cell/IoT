@@ -2,10 +2,11 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <meta name="ui-id" content="登录1">
     <title>ESG VISA - DID身份管理</title>
-    <link rel="stylesheet" href="/static/styles.css?v=20250816-login-fix">
+    <link rel="stylesheet" href="/static/styles.css?v=20250323">
+    <link rel="stylesheet" href="/static/a11y-improvements.css?v=20250323">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
@@ -68,7 +69,7 @@
                     <!-- 第三方登录按钮 -->
                     <button class="social-btn social-google"><i class="fab fa-google"></i> Sign in with Google</button>
                     <button class="social-btn social-wechat"><i class="fab fa-weixin"></i> Sign in with Wechat</button>
-                    <button class="social-btn social-apple"><i class="fab fa-apple"></i> Sign in with Apple</button>
+                    <button class="social-btn social-sms"><i class="fas fa-sms"></i> <span data-translate="sms.login">SMS Login</span></button>
 
                     <div class="legal-text" style="margin-top:16px;">
                         By continuing, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
@@ -453,5 +454,6 @@
         });
 
     </script>
+<script src="sms-login-handler.js"></script>
 </body>
 </html>

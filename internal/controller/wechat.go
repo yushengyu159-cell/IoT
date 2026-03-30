@@ -210,7 +210,7 @@ func (c *WechatController) ScanQRCode(r *ghttp.Request) {
 	}
 
 	// 扫描后直接确认为已确认状态，跳过确认界面
-	existingData["status"] = "confirmed"
+	existingData["status"] = "scanned"
 	existingData["scanned_at"] = time.Now().Format("2006-01-02 15:04:05")
 	existingData["confirmed_at"] = time.Now().Format("2006-01-02 15:04:05")
 

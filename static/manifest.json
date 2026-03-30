@@ -1,0 +1,28 @@
+{
+  "name": "ESG VISA - DID身份管理",
+  "short_name": "ESG VISA",
+  "description": "基于区块链的DID身份管理平台",
+  "start_url": "/static/index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2ECC71",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/static/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "finance", "productivity"],
+  "lang": "zh-CN",
+  "dir": "ltr",
+  "scope": "/static/"
+}

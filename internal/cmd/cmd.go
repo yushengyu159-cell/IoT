@@ -109,6 +109,9 @@ var (
 				group.GET("/tracking/source", controller.Carbon.GetCarbonSourceDecomposition)
 				group.GET("/verification", controller.Carbon.GetCarbonVerification)
 				group.GET("/analysis", controller.Carbon.GetCarbonAnalysis)
+				group.GET("/realtime", controller.Carbon.GetRealtimeCO2)
+				group.GET("/sensor-data", controller.Carbon.GetSensorDataLastNDays)
+				group.GET("/sensor-data/today", controller.Carbon.GetSensorDataToday)
 			})
 
 			// ESG Analytics Routes
@@ -135,6 +138,11 @@ var (
 			})
 
 			// 失败注册记录管理路由
+			// SMS login routes
+			s.Group("/api/sms", func(group *ghttp.RouterGroup) {
+				group.POST("/send-code", controller.SMS.SendCode)
+				group.POST("/verify-code", controller.SMS.VerifyCode)
+			})
 			failedRegController := &controller.FailedRegistrationController{}
 			s.Group("/api/failed-registration", func(group *ghttp.RouterGroup) {
 				group.POST("/add", failedRegController.AddFailedRegistration)

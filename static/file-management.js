@@ -443,34 +443,21 @@ async function handleFileUpload(event) {
         }
     }
     
-    // 验证 DID 格式，确保使用正确的链码 DID
-    if (uploader && !/^did:example:/.test(uploader)) {
-        console.warn('⚠️ 警告：上传者 DID 格式不正确:', uploader);
-        console.warn('期望格式: did:example:...');
-        
-        // 尝试从后端获取正确的 DID
+    // 简化：直接使用当前uploader，不进行DID格式验证
+    console.log('📤 使用上传者:', uploader);
+
+    // 如果uploader为空，尝试从localStorage获取
+    if (!uploader) {
         try {
-            console.log('🔄 尝试从后端获取正确的 DID...');
-            const updatedUserInfo = await refreshUserInfoFromServer();
-            console.log('📥 后端返回的用户信息:', updatedUserInfo);
-            
-            if (updatedUserInfo && updatedUserInfo.DID && /^did:example:/.test(updatedUserInfo.DID)) {
-                uploader = updatedUserInfo.DID;
-                uploaderInputEl.value = updatedUserInfo.DID;
-                console.log('✅ 已更新为正确的 DID:', updatedUserInfo.DID);
-            } else {
-                console.error('❌ 无法获取正确的 DID');
-                showStatusMessage(tr('wrongDid','上传者身份格式不正确，请重新登录获取正确的 DID'), 'error');
-                return;
-            }
-        } catch (error) {
-            console.error('❌ 获取正确 DID 失败:', error);
-            showStatusMessage(tr('cannotGetUploader','无法获取正确的上传者身份，请重新登录'), 'error');
-            return;
+            const local = JSON.parse(localStorage.getItem('userInfo') || '{}');
+            uploader = local.Email || local.email || local.DID || local.did || '';
+            console.log('✅ 从localStorage获取上传者:', uploader);
+        } catch (e) {
+            console.warn('⚠️ 无法获取上传者信息');
         }
     }
-    
-    console.log('📤 最终上传者 DID:', uploader);
+
+    console.log('📤 最终上传者:', uploader);
     
     try {
         showLoading(true);
@@ -507,10 +494,24 @@ async function handleFileUpload(event) {
          console.log('📥 后端响应数据:', result);
         
         if (result.code === 200) {
-            showStatusMessage(tr('uploadSuccess','加密分片上传成功！'), 'success');
+            showStatusMessage(tr('uploadSuccess', '加密分片上传成功！'), 'success');
+            console.log('✅ [上传成功] 即将关闭模态框并刷新列表');
+            
+            // 先关闭模态框
             closeUploadModal();
-            // 刷新文件列表
-            loadFileList();
+            
+            // 立即执行第一次刷新（尝试）
+            console.log('🔄 [上传成功] 立即执行第一次刷新尝试...');
+            setTimeout(() => {
+                console.log('⚡ [上传成功] 1秒后执行刷新...');
+                loadFileList();
+            }, 1000);
+            
+            // 1.5秒后执行第二次刷新（确保后端写入完成）
+            setTimeout(() => {
+                console.log('🔄 [上传成功] 2秒后执行确认刷新...');
+                loadFileList();
+            }, 2000);
         } else {
             showStatusMessage(result.message || tr('uploadFailed','上传失败'), 'error');
         }
@@ -525,8 +526,10 @@ async function handleFileUpload(event) {
 
 // 文件列表管理功能
 function loadFileList() {
+    console.log('🔄 [loadFileList] 开始加载文件列表...');
     fetchFileList()
         .then(files => {
+            console.log('📥 [loadFileList] 获取到文件数量:', files.length);
             displayFileList(files);
         })
         .catch(error => {
@@ -566,7 +569,17 @@ async function fetchFileList() {
 }
 
 function displayFileList(files) {
+    console.log('🎨 [displayFileList] 开始渲染文件列表, 文件数:', files.length);
     const fileListContainer = document.getElementById('fileList');
+    console.log('📍 [displayFileList] 找到fileList容器:', fileListContainer);
+    
+    if (!fileListContainer) {
+        console.error('❌ [displayFileList] 无法找到fileList元素!');
+        return;
+    }
+    
+    // 强制触发重排以确保DOM更新
+    console.log('🔄 [displayFileList] 准备更新DOM...');
     
     if (!files || files.length === 0) {
         fileListContainer.innerHTML = `

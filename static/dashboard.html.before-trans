@@ -7,6 +7,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/static/styles.css?v=20250819-file-management">
     <style>
+@keyframes pulse {            0%, 100% { opacity: 1; transform: scale(1); }            50% { opacity: 0.7; transform: scale(1.1); }        }
         :root {
             --primary-color: #1a4d3f;
             --secondary-color: #2c7a62;
@@ -532,11 +533,21 @@
     <!-- Chart.js for Data Visualization -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+<script src="/static/carbon-realtime.js"></script>
 <body>
     <!-- 顶部用户信息栏 -->
     <header class="dashboard-header" style="position: fixed; top: 0; left: 0; right: 0; z-index: 100; margin-left: var(--sidebar-width);">
         <div class="app-title">
             <h1>ESG VISA</h1>
+        </div>
+        <!-- Language Switcher -->
+        <div class="language-switcher" style="position: relative; margin-right: 20px;">
+            <button id="langBtn" onclick="toggleLangMenu()" style="padding: 8px 12px; background: white; border: 1px solid #ddd; border-radius: 6px; cursor: pointer;">🌐 <span id="langCode">EN</span> ▼</button>
+            <div id="langMenu" style="display:none; position: absolute; right: 0; background: white; border: 1px solid #ddd; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1001;">
+                <div onclick="switchLanguage('en')" style="padding: 10px; cursor: pointer;">🇺🇸 English</div>
+                <div onclick="switchLanguage('zh-cn')" style="padding: 10px; cursor: pointer;">🇨🇳 简体</div>
+                <div onclick="switchLanguage('zh-tw')" style="padding: 10px; cursor: pointer;">🇭🇰 繁體</div>
+            </div>
         </div>
         <div class="user-info" onclick="showUserDetail()">
             <div class="user-avatar">
@@ -789,6 +800,47 @@
                         <i class="fas fa-calendar-check" style="font-size: 64px; color: #333;"></i>
                     </div>
                 </div>
+            <!-- Real-time CO2 Data Section -->
+            <div class="carbon-content-grid" style="margin-bottom: 20px;">
+                <!-- Real-time CO2 Display -->
+                <div class="card" style="padding: 20px;">
+                    <div class="chart-header">
+                        <div class="chart-title">
+                            <i class="fas fa-broadcast-tower" style="margin-right: 8px; color: #2c7a62;"></i>
+                            Real-time CO2 Level
+                        </div>
+                        <span class="live-indicator" style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; background: #e8f5e9; border-radius: 12px; font-size: 12px; color: #2c7a62;">
+                            <span style="width: 8px; height: 8px; background: #4caf50; border-radius: 50%; animation: pulse 2s infinite;"></span>
+                            LIVE
+                        </span>
+                    </div>
+                    <div style="text-align: center; padding: 20px 0;">
+                        <div style="font-size: 48px; font-weight: 700; color: #2c7a62; margin-bottom: 8px;" id="realtimeCO2Value">--</div>
+                        <div style="font-size: 16px; color: #666; margin-bottom: 4px;">ppm</div>
+                        <div style="font-size: 14px; color: #999; margin-top: 12px;" id="realtimeCO2Time">Last updated: -</div>
+                        <div style="font-size: 12px; color: #4caf50; margin-top: 8px;" id="realtimeCO2Emission">Carbon Emission: --</div>
+                    </div>
+                </div>
+
+                <!-- Sensor Data Chart -->
+                <div class="card" style="padding: 20px;">
+                    <div class="chart-header">
+                        <div class="chart-title">
+                            <i class="fas fa-chart-line" style="margin-right: 8px; color: #2c7a62;"></i>
+                            CO2 Sensor History
+                        </div>
+                        <div class="chart-controls">
+                            <button class="chart-control-btn active" id="btn1Day" onclick="loadSensorChartData(1)">1 Day</button>
+                            <button class="chart-control-btn" id="btn7Days" onclick="loadSensorChartData(7)">7 Days</button>
+                        </div>
+                    </div>
+                    <div style="height: 200px;">
+                        <canvas id="sensorDataChart"></canvas>
+                    </div>
+                    <div style="text-align: center; margin-top: 12px; font-size: 12px; color: #999;" id="sensorDataInfo">Loading...</div>
+                </div>
+            </div>
+
             </div>
 
             <!-- 6.1 Carbon Tracking Interface -->
@@ -1299,127 +1351,76 @@
 
     <!-- 引入文件管理JavaScript -->
     <script src="/static/file-management.js?v=20250826-download-fix"></script>
+    <script src="/static/dashboard-autoload.js"></script>
+
     
     <script>
-    // 语言数据 - 支持三种语言转换
-    // 只添加语言数据，不影响其他功能
-    window.languageData = {
-        "en": {
-            "t": {
-                "basicInfoTitle": "Basic Information",
-                "nameLabel": "Name",
-                "phoneLabel": "Phone",
-                "emailLabel": "Email",
-                "roleLabel": "Role",
-                "ageLabel": "Age",
-                "roleRelatedTitle": "Role Related Information",
-                "buildingNameLabel": "Building Name",
-                "buildingAddrLabel": "Building Address",
-                "buildingTypeLabel": "Building Type",
-                "propertyNameLabel": "Property Name",
-                "institutionLabel": "Institution",
-                "occupationLabel": "Occupation",
-                "didInfoTitle": "DID Identity Information",
-                "didIdentifierLabel": "DID Identifier",
-                "chainInfoTitle": "Blockchain Information",
-                "chainStatusLabel": "Status",
-                "chainTimeLabel": "Timestamp",
-                "chainMsgLabel": "Message",
-                "txHashLabel": "Transaction Hash",
-                "registerTimeLabel": "Registration Time",
-                "unknown": "Unknown",
-                "identityStatusLabel": "Identity Status",
-                "assetIdLabel": "Asset ID",
-                "chaincodeStatusLabel": "Chaincode Status",
-                "logoutText": "Logout",
-                "verifiedText": "Verified",
-                "onChainText": "On Chain",
-                "confirmLogout": "Are you sure you want to logout?"
-            }
-        },
-        "zh-cn": {
-            "t": {
-                "basicInfoTitle": "基本信息",
-                "nameLabel": "姓名",
-                "phoneLabel": "电话",
-                "emailLabel": "邮箱",
-                "roleLabel": "角色",
-                "ageLabel": "年龄",
-                "roleRelatedTitle": "角色相关信息",
-                "buildingNameLabel": "建筑名称",
-                "buildingAddrLabel": "建筑地址",
-                "buildingTypeLabel": "建筑类型",
-                "propertyNameLabel": "物业名称",
-                "institutionLabel": "机构",
-                "occupationLabel": "职业",
-                "didInfoTitle": "DID身份信息",
-                "didIdentifierLabel": "DID标识符",
-                "chainInfoTitle": "区块链信息",
-                "chainStatusLabel": "状态",
-                "chainTimeLabel": "时间戳",
-                "chainMsgLabel": "消息",
-                "txHashLabel": "交易哈希",
-                "registerTimeLabel": "注册时间",
-                "unknown": "未知",
-                "identityStatusLabel": "身份状态",
-                "assetIdLabel": "资产ID",
-                "chaincodeStatusLabel": "链码状态",
-                "logoutText": "退出登录",
-                "verifiedText": "已验证",
-                "onChainText": "已上链",
-                "confirmLogout": "确定要退出登录吗？"
-            }
-        },
-        "zh-tw": {
-            "t": {
-                "basicInfoTitle": "基本資訊",
-                "nameLabel": "姓名",
-                "phoneLabel": "電話",
-                "emailLabel": "郵箱",
-                "roleLabel": "角色",
-                "ageLabel": "年齡",
-                "roleRelatedTitle": "角色相關資訊",
-                "buildingNameLabel": "建築名稱",
-                "buildingAddrLabel": "建築地址",
-                "buildingTypeLabel": "建築類型",
-                "propertyNameLabel": "物業名稱",
-                "institutionLabel": "機構",
-                "occupationLabel": "職業",
-                "didInfoTitle": "DID身份資訊",
-                "didIdentifierLabel": "DID標識符",
-                "chainInfoTitle": "區塊鏈資訊",
-                "chainStatusLabel": "狀態",
-                "chainTimeLabel": "時間戳",
-                "chainMsgLabel": "消息",
-                "txHashLabel": "交易哈希",
-                "registerTimeLabel": "註冊時間",
-                "unknown": "未知",
-                "identityStatusLabel": "身份状态",
-                "assetIdLabel": "资产ID",
-                "chaincodeStatusLabel": "链码状态",
-                "logoutText": "退出登录",
-                "verifiedText": "已验证",
-                "onChainText": "已上链",
-                "confirmLogout": "确定要退出登录吗？"
+        const languageData = {en:{code:'EN',t:{'user.title':'User Details','user.name':'Name','user.email':'Email','user.phone':'Phone','user.age':'Age','user.did':'DID','user.role':'Role','user.reg':'Registration Time'}},'zh-cn':{code:'简体',t:{'user.title':'用户详细信息','user.name':'姓名','user.email':'邮箱','user.phone':'电话','user.age':'年龄','user.did':'DID','user.role':'角色','user.reg':'注册时间'}},'zh-tw':{code:'繁體',t:{'user.title':'用戶詳細信息','user.name':'姓名','user.email':'郵箱','user.phone':'電話','user.age':'年齡','user.did':'DID','user.role':'角色','user.reg':'註冊時間'}}};
+let curLang='en';
+function tr(k,f){let l=localStorage.getItem('esg_language')||'en';if(l==='zh')l='zh-cn';const d=languageData[l];return d&&d.t&&d.t[k]?d.t[k]:f||k;}
+function switchLanguage(l){if(!languageData[l])return;curLang=l;localStorage.setItem('esg_language',l);document.getElementById('langCode').textContent=languageData[l].code;document.getElementById('langMenu').style.display='none';const ui=localStorage.getItem('userInfo');if(ui&&!document.getElementById('userDetailModal').classList.contains('hidden'))showUserDetail();}
+function toggleLangMenu(){document.getElementById('langMenu').style.display=document.getElementById('langMenu').style.display==='none'?'block':'none';}
+document.addEventListener('click',e=>{const m=document.getElementById('langMenu');const b=document.getElementById('langBtn');if(m&&b&&!b.contains(e.target)&&!m.contains(e.target))m.style.display='none';});
+document.addEventListener('DOMContentLoaded',()=>{const s=localStorage.getItem('esg_language')||'en';document.getElementById('langCode').textContent=languageData[s].code;curLang=s;});
+// 显示用户详情
+function showUserDetail() {
+    const userInfo = localStorage.getItem('userInfo');
+    if (!userInfo) {
+        alert('未找到用户信息');
+        return;
+    }
+    
+    try {
+        const user = JSON.parse(userInfo);
+        const content = document.getElementById('userDetailContent');
+        
+        // 格式化注册时间
+        let registerTime = user.RegisterTime || '';
+        if (registerTime) {
+            try {
+                const date = new Date(registerTime);
+                registerTime = date.toLocaleString('zh-CN');
+            } catch (e) {
+                registerTime = user.RegisterTime;
             }
         }
-    };
+        
+        content.innerHTML = '<div style="padding: 20px;">' +
+            '<h4>用户详细信息</h4>' +
+            '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">' +
+            '<div>' +
+            '<p style="margin: 8px 0;"><strong style="color: #2c7a62;">姓名:</strong><br>' + (user.FullName || user.fullName || user.Name || user.name || '用户') + '</p>' +
+            '<p style="margin: 8px 0;"><strong style="color: #2c7a62;">邮箱:</strong><br>' + (user.Email || user.email || 'user@example.com') + '</p>' +
+            '<p style="margin: 8px 0;"><strong style="color: #2c7a62;">电话:</strong><br>' + (user.Phone || '未设置') + '</p>' +
+            '</div>' +
+            '<div>' +
+            '<p style="margin: 8px 0;"><strong style="color: #2c7a62;">年龄:</strong><br>' + (user.Age || '未设置') + ' 岁</p>' +
+            '<p style="margin: 8px 0;"><strong style="color: #2c7a62;">DID:</strong><br>' + (user.DID || user.did || '未设置') + '</p>' +
+            '<p style="margin: 8px 0;"><strong style="color: #2c7a62;">角色:</strong><br>' + (user.Role || user.role || '普通用户') + '</p>' +
+            '</div>' +
+            '</div>' +
+            '<div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">' +
+            '<p style="margin: 8px 0;"><strong style="color: #2c7a62;">注册时间:</strong><br>' + (registerTime || '未设置') + '</p>' +
+            '</div>' +
+            '<div style="margin-top: 25px; text-align: center;">' +
+            '<button onclick="logout()" style="padding: 12px 30px; background: #f44336; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">' +
+            '退出登录' +
+            '</button>' +
+            '</div>' +
+            '</div>';
+        
+        document.getElementById('userDetailModal').classList.remove('hidden');
+    } catch (error) {
+        console.error('解析用户信息失败:', error);
+        alert('获取用户信息失败');
+    }
+}
 
-    // 监听index页面的语言切换
-    window.addEventListener("storage", function(event) {
-        if (event.key === "esg_language" && event.newValue !== event.oldValue) {
-            const modal = document.getElementById("userDetailModal");
-            if (modal && !modal.classList.contains("hidden")) {
-                setTimeout(function() {
-                    if (typeof showUserDetail === "function") {
-                        showUserDetail();
-                    }
-                }, 100);
-            }
-        }
-    });
-    </script>
-    <script>
+// 关闭用户详情
+function closeUserDetail() {
+    document.getElementById('userDetailModal').classList.add('hidden');
+}
+
         // Map Modal Functions
         function showMapModal(address) {
             document.getElementById('mapModal').classList.remove('hidden');
@@ -1863,125 +1864,150 @@
         // Fetch Carbon Transparency Data
         async function fetchCarbonData() {
             try {
-                console.log('开始并行获取碳排放数据...');
+                console.log('开始获取碳排放数据...');
+                // 获取当前用户邮箱
                 const userEmail = localStorage.getItem('esg_login_email') || localStorage.getItem('esg_email') || '';
+                console.log('当前用户邮箱:', userEmail);
+                const emailParam = userEmail ? `?email=${encodeURIComponent(userEmail)}` : '';
                 
-                const [overviewResult, timelineResult, sourceResult, analysisResult, verificationResult] = await Promise.allSettled([
-                    fetch('/api/carbon/overview?email=' + encodeURIComponent(userEmail)).then(r => r.json()).catch(err => ({ code: 500, message: err.message })),
-                    fetch('/api/carbon/tracking/timeline?period=1Y&email=' + encodeURIComponent(userEmail)).then(r => r.json()).catch(err => ({ code: 500, message: err.message })),
-                    fetch('/api/carbon/tracking/source').then(r => r.json()).catch(err => ({ code: 500, message: err.message })),
-                    fetch('/api/carbon/analysis').then(r => r.json()).catch(err => ({ code: 500, message: err.message })),
-                    fetch('/api/carbon/verification').then(r => r.json()).catch(err => ({ code: 500, message: err.message }))
-                ]);
-                
-                let successCount = 0;
-                let failCount = 0;
-                
-                if (overviewResult.status === 'fulfilled' && overviewResult.value.code === 200 && overviewResult.value.data) {
-                    updateCarbonOverview(overviewResult.value.data, overviewResult.value.message);
-                    successCount++;
-                } else {
-                    console.warn('概览数据获取失败');
-                    failCount++;
-                }
-                
-                if (timelineResult.status === 'fulfilled' && timelineResult.value.code === 200 && timelineResult.value.data) {
-                    const ctx = document.getElementById('emissionTimelineChart');
-                    if (ctx) {
-                        renderTimelineChart(timelineResult.value.data);
-                        successCount++;
+                // 1. Fetch Overview
+                console.log('获取概览数据...');
+                const overviewRes = await fetch(`/api/carbon/overview${emailParam}`);
+                const overviewData = await overviewRes.json();
+                console.log('概览数据响应:', overviewData);
+                if (overviewData.code === 200 && overviewData.data) {
+                    const data = overviewData.data;
+                    const totalEl = document.getElementById('carbonTotal');
+                    if (totalEl) {
+                        totalEl.innerHTML = `${data.totalEmission}<span class="card-unit" style="color: rgba(255,255,255,0.8); font-size: 16px;">${data.unit}</span>`;
+                    }
+                    const scoreEl = document.getElementById('carbonScore');
+                    if (scoreEl) {
+                        scoreEl.textContent = data.complianceScore;
+                    }
+                    const lastUpdatedEl = document.getElementById('carbonLastUpdated');
+                    if (lastUpdatedEl) {
+                        lastUpdatedEl.textContent = data.lastUpdated;
+                    }
+                    
+                    const changeRateEl = document.getElementById('carbonChangeRate');
+                    const trendIcon = document.getElementById('carbonTrendIcon');
+                    if (changeRateEl) {
+                    changeRateEl.textContent = Math.abs(data.changeRate) + '%';
+                    }
+                    
+                    if (trendIcon) {
+                    if (data.trend === 'down') {
+                        trendIcon.className = 'fas fa-arrow-down';
                     } else {
-                        failCount++;
+                        trendIcon.className = 'fas fa-arrow-up';
+                    }
+                    }
+                    
+                    // 显示数据来源信息
+                    const dataSource = overviewData.message && overviewData.message.includes('LiveSense') ? '真实数据' : '模拟数据';
+                    console.log('概览数据已更新 - 数据来源:', dataSource, '- 消息:', overviewData.message);
+                    
+                    // 如果有数据来源信息，可以在页面上显示（可选）
+                    if (dataSource === '真实数据' && userEmail) {
+                        console.log('✓ 使用LiveSense API真实传感器数据，用户:', userEmail);
                     }
                 } else {
-                    console.warn('时间线数据获取失败');
-                    failCount++;
+                    console.warn('概览数据获取失败:', overviewData);
                 }
-                
-                if (sourceResult.status === 'fulfilled' && sourceResult.value.code === 200 && sourceResult.value.data) {
-                    const ctx = document.getElementById('emissionSourceChart');
-                    if (ctx) {
-                        renderSourceChart(sourceResult.value.data);
-                        successCount++;
+
+                // 2. Fetch Timeline Data & Render Chart
+                console.log('获取时间线数据...');
+                const timelineEmailParam = userEmail ? `&email=${encodeURIComponent(userEmail)}` : '';
+                const timelineRes = await fetch(`/api/carbon/tracking/timeline?period=1Y${timelineEmailParam}`);
+                const timelineData = await timelineRes.json();
+                console.log('时间线数据响应:', timelineData);
+                if (timelineData.code === 200 && timelineData.data) {
+                    const timelineCtx = document.getElementById('emissionTimelineChart');
+                    if (timelineCtx) {
+                    renderTimelineChart(timelineData.data);
+                        const dataSource = timelineData.message && timelineData.message.includes('LiveSense') ? '真实数据' : '模拟数据';
+                        console.log('时间线图表已渲染 - 数据来源:', dataSource);
+                        if (dataSource === '真实数据' && userEmail) {
+                            console.log('✓ 使用LiveSense API真实传感器数据，用户:', userEmail);
+                        }
                     } else {
-                        failCount++;
+                        console.error('找不到时间线图表canvas元素');
                     }
                 } else {
-                    console.warn('来源分解数据获取失败');
-                    failCount++;
+                    console.warn('时间线数据获取失败:', timelineData);
                 }
-                
-                if (analysisResult.status === 'fulfilled' && analysisResult.value.code === 200 && analysisResult.value.data) {
-                    const predCtx = document.getElementById('emissionPredictionChart');
-                    const benchCtx = document.getElementById('emissionBenchmarkChart');
-                    let chartSuccess = false;
-                    if (predCtx && analysisResult.value.data.labels) {
-                        renderPredictionChart(analysisResult.value.data);
-                        chartSuccess = true;
-                    }
-                    if (benchCtx && analysisResult.value.data.comparison) {
-                        renderBenchmarkChart(analysisResult.value.data.comparison);
-                        chartSuccess = true;
-                    }
-                    if (chartSuccess) {
-                        successCount++;
+
+                // 3. Fetch Source Decomposition & Render Chart
+                console.log('获取来源分解数据...');
+                const sourceRes = await fetch('/api/carbon/tracking/source');
+                const sourceData = await sourceRes.json();
+                console.log('来源分解数据响应:', sourceData);
+                if (sourceData.code === 200 && sourceData.data) {
+                    const sourceCtx = document.getElementById('emissionSourceChart');
+                    if (sourceCtx) {
+                    renderSourceChart(sourceData.data);
+                        console.log('来源分解图表已渲染');
                     } else {
-                        failCount++;
+                        console.error('找不到来源分解图表canvas元素');
                     }
                 } else {
-                    console.warn('分析数据获取失败');
-                    failCount++;
+                    console.warn('来源分解数据获取失败:', sourceData);
                 }
-                
-                if (verificationResult.status === 'fulfilled' && verificationResult.value.code === 200 && verificationResult.value.data) {
-                    const list = document.getElementById('verificationList');
-                    if (list) {
-                        renderVerificationList(verificationResult.value.data);
-                        successCount++;
-                    } else {
-                        failCount++;
+
+                // 4. Fetch Analysis Data & Render Charts
+                console.log('获取分析数据...');
+                const analysisRes = await fetch('/api/carbon/analysis');
+                const analysisData = await analysisRes.json();
+                console.log('分析数据响应:', analysisData);
+                if (analysisData.code === 200 && analysisData.data) {
+                    const predictionCtx = document.getElementById('emissionPredictionChart');
+                    const benchmarkCtx = document.getElementById('emissionBenchmarkChart');
+                    if (predictionCtx && analysisData.data.labels) {
+                    renderPredictionChart(analysisData.data);
+                        console.log('预测图表已渲染');
+                    }
+                    if (benchmarkCtx && analysisData.data.comparison) {
+                        renderBenchmarkChart(analysisData.data.comparison);
+                        console.log('基准对比图表已渲染');
                     }
                 } else {
-                    console.warn('验证数据获取失败');
-                    failCount++;
+                    console.warn('分析数据获取失败:', analysisData);
                 }
+
+                // 5. Fetch Verification Data
+                console.log('获取验证数据...');
+                const verificationRes = await fetch('/api/carbon/verification');
+                const verificationData = await verificationRes.json();
+                console.log('验证数据响应:', verificationData);
+                if (verificationData.code === 200 && verificationData.data) {
+                    const verificationList = document.getElementById('verificationList');
+                    if (verificationList) {
+                    renderVerificationList(verificationData.data);
+                        console.log('验证列表已渲染');
+                    }
+                } else {
+                    console.warn('验证数据获取失败:', verificationData);
+                }
+
+                console.log('碳排放数据获取完成');
                 
-                console.log('主要数据加载完成: 成功 ' + successCount + ' 个, 失败 ' + failCount + ' 个');
-                
-                setTimeout(() => {
-                    loadLiveSenseSensorData().catch(err => {
-                        console.warn('LiveSense传感器数据加载失败:', err.message);
-                    });
-                }, 1000);
-                
+                // 6. Load LiveSense Sensor Data
+                await loadLiveSenseSensorData();
             } catch (error) {
-                console.error('Carbon data loading error:', error);
+                console.error('Failed to fetch carbon data:', error);
+                // 显示错误提示
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'alert alert-error';
+                errorMsg.style.cssText = 'margin: 20px; padding: 15px; background: #fee; color: #c33; border-radius: 4px;';
+                errorMsg.textContent = '数据加载失败: ' + error.message;
+                const carbonView = document.getElementById('carbon-transparency-view');
+                if (carbonView) {
+                    carbonView.insertBefore(errorMsg, carbonView.firstChild);
+                }
             }
         }
-        
-        function updateCarbonOverview(data, message) {
-            const totalEl = document.getElementById('carbonTotal');
-            if (totalEl) {
-                totalEl.innerHTML = data.totalEmission + '<span class="card-unit" style="color: rgba(255,255,255,0.8); font-size: 16px;">' + data.unit + '</span>';
-            }
-            const scoreEl = document.getElementById('carbonScore');
-            if (scoreEl) {
-                scoreEl.textContent = data.complianceScore;
-            }
-            const lastUpdatedEl = document.getElementById('carbonLastUpdated');
-            if (lastUpdatedEl) {
-                lastUpdatedEl.textContent = data.lastUpdated;
-            }
-            const changeRateEl = document.getElementById('carbonChangeRate');
-            const trendIcon = document.getElementById('carbonTrendIcon');
-            if (changeRateEl) {
-                changeRateEl.textContent = Math.abs(data.changeRate) + '%';
-            }
-            if (trendIcon) {
-                trendIcon.className = data.trend === 'down' ? 'fas fa-arrow-down' : 'fas fa-arrow-up';
-            }
-            console.log('概览数据已更新');
-        }
+
         // Render Timeline Chart
         function renderTimelineChart(data) {
             const ctx = document.getElementById('emissionTimelineChart').getContext('2d');
@@ -2244,10 +2270,6 @@
 
         // 视图切换函数
         function switchView(viewName) {
-            // 清理Carbon Transparency的定时器（防止累积）
-            if (typeof stopRealtimeCO2Updates === 'function') {
-                stopRealtimeCO2Updates();
-            }
             // 隐藏所有视图
             document.querySelectorAll('.view-section').forEach(section => {
                 section.classList.remove('active');
@@ -2290,8 +2312,17 @@
                 } else {
                     console.error('fetchCarbonData函数不存在');
                 }
-            }
                 
+                // Load LiveSense sensor data
+                if (typeof loadLiveSenseSensorData === 'function') {
+                    loadLiveSenseSensorData();
+                }
+                
+                // Initialize real-time CO2 updates
+                if (typeof initRealtimeCO2Updates === 'function') {
+                    initRealtimeCO2Updates();
+                }
+            }
 
             // 如果是ESG Analytics视图，加载AI分析数据
             if (viewName === 'esg-analytics') {
@@ -2415,9 +2446,14 @@
                 const userEmail = localStorage.getItem('esg_login_email') || localStorage.getItem('esg_email') || '';
                 const emailParam = userEmail ? `&email=${encodeURIComponent(userEmail)}` : '';
                 
-                // Use Postman verified time range
-                const from = '1769327847000';
-                const to = '1769414247000';
+                // 计算动态时间范围：最近一天
+                const now = new Date();
+                const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+                const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+                const to = endOfDay.getTime();
+                const from = startOfDay.getTime();
+                
+                console.log('Loading sensor data for last 24 hours: from=' + new Date(from).toLocaleString() + ', to=' + new Date(to).toLocaleString());
                 
                 const valuesRes = await fetch(`/api/livesense/values?${emailParam}&id=${sensorId}&from=${from}&to=${to}&group=allValues`);
                 const valuesData = await valuesRes.json();
@@ -2973,7 +3009,6 @@
                 window.location.href = '/static/index.html#login';
                 return;
             }
-            
             // Fetch profile data
             fetchBuildingProfile();
 
@@ -2993,7 +3028,6 @@
                 console.error('解析用户信息失败:', e);
             }
             
-            // 初始化文件管理功能（延迟初始化，确保file-management.js已加载）
             setTimeout(() => {
                 if (typeof checkUserLogin === 'function') {
                     checkUserLogin();
@@ -3009,7 +3043,72 @@
                     }
                 }
             }, 500);
+
+            // 异步加载LiveSense传感器数据，不阻塞主页面
+            setTimeout(() => {
+                if (typeof loadLiveSenseSensorData === 'function') {
+                    console.log('[Dashboard] 开始异步加载LiveSense传感器数据...');
+                    loadLiveSenseSensorData().catch(err => {
+                        console.warn('[Dashboard] LiveSense传感器数据加载失败，不影响主功能:', err);
+                    });
+                }
+            }, 2500);  // 延迟2.5秒，确保主页面先完全加载
         });
+    </script>
+
+    <script>
+        // Dashboard专用文件列表刷新函数
+        function refreshDashboardFileList() {
+            console.log('🔄 [Dashboard] 开始刷新文件列表...');
+            
+            const userInfo = localStorage.getItem('userInfo');
+            if (!userInfo) {
+                console.log('[Dashboard] 未找到用户信息');
+                return;
+            }
+            
+            try {
+                const user = JSON.parse(userInfo);
+                const email = user.Email || user.email;
+                if (!email) {
+                    console.log('[Dashboard] 用户信息中没有邮箱');
+                    return;
+                }
+                
+                console.log('[Dashboard] 使用邮箱:', email);
+                const url = '/api/esg/list?userEmail=' + encodeURIComponent(email);
+                
+                fetch(url)
+                    .then(r => r.json())
+                    .then(result => {
+                        if (result.code === 200) {
+                            console.log('[Dashboard] 成功获取', result.data.length, '个文件');
+                            // 调用file-management.js中的displayFileList函数
+                            if (typeof displayFileList === 'function') {
+                                displayFileList(result.data);
+                            } else {
+                                console.error('[Dashboard] displayFileList函数不存在');
+                            }
+                        } else {
+                            console.error('[Dashboard] 获取列表失败:', result.message);
+                        }
+                    })
+                    .catch(e => {
+                        console.error('[Dashboard] 获取列表异常:', e);
+                    });
+            } catch (e) {
+                console.error('[Dashboard] 解析用户信息失败:', e);
+            }
+        }
+        
+        // 重写file-management.js的loadFileList，确保在Dashboard中正确工作
+        const originalLoadFileList = window.loadFileList;
+        if (typeof originalLoadFileList === 'function') {
+            window.loadFileList = function() {
+                console.log('🔄 [Dashboard] 拦截loadFileList调用');
+                refreshDashboardFileList();
+            };
+        }
     </script>
 </body>
 </html>

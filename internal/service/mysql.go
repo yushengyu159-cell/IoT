@@ -5,30 +5,54 @@ import (
 	"fmt"
 	"os"
 	"strings"
-
+	"time"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 var DB *gorm.DB
 
-// GetDB 获取数据库连接
+const (
+	MaxIdleConns    = 10
+	MaxOpenConns    = 100
+	ConnMaxLifetime = 3600
+	ConnMaxIdleTime = 600
+)
+
 func GetDB() *gorm.DB {
 	return DB
 }
 
 func InitMySQL() error {
-	dsn := os.Getenv("MYSQL_DSN")
-	if dsn == "" {
-		dsn = "root:Test@123456@tcp(127.0.0.1:3306)/esg?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := getDSN()
+	isDev := os.Getenv("ENV") == "development" || os.Getenv("DEBUG") == "true"
+	
+	logLevel := logger.Silent
+	if isDev {
+		logLevel = logger.Info
 	}
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+		Logger: logger.Default.LogMode(logLevel),
+		NowFunc: func() time.Time {
+			return time.Now().Local()
+		},
+	})
 	if err != nil {
 		return fmt.Errorf("MySQL连接失败: %v", err)
 	}
-	db = db.Debug() // 启用GORM Debug日志
 	
-	// 安全地删除表并重新创建
+	sqlDB, err := db.DB()
+	if err != nil {
+		return fmt.Errorf("获取数据库连接失败: %v", err)
+	}
+	
+	sqlDB.SetMaxIdleConns(MaxIdleConns)
+	sqlDB.SetMaxOpenConns(MaxOpenConns)
+	sqlDB.SetConnMaxLifetime(time.Duration(ConnMaxLifetime) * time.Second)
+	sqlDB.SetConnMaxIdleTime(time.Duration(ConnMaxIdleTime) * time.Second)
+	
 	err = safeDropAndMigrate(db)
 	if err != nil {
 		return fmt.Errorf("MySQL自动迁移失败: %v", err)
@@ -38,46 +62,72 @@ func InitMySQL() error {
 	return nil
 }
 
-// safeDropAndMigrate 安全地删除表并重新迁移
+func getDSN() string {
+	if dsn := os.Getenv("MYSQL_DSN"); dsn != "" {
+		return dsn
+	}
+	
+	// 从环境变量构建DSN
+	host := os.Getenv("MYSQL_HOST")
+	if host == "" {
+		host = "127.0.0.1"
+	}
+	port := os.Getenv("MYSQL_PORT")
+	if port == "" {
+		port = "3306"
+	}
+	user := os.Getenv("MYSQL_USER")
+	if user == "" {
+		user = "root"
+	}
+	password := os.Getenv("MYSQL_PASSWORD")
+	if password == "" {
+		password = "Test@123456"
+	}
+	database := os.Getenv("MYSQL_DATABASE")
+	if database == "" {
+		database = "esg"
+	}
+	
+	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+		user, password, host, port, database)
+}
+
+func PingDatabase() error {
+	if DB == nil {
+		return fmt.Errorf("database not initialized")
+	}
+	sqlDB, err := DB.DB()
+	if err != nil {
+		return err
+	}
+	return sqlDB.Ping()
+}
+
 func safeDropAndMigrate(db *gorm.DB) error {
-	// 先尝试正常迁移
 	err := db.AutoMigrate(&model.ESGFile{}, &model.DID{}, &model.FailedRegistration{})
 	if err == nil {
 		return nil
 	}
 	
-	// 如果迁移失败，检查是否是外键约束错误
 	errStr := err.Error()
 	if isForeignKeyError(errStr) {
-		// 安全地删除外键约束
 		safeDropForeignKeys(db)
-		// 删除表并重新创建
 		db.Exec("DROP TABLE IF EXISTS esg_files")
 		db.Exec("DROP TABLE IF EXISTS dids")
 		db.Exec("DROP TABLE IF EXISTS failed_registrations")
 
-		// 重新迁移
 		err = db.AutoMigrate(&model.ESGFile{}, &model.DID{}, &model.FailedRegistration{})
 		if err != nil {
 			return fmt.Errorf("重新迁移失败: %v", err)
 		}
 		return nil
 	}
-	
 	return err
 }
 
-// isForeignKeyError 检查是否是外键相关的错误
 func isForeignKeyError(errStr string) bool {
-	keywords := []string{
-		"Error 1091",
-		"DROP FOREIGN KEY",
-		"DROP INDEX", 
-		"check that column/key exists",
-		"Can't DROP",
-		"doesn't exist",
-	}
-	
+	keywords := []string{"Error 1091", "DROP FOREIGN KEY", "DROP INDEX", "check that column/key exists", "Can't DROP", "doesn't exist"}
 	for _, keyword := range keywords {
 		if strings.Contains(errStr, keyword) {
 			return true
@@ -86,9 +136,7 @@ func isForeignKeyError(errStr string) bool {
 	return false
 }
 
-// safeDropForeignKeys 安全地删除外键约束
 func safeDropForeignKeys(db *gorm.DB) {
-	// 获取esg_files表的外键约束
 	var constraints []struct {
 		ConstraintName string `gorm:"column:CONSTRAINT_NAME"`
 	}
@@ -101,14 +149,12 @@ func safeDropForeignKeys(db *gorm.DB) {
 		AND REFERENCED_TABLE_NAME IS NOT NULL
 	`).Scan(&constraints)
 	
-	// 安全地删除每个外键约束
 	for _, constraint := range constraints {
 		if constraint.ConstraintName != "" {
-			db.Exec(fmt.Sprintf("ALTER TABLE esg_files DROP FOREIGN KEY IF EXISTS %s", constraint.ConstraintName))
+			db.Exec("ALTER TABLE esg_files DROP FOREIGN KEY ?", constraint.ConstraintName)
 		}
 	}
 	
-	// 同样处理dids表
 	db.Raw(`
 		SELECT CONSTRAINT_NAME 
 		FROM information_schema.KEY_COLUMN_USAGE 
@@ -119,12 +165,7 @@ func safeDropForeignKeys(db *gorm.DB) {
 	
 	for _, constraint := range constraints {
 		if constraint.ConstraintName != "" {
-			db.Exec(fmt.Sprintf("ALTER TABLE dids DROP FOREIGN KEY IF EXISTS %s", constraint.ConstraintName))
+			db.Exec("ALTER TABLE dids DROP FOREIGN KEY ?", constraint.ConstraintName)
 		}
 	}
-}
-
-// contains 是 strings.Contains 的简写
-func contains(s, substr string) bool {
-	return strings.Contains(s, substr)
 }

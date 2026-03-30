@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset=UTF-8>
+    <title>Dashboard测试页面</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .test-box { background: white; padding: 20px; margin: 10px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        button { padding: 10px 20px; background: #2c7a62; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #1a4d3f; }
+    </style>
+</head>
+<body>
+    <h1>Dashboard连接测试</h1>
+    
+    <div class="test-box">
+        <h3>1. 基本信息</h3>
+        <p>服务器IP: <strong>47.238.159.234</strong></p>
+        <p>服务端口: <strong>8199</strong></p>
+        <p>当前URL: <strong id="currentUrl"></strong></p>
+    </div>
+
+    <div class="test-box">
+        <h3>2. 正确的访问地址</h3>
+        <p>登录页面: <a href="http://47.238.159.234:8199/static/index.html#login" target="_blank">http://47.238.159.234:8199/static/index.html#login</a></p>
+        <p>Dashboard: <a href="http://47.238.159.234:8199/static/dashboard.html" target="_blank">http://47.238.159.234:8199/static/dashboard.html</a></p>
+    </div>
+
+    <div class="test-box">
+        <h3>3. API测试</h3>
+        <p>状态: <span id="apiStatus" class="info">测试中...</span></p>
+        <p>响应: <pre id="apiResponse" style="background: #f9f9f9; padding: 10px; overflow-x: auto;"></pre></p>
+    </div>
+
+    <div class="test-box">
+        <h3>4. 用户登录状态</h3>
+        <p>状态: <span id="userStatus" class="info">检查中...</span></p>
+    </div>
+
+    <div class="test-box">
+        <h3>5. 操作</h3>
+        <button onclick="goToLogin()">前往登录页面</button>
+        <button onclick="clearStorage()">清除本地存储</button>
+        <button onclick="testDashboard()">测试Dashboard</button>
+    </div>
+
+    <script>
+        // 显示当前URL
+        document.getElementById('currentUrl').textContent = window.location.href;
+
+        // 测试API
+        fetch('/api/index')
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('apiStatus').innerHTML = '<span class="success">✓ API正常</span>';
+                document.getElementById('apiResponse').textContent = JSON.stringify(data, null, 2);
+            })
+            .catch(err => {
+                document.getElementById('apiStatus').innerHTML = '<span class="error">✗ API失败: ' + err.message + '</span>';
+            });
+
+        // 检查用户登录状态
+        const userInfo = localStorage.getItem('userInfo');
+        if (userInfo) {
+            document.getElementById('userStatus').innerHTML = '<span class="success">✓ 已登录</span>';
+        } else {
+            document.getElementById('userStatus').innerHTML = '<span class="error">✗ 未登录</span>';
+        }
+
+        // 前往登录页面
+        function goToLogin() {
+            window.location.href = '/static/index.html#login';
+        }
+
+        // 清除本地存储
+        function clearStorage() {
+            localStorage.clear();
+            alert('本地存储已清除，请重新登录');
+            document.getElementById('userStatus').innerHTML = '<span class="error">✗ 未登录</span>';
+        }
+
+        // 测试Dashboard
+        function testDashboard() {
+            window.location.href = '/static/dashboard.html';
+        }
+    </script>
+</body>
+</html>

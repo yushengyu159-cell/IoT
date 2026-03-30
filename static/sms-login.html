@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESG VISA - 短信登录</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .container { width: 100%; max-width: 420px; }
+        .login-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 24px; padding: 48px 40px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); animation: slideUp 0.5s ease-out; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        .logo { text-align: center; margin-bottom: 32px; }
+        .logo img { width: 64px; height: 64px; }
+        .header { text-align: center; margin-bottom: 36px; }
+        .header h1 { font-size: 28px; color: #1a1a1a; margin-bottom: 8px; font-weight: 700; }
+        .header p { font-size: 14px; color: #666; }
+        .step-indicator { display: flex; justify-content: center; gap: 8px; margin-bottom: 32px; }
+        .step { width: 40px; height: 4px; background: #e5e7eb; border-radius: 2px; transition: all 0.3s ease; }
+        .step.active { background: linear-gradient(90deg, #667eea, #764ba2); width: 60px; }
+        .step.completed { background: #10b981; }
+        .form-group { margin-bottom: 24px; }
+        .form-group label { display: block; font-size: 14px; color: #374151; margin-bottom: 8px; font-weight: 500; }
+        .input-wrapper { position: relative; }
+        .input-wrapper i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: 18px; }
+        .form-control { width: 100%; padding: 16px 16px 16px 48px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 16px; background: #f9fafb; transition: all 0.3s ease; }
+        .form-control:focus { outline: none; border-color: #667eea; background: white; box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1); }
+        .btn { width: 100%; padding: 16px; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; box-shadow: 0 4px 14px rgba(102, 126, 234, 0.4); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5); }
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .info-box { background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border: 1px solid #bae6fd; border-radius: 12px; padding: 16px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px; }
+        .info-box i { color: #0284c7; font-size: 20px; }
+        .info-box-text { font-size: 13px; color: #0369a1; }
+        .phone-display { font-weight: 600; color: #667eea; }
+        .code-inputs { display: flex; gap: 12px; justify-content: center; }
+        .code-input { width: 50px; height: 60px; text-align: center; font-size: 24px; font-weight: 600; border: 2px solid #e5e7eb; border-radius: 12px; background: #f9fafb; transition: all 0.3s ease; }
+        .code-input:focus { outline: none; border-color: #667eea; background: white; box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1); transform: scale(1.05); }
+        .resend-section { text-align: center; margin-top: 16px; }
+        .resend-text { font-size: 14px; color: #666; }
+        .resend-link { color: #667eea; font-weight: 600; cursor: pointer; }
+        .resend-link:hover { color: #764ba2; text-decoration: underline; }
+        .resend-link.disabled { color: #9ca3af; cursor: not-allowed; text-decoration: none; }
+        .status-message { padding: 14px 18px; border-radius: 12px; margin-bottom: 20px; font-size: 14px; display: flex; align-items: center; gap: 10px; }
+        .status-success { background: #d1fae5; border: 1px solid #6ee7b7; color: #065f46; }
+        .status-error { background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; }
+        .back-link { display: inline-flex; align-items: center; gap: 6px; color: #666; text-decoration: none; font-size: 14px; margin-top: 20px; }
+        .back-link:hover { color: #667eea; }
+        .step-content { display: none; }
+        .step-content.active { display: block; }
+        .loading-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.3s ease; }
+        .loading-overlay.show { opacity: 1; visibility: visible; }
+        .spinner { width: 50px; height: 50px; border: 4px solid rgba(255, 255, 255, 0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .debug-info { background: #fef3c7; border: 1px solid #fbbf24; border-radius: 8px; padding: 12px; margin-top: 16px; font-size: 13px; text-align: center; }
+        .debug-code { font-size: 24px; font-weight: 700; color: #dc2626; letter-spacing: 4px; margin-top: 8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="login-card">
+            <div class="logo"><img src="/static/log.png" alt="ESG VISA"></div>
+            <div class="header">
+                <h1>短信登录</h1>
+                <p>使用手机验证码快速登录</p>
+            </div>
+            <div class="step-indicator">
+                <div class="step active" id="step1"></div>
+                <div class="step" id="step2"></div>
+            </div>
+            <div id="statusMessage" class="status-message" style="display:none;"></div>
+            <div id="step1Content" class="step-content active">
+                <form id="emailForm">
+                    <div class="form-group">
+                        <label>邮箱地址</label>
+                        <div class="input-wrapper">
+                            <input type="email" id="email" class="form-control" placeholder="请输入注册邮箱" required>
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">发送验证码</button>
+                </form>
+                <div style="text-align:center;margin-top:20px;">
+                    <a href="/static/index.html" class="back-link"><i class="fas fa-arrow-left"></i>返回登录</a>
+                </div>
+            </div>
+            <div id="step2Content" class="step-content">
+                <div class="info-box">
+                    <i class="fas fa-mobile-alt"></i>
+                    <div class="info-box-text">验证码已发送至 <span class="phone-display" id="phoneDisplay">*** **** ****</span></div>
+                </div>
+                <form id="codeForm">
+                    <div class="form-group">
+                        <label>验证码</label>
+                        <div class="code-inputs" id="codeInputs">
+                            <input type="text" class="code-input" maxlength="1" pattern="[0-9]" inputmode="numeric">
+                            <input type="text" class="code-input" maxlength="1" pattern="[0-9]" inputmode="numeric">
+                            <input type="text" class="code-input" maxlength="1" pattern="[0-9]" inputmode="numeric">
+                            <input type="text" class="code-input" maxlength="1" pattern="[0-9]" inputmode="numeric">
+                            <input type="text" class="code-input" maxlength="1" pattern="[0-9]" inputmode="numeric">
+                            <input type="text" class="code-input" maxlength="1" pattern="[0-9]" inputmode="numeric">
+                        </div>
+                        <input type="hidden" id="verificationCode" value="">
+                    </div>
+                    <button type="submit" class="btn btn-primary">验证并登录</button>
+                </form>
+                <div class="resend-section">
+                    <span class="resend-text">没有收到？<span id="resendLink" class="resend-link">重新发送</span></span>
+                    <span id="countdown" style="display:none;margin-left:8px;color:#9ca3af;"></span>
+                </div>
+                <div id="debugInfo" class="debug-info" style="display:none;">
+                    <div>测试用验证码</div>
+                    <div class="debug-code" id="debugCode">------</div>
+                    <small style="color:#92400e;margin-top:4px;display:block;">(短信发送为模拟模式)</small>
+                </div>
+                <div style="text-align:center;">
+                    <a href="#" class="back-link" id="backLink"><i class="fas fa-arrow-left"></i>返回邮箱输入</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div></div>
+    <script>
+        let currentEmail="",resendTimer=null,countdownSeconds=0,RESEND_TIMEOUT=60;
+        function showMessage(msg,type="info"){const el=document.getElementById("statusMessage");el.className="status-message status-"+type;el.innerHTML="<i class=\"fas fa-info-circle\"></i><span>"+msg+"</span>";el.style.display="flex";setTimeout(()=>el.style.display="none",5000);}
+        function setLoading(show){document.getElementById("loadingOverlay").classList.toggle("show",show);}
+        function switchStep(step){document.querySelectorAll(".step-content").forEach(e=>e.classList.remove("active"));document.querySelectorAll(".step").forEach((e,i)=>{e.classList.toggle("active",i===step-1);e.classList.toggle("completed",i<step-1);});document.getElementById("step"+step+"Content").classList.add("active");}
+        function initCodeInputs(){const inputs=document.querySelectorAll(".code-input");inputs.forEach((input,index)=>{input.addEventListener("input",e=>{if(!/^\d*$/.test(e.target.value)){e.target.value="";return;}if(e.target.value&&index<inputs.length-1)inputs[index+1].focus();document.getElementById("verificationCode").value=Array.from(inputs).map(i=>i.value).join("");});input.addEventListener("keydown",e=>{if(e.key==="Backspace"&&!e.target.value&&index>0)inputs[index-1].focus();});input.addEventListener("paste",e=>{e.preventDefault();const pasted=e.clipboardData.getData("text").replace(/\D/g,"").slice(0,6);pasted.split("").forEach((c,i)=>{if(inputs[i])inputs[i].value=c;});document.getElementById("verificationCode").value=Array.from(inputs).map(i=>i.value).join("");inputs[Math.min(pasted.length,inputs.length-1)].focus();});});}
+        function startCountdown(){countdownSeconds=RESEND_TIMEOUT;const link=document.getElementById("resendLink");const countdown=document.getElementById("countdown");link.classList.add("disabled");countdown.style.display="inline";if(resendTimer)clearInterval(resendTimer);resendTimer=setInterval(()=>{countdownSeconds--;countdown.textContent="("+countdownSeconds+"秒后重新发送)";if(countdownSeconds<=0){clearInterval(resendTimer);link.classList.remove("disabled");countdown.style.display="none";}},1000);}
+        async function sendCode(email){setLoading(true);try{const res=await fetch("/api/sms/send-code",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email})});const result=await res.json();if(result.code===200){currentEmail=email;document.getElementById("phoneDisplay").textContent=result.data.phone||"您的手机";if(result.data.debugCode){document.getElementById("debugCode").textContent=result.data.debugCode;document.getElementById("debugInfo").style.display="block";}switchStep(2);startCountdown();showMessage("验证码发送成功","success");setTimeout(()=>document.querySelector(".code-input").focus(),100);}else{showMessage(result.message||"网络错误","error");}}catch(err){console.error(err);showMessage("网络错误","error");}setLoading(false);}
+        async function verifyCode(code){if(code.length!==6){showMessage("请输入6位验证码","error");return;}setLoading(true);try{const res=await fetch("/api/sms/verify-code",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:currentEmail,code})});const result=await res.json();if(result.code===200){showMessage("登录成功，正在跳转...","success");if(result.data.userInfo){localStorage.setItem("userInfo",JSON.stringify(result.data.userInfo));localStorage.setItem("isLoggedIn","true");}setTimeout(()=>window.location.href=result.data.redirectUrl||"/static/dashboard.html",1000);}else{showMessage(result.message||"验证码错误","error");}}catch(err){console.error(err);showMessage("网络错误","error");}setLoading(false);}
+        document.addEventListener("DOMContentLoaded",()=>{const savedEmail=localStorage.getItem("esg_login_email");if(savedEmail)document.getElementById("email").value=savedEmail;initCodeInputs();document.getElementById("emailForm").addEventListener("submit",async e=>{e.preventDefault();const email=document.getElementById("email").value.trim();if(!email){showMessage("请输入邮箱","error");return;}if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){showMessage("邮箱格式错误","error");return;}localStorage.setItem("esg_login_email",email);await sendCode(email);});document.getElementById("codeForm").addEventListener("submit",async e=>{e.preventDefault();await verifyCode(document.getElementById("verificationCode").value);});document.getElementById("resendLink").addEventListener("click",async()=>{if(currentEmail&&!document.getElementById("resendLink").classList.contains("disabled")){document.querySelectorAll(".code-input").forEach(i=>i.value="");document.getElementById("verificationCode").value="";await sendCode(currentEmail);}});document.getElementById("backLink").addEventListener("click",e=>{e.preventDefault();switchStep(1);if(resendTimer)clearInterval(resendTimer);document.getElementById("debugInfo").style.display="none";});});
+    </script>
+</body>
+</html>

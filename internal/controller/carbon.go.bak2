@@ -55,10 +55,6 @@ func (c *CarbonController) GetCarbonOverview(r *ghttp.Request) {
 		sensorIDs := []string{"27732", "27728", "27729"} // CO2, Temperature, Humidity
 		
 		var totalEmission float64
-		// 计算动态时间范围：最近7天
-		to := time.Now().UnixMilli()
-		from := time.Now().AddDate(0, 0, -7).UnixMilli()
-		g.Log().Info(r.Context(), "获取Overview数据，使用最近7天数据，from:", from, "to:", to)
 		var dataPointCount int
 		var hasData bool
 		
@@ -95,8 +91,8 @@ func (c *CarbonController) GetCarbonOverview(r *ghttp.Request) {
 			// 策略2: 如果策略1失败，使用Postman文件中验证成功的时间范围
 			if !hasData {
 				g.Log().Info(r.Context(), "策略1失败，尝试策略2：使用Postman验证的时间范围，传感器:", sensorID)
-				// 使用动态时间范围重试
-				values, err := service.LiveSenseAPI.GetSensorValues(r.Context(), sensorID, fmt.Sprintf("%d", from), fmt.Sprintf("%d", to), "", "allValues", "")
+				// Postman文件中验证成功的时间范围：from=1769327847000, to=1769414247000
+				values, err := service.LiveSenseAPI.GetSensorValues(r.Context(), sensorID, "1769327847000", "1769414247000", "", "allValues", "")
 				if err != nil {
 					g.Log().Error(r.Context(), "策略2调用API失败，传感器:", sensorID, "错误:", err)
 				} else if values != nil {
@@ -238,49 +234,47 @@ func (c *CarbonController) GetCarbonTrackingTimeline(r *ghttp.Request) {
 			sensorID = "27732" // 默认传感器ID
 		}
 		
+		// 根据Postman文件，不预设时间范围，先尝试不传时间参数获取数据
+		// 如果返回数据，则从数据中的timestampUtc提取时间范围
+		// 如果返回null，再尝试使用Postman文件中验证成功的时间范围
 		
-		// 获取period参数，默认为1M
-		period := r.Get("period").String()
-		if period == "" {
-			period = "1M"
-		}
-		
-		// 根据period参数计算时间范围
-		to := time.Now().UnixMilli()
-		var from int64
-		switch period {
-		case "1M":
-			from = time.Now().AddDate(0, -1, 0).UnixMilli() // 最近1个月
-		case "3M":
-			from = time.Now().AddDate(0, -3, 0).UnixMilli() // 最近3个月
-		case "1Y":
-			from = time.Now().AddDate(-1, 0, 0).UnixMilli()  // 最近1年
-		default:
-			from = time.Now().AddDate(0, -1, 0).UnixMilli() // 默认1个月
-		}
-		
-		g.Log().Info(r.Context(), "获取Timeline数据，period:", period, "from:", from, "to:", to)
-		
-		// 使用动态时间范围从LiveSense API获取数据
 		var valuesList []service.SensorValueItem
-		
-		values, err := service.LiveSenseAPI.GetSensorValues(r.Context(), sensorID, fmt.Sprintf("%d", from), fmt.Sprintf("%d", to), "", "allValues", "")
 		var lastErr error
+		
+		// 策略1: 先不传时间参数，让API返回默认数据
+		values, err := service.LiveSenseAPI.GetSensorValues(r.Context(), sensorID, "", "", "", "allValues", "")
 		if err == nil && values != nil {
 			valuesList = values.GetValuesList()
 			if len(valuesList) > 0 && len(valuesList[0].DataPoints) > 0 {
-				dataPointCount := 0
-				for _, v := range valuesList {
-					dataPointCount += len(v.DataPoints)
-				}
-				g.Log().Info(r.Context(), "✓ 成功获取Timeline真实数据，period:", period, "传感器:", sensorID, "数据点数量:", dataPointCount)
+				// 从返回的数据中提取时间范围信息
+				dataPoints := valuesList[0].DataPoints
+				firstTs := dataPoints[0].TimestampUtc
+				lastTs := dataPoints[len(dataPoints)-1].TimestampUtc
+				g.Log().Info(r.Context(), "✓ 成功获取时间线真实数据（无时间参数），传感器:", sensorID, "数据点数量:", len(dataPoints), "时间范围:", firstTs, "至", lastTs)
 			}
-		} else {
+		} else if err != nil {
 			lastErr = err
-			g.Log().Error(r.Context(), "获取Timeline数据失败:", err)
 		}
-
+		
+		// 策略2: 如果策略1失败，使用Postman文件中验证成功的时间范围
+		if len(valuesList) == 0 {
+			values, err := service.LiveSenseAPI.GetSensorValues(r.Context(), sensorID, "1769327847000", "1769414247000", "", "allValues", "")
+			if err == nil && values != nil {
+				valuesList = values.GetValuesList()
+				if len(valuesList) > 0 {
+					dataPointCount := 0
+					for _, v := range valuesList {
+						dataPointCount += len(v.DataPoints)
+					}
+					g.Log().Info(r.Context(), "✓ 成功获取时间线真实数据（使用Postman验证的时间范围），传感器:", sensorID, "数据点数量:", dataPointCount)
+				}
+			} else if err != nil {
+				lastErr = err
+			}
+		}
+		
 		if len(valuesList) > 0 {
+			// 将传感器数据转换为时间线格式
 			var labels []string
 			var emissionValues []float64
 			var baseline []float64
@@ -658,218 +652,4 @@ func (c *CarbonController) GetCarbonAnalysis(r *ghttp.Request) {
 		Message: "Success",
 		Data:    data,
 	})
-}
-
-// GetRealtimeCO2 获取实时二氧化碳数据（当日）
-// GET /api/carbon/realtime
-func (c *CarbonController) GetRealtimeCO2(r *ghttp.Request) {
-	// 获取用户邮箱
-	email := r.Get("email").String()
-	if email == "" {
-		email = r.GetHeader("X-User-Email")
-	}
-
-	ctx := r.Context()
-
-	// 检查是否为belucksapi用户
-	if email != "" && isBelucksAPIUser(email) {
-		sensorID := "27732" // CO2传感器
-
-		// 使用动态时间范围：今天
-		now := time.Now()
-		startOfDay := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
-		endOfDay := time.Date(now.Year(), now.Month(), now.Day(), 23, 59, 59, 999999999, now.Location())
-
-		from := startOfDay.UnixMilli()
-		to := endOfDay.UnixMilli()
-
-		g.Log().Info(ctx, "获取当日CO2数据，from:", from, "to:", to)
-
-		// 调用LiveSense API
-		values, err := service.LiveSenseAPI.GetSensorValues(ctx, sensorID, fmt.Sprintf("%d", from), fmt.Sprintf("%d", to), "", "allValues", "")
-		if err != nil {
-			g.Log().Error(ctx, "获取实时CO2失败:", err)
-		}
-
-		if values != nil && len(values.GetValuesList()) > 0 {
-			valuesList := values.GetValuesList()
-			if len(valuesList) > 0 && len(valuesList[0].DataPoints) > 0 {
-				// 提取最新数据点
-				dataPoints := valuesList[0].DataPoints
-				var latestValue float64
-				var latestTime string
-
-				for _, dp := range dataPoints {
-					if val, ok := service.ParseValue(dp.Value); ok {
-						latestValue = val
-						latestTime = dp.TimestampUtc
-					}
-				}
-
-				// 转换为碳排放单位
-				co2Emission := (latestValue * 0.001) * 30.0
-
-				r.Response.WriteJson(ghttp.DefaultHandlerResponse{
-					Code:    200,
-					Message: "Success (LiveSense Real-time Data)",
-					Data: g.Map{
-						"currentValue":  latestValue,
-						"co2Emission": co2Emission,
-						"unit":         "ppm",
-						"timestamp":    latestTime,
-						"date":         startOfDay.Format("2006-01-02"),
-						"dataSource":   "LiveSense API",
-						"sensorId":     sensorID,
-					},
-				})
-				return
-			}
-		}
-
-		g.Log().Warning(ctx, "LiveSense API返回空数据")
-	}
-
-	// 返回默认实时数据
-	r.Response.WriteJson(ghttp.DefaultHandlerResponse{
-		Code:    200,
-		Message: "Success",
-		Data: g.Map{
-			"currentValue": 420.5,
-			"co2Emission": 12.615,
-			"unit":         "ppm",
-			"timestamp":    time.Now().UnixMilli(),
-			"date":         time.Now().Format("2006-01-02"),
-			"dataSource":   "Sensor Reading",
-		},
-	})
-}
-
-// GetSensorDataLastNDays 获取最近N天的传感器数据
-// GET /api/carbon/sensor-data?days=1&days=7
-func (c *CarbonController) GetSensorDataLastNDays(r *ghttp.Request) {
-	// 获取天数参数，默认为1天
-	daysStr := r.Get("days").String()
-	days := 1
-	if daysStr != "" {
-		if d, err := strconv.Atoi(daysStr); err == nil && d > 0 && d <= 30 {
-			days = d
-		}
-	}
-
-	// 获取用户邮箱
-	email := r.Get("email").String()
-	if email == "" {
-		email = r.GetHeader("X-User-Email")
-	}
-
-	ctx := r.Context()
-
-	// 检查是否为belucksapi用户
-	if email != "" && isBelucksAPIUser(email) {
-		sensorID := "27732" // CO2传感器
-
-		// 计算时间范围：最近N天
-		now := time.Now()
-		endTime := time.Date(now.Year(), now.Month(), now.Day(), 23, 59, 59, 999999999, now.Location())
-		startTime := endTime.AddDate(0, 0, -days)
-
-		from := startTime.UnixMilli()
-		to := endTime.UnixMilli()
-
-		g.Log().Info(ctx, "获取最近", days, "天传感器数据，from:", from, "to:", to)
-
-		// 调用LiveSense API
-		values, err := service.LiveSenseAPI.GetSensorValues(ctx, sensorID, fmt.Sprintf("%d", from), fmt.Sprintf("%d", to), "", "allValues", "")
-		if err != nil {
-			g.Log().Error(ctx, "获取传感器数据失败:", err)
-		}
-
-		if values != nil && len(values.GetValuesList()) > 0 {
-			valuesList := values.GetValuesList()
-			if len(valuesList) > 0 && len(valuesList[0].DataPoints) > 0 {
-				// 收集所有数据点
-				type DataPoint struct {
-					Value     float64 `json:"value"`
-					Timestamp string  `json:"timestamp"`
-					Date      string  `json:"date"`
-					Time      string  `json:"time"`
-				}
-
-				var dataPoints []DataPoint
-				for _, v := range valuesList {
-					for _, dp := range v.DataPoints {
-						if val, ok := service.ParseValue(dp.Value); ok {
-							if timestamp, err := strconv.ParseInt(dp.TimestampUtc, 10, 64); err == nil {
-								t := time.Unix(timestamp/1000, 0)
-								dataPoints = append(dataPoints, DataPoint{
-									Value:     val,
-									Timestamp: dp.TimestampUtc,
-									Date:      t.Format("2006-01-02"),
-									Time:      t.Format("15:04:05"),
-								})
-							}
-						}
-					}
-				}
-
-				// 按时间排序
-				sort.Slice(dataPoints, func(i, j int) bool {
-					t1, _ := time.Parse(time.RFC3339, dataPoints[i].Timestamp+"Z")
-					t2, _ := time.Parse(time.RFC3339, dataPoints[j].Timestamp+"Z")
-					return t1.Before(t2)
-				})
-
-				r.Response.WriteJson(ghttp.DefaultHandlerResponse{
-					Code:    200,
-					Message: fmt.Sprintf("Success (Last %d Days)", days),
-					Data: g.Map{
-						"days":       days,
-						"dataPoints": dataPoints,
-						"count":      len(dataPoints),
-						"dataSource": "LiveSense API",
-						"sensorId":    sensorID,
-						"fromDate":   startTime.Format("2006-01-02 15:04:05"),
-						"toDate":     endTime.Format("2006-01-02 15:04:05"),
-					},
-				})
-				return
-			}
-		}
-
-		g.Log().Warning(ctx, "LiveSense API返回空数据，使用模拟数据")
-	}
-
-	// 返回模拟数据
-	var dataPoints []map[string]interface{}
-	baseValue := 420.0
-	now := time.Now()
-	for i := days - 1; i >= 0; i-- {
-		date := now.AddDate(0, 0, -i).Format("2006-01-02")
-		// 每天生成24小时的数据点
-		for hour := 0; hour < 24; hour++ {
-			dataPoints = append(dataPoints, map[string]interface{}{
-				"value":     baseValue + float64(rand.Intn(50)-25),
-				"timestamp": time.Date(now.Year(), now.Month(), now.Day(), hour, 0, 0, 0, now.Location()).UnixMilli(),
-				"date":      date,
-				"time":      fmt.Sprintf("%02d:00:00", hour),
-			})
-		}
-	}
-
-	r.Response.WriteJson(ghttp.DefaultHandlerResponse{
-		Code:    200,
-		Message: fmt.Sprintf("Success (Last %d Days - Simulated)", days),
-		Data: g.Map{
-			"days":       days,
-			"dataPoints": dataPoints,
-			"count":      len(dataPoints),
-			"dataSource": "Simulated",
-		},
-	})
-}
-
-// GetSensorDataToday 获取今日传感器数据
-// GET /api/carbon/sensor-data/today
-func (c *CarbonController) GetSensorDataToday(r *ghttp.Request) {
-	c.GetSensorDataLastNDays(r)
 }

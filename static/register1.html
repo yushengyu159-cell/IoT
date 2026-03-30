@@ -188,17 +188,25 @@
             if (result.code === 200) {
                 showStatusMessage('DID验证成功，正在跳转...', 'success');
                 
-                const userInfo = {
+const userInfo = {
                     Email: email,
+                    FullName: result.data.FullName || email,
                     Name: result.data.FullName || email,
                     Role: result.data.Role || 'user',
                     Phone: result.data.Phone || '',
                     Age: result.data.Age || 20,
                     DID: result.data.did || '',
-                    RegisterTime: result.data.RegisterTime || '',
+                    RegisterTime: result.data.RegisterTime || result.data.CreatedAt || '',
+                    // Additional fields from backend API
+                    BuildingName: result.data.BuildingName || '',
+                    BuildingAddr: result.data.BuildingAddr || '',
+                    BuildingType: result.data.BuildingType || '',
+                    PropertyName: result.data.PropertyName || '',
+                    Occupation: result.data.Occupation || '',
+                    Institution: result.data.Institution || '',
                     isLoggedIn: true
                 };
-                
+                };
                 localStorage.setItem('userInfo', JSON.stringify(userInfo));
                 localStorage.setItem('isLoggedIn', 'true');
                 

@@ -1,0 +1,1 @@
+setTimeout(function(){var u=localStorage.getItem(userInfo);if(u){var user=JSON.parse(u);var email=user.Email||user.email;if(email){fetch(/api/esg/list?userEmail=+encodeURIComponent(email)).then(r=>r.json()).then(r=>{if(r.code===200){console.log([Dashboard] 加载+r.data.length+个文件);if(typeof displayFileList===function)displayFileList(r.data)}})})}},800);
