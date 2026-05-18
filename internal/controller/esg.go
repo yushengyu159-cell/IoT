@@ -2,6 +2,8 @@ package controller
 
 import (
 	"context"
+	"strings"
+	"fabric-sdk/internal/middleware"
 	"fabric-sdk/internal/service"
 	"time"
 
@@ -121,26 +123,38 @@ func (c *ESGController) GetReportHistory(r *ghttp.Request) {
 
 // POST /api/esg/upload
 func (c *ESGController) UploadFile(r *ghttp.Request) {
+	g.Log().Infof(r.Context(), "===== [ESG UPLOAD] 收到上传请求 =====")
 	file := r.GetUploadFile("file")
 	desc := r.Get("desc").String()
-	uploader := r.Get("uploader").String()
+	// Get uploader from token (trusted), fallback to form param
+	uploader := ""
+	if email, valid := middleware.ValidateToken(strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")); valid {
+		uploader = email
+	}
+	if uploader == "" {
+		uploader = r.Get("uploader").String()
+	}
+	g.Log().Infof(r.Context(), "[ESG UPLOAD] file=%v desc=%s uploader=%s", file, desc, uploader)
 	if file == nil {
+		g.Log().Warningf(r.Context(), "[ESG UPLOAD] file is nil!")
 		r.Response.WriteJson(ghttp.DefaultHandlerResponse{Code: 400, Message: "未上传文件"})
 		return
 	}
+	g.Log().Infof(r.Context(), "[ESG UPLOAD] filename=%s size=%d", file.Filename, file.Size)
 	f, err := file.Open()
 	if err != nil {
-		g.Log().Errorf(r.Context(), "文件打开失败: %v", err)
+		g.Log().Errorf(r.Context(), "[ESG UPLOAD] 文件打开失败: %v", err)
 		r.Response.WriteJson(ghttp.DefaultHandlerResponse{Code: 500, Message: "文件打开失败: " + err.Error()})
 		return
 	}
 	defer f.Close()
-	cid, _, err := service.UploadESGFile(context.Background(), f, file.Filename, desc, uploader)
+	cid, _, err := service.UploadESGFile(context.Background(), f, file.Filename, desc, uploader, file.Size)
 	if err != nil {
-		g.Log().Errorf(r.Context(), "上传失败: %v", err)
+		g.Log().Errorf(r.Context(), "[ESG UPLOAD] 上传失败: %v", err)
 		r.Response.WriteJson(ghttp.DefaultHandlerResponse{Code: 500, Message: err.Error()})
 		return
 	}
+	g.Log().Infof(r.Context(), "[ESG UPLOAD] 上传成功 CID=%s", cid)
 	r.Response.WriteJson(ghttp.DefaultHandlerResponse{
 		Code:    200,
 		Message: "文件已成功存储到区块链",
@@ -229,21 +243,20 @@ func (c *ESGController) QueryFile(r *ghttp.Request) {
 
 // GET /api/esg/list
 func (c *ESGController) ListFiles(r *ghttp.Request) {
-	// 从查询参数获取用户邮箱，实现用户隔离
 	userEmail := r.Get("userEmail").String()
-	if userEmail == "" {
-		r.Response.WriteJson(ghttp.DefaultHandlerResponse{Code: 400, Message: "缺少用户邮箱参数"})
-		return
+	var metas ([]service.ESGFileMeta)
+	var err error
+	if userEmail == "" || userEmail == "all" {
+		metas, err = service.ListESGFilesFromDB(r.Context())
+	} else {
+		metas, err = service.ListESGFilesFromDBByUser(r.Context(), userEmail)
 	}
-	
-	metas, err := service.ListESGFilesFromDBByUser(r.Context(), userEmail)
 	if err != nil {
 		r.Response.WriteJson(ghttp.DefaultHandlerResponse{Code: 500, Message: err.Error()})
 		return
 	}
 	r.Response.WriteJson(ghttp.DefaultHandlerResponse{Code: 200, Message: "批量查询成功", Data: metas})
 }
-
 // POST /api/esg/batch-list
 func (c *ESGController) BatchListFiles(r *ghttp.Request) {
 	var req struct {

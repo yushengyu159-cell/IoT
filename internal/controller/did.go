@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fabric-sdk/internal/middleware"
 	"fabric-sdk/internal/service"
 
 	"github.com/gogf/gf/v2/net/ghttp"
@@ -94,7 +95,8 @@ func (c *DIDController) VerifyDID(r *ghttp.Request) {
 		r.Response.WriteJson(ghttp.DefaultHandlerResponse{Code: 403, Message: "账号未审核通过或已被拒绝", Data: map[string]interface{}{"status": user.Status}})
 		return
 	}
-	// 密码验证成功，返回用户信息
+	// 密码验证成功，返回用户信息和token
+	token := middleware.GenerateToken(user.Email)
 	r.Response.WriteJson(ghttp.DefaultHandlerResponse{
 		Code:    200,
 		Message: "DID验证成功",
@@ -107,6 +109,7 @@ func (c *DIDController) VerifyDID(r *ghttp.Request) {
 			"did":      user.DID,
 			"status":   user.Status,
 			"valid":    true,
+			"token":    token,
 		},
 	})
 }

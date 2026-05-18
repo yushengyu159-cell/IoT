@@ -6,6 +6,7 @@ import (
 	"fabric-sdk/internal/service"
 	"fmt"
 	"io"
+	"strings"
 	"log"
 	"strconv"
 	"time"
@@ -68,6 +69,41 @@ func (c *IpfsController) Download(r *ghttp.Request) {
 	// 直接流式返回文件内容
 	r.Response.Header().Set("Content-Disposition", "attachment; filename="+cid)
 	r.Response.Header().Set("Content-Type", "application/octet-stream")
+	io.Copy(r.Response.Writer, reader)
+}
+
+// GET /api/ipfs/view?cid=xxx&filename=yyy
+func (c *IpfsController) View(r *ghttp.Request) {
+	cid := r.Get("cid").String()
+	filename := r.Get("filename").String()
+	if cid == "" {
+		r.Response.WriteJson(ghttp.DefaultHandlerResponse{Code: 400, Message: "cid参数不能为空"})
+		return
+	}
+	reader, err := service.IpfsDownload(cid)
+	if err != nil {
+		r.Response.WriteJson(ghttp.DefaultHandlerResponse{Code: 500, Message: "IPFS下载失败: " + err.Error()})
+		return
+	}
+	defer reader.Close()
+
+	contentType := "application/octet-stream"
+	if idx := strings.LastIndex(filename, "."); idx >= 0 {
+		switch strings.ToLower(filename[idx:]) {
+		case ".pdf":
+			contentType = "application/pdf"
+		case ".png":
+			contentType = "image/png"
+		case ".jpg", ".jpeg":
+			contentType = "image/jpeg"
+		case ".txt":
+			contentType = "text/plain; charset=utf-8"
+		case ".csv":
+			contentType = "text/csv; charset=utf-8"
+		}
+	}
+	r.Response.Header().Set("Content-Type", contentType)
+	r.Response.Header().Set("Content-Disposition", "inline; filename="+filename)
 	io.Copy(r.Response.Writer, reader)
 }
 

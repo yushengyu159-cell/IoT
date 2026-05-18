@@ -11,6 +11,7 @@ RUN apk add --no-cache git ca-certificates tzdata
 COPY go.mod go.sum ./
 
 # 下载依赖
+ENV GOPROXY=https://proxy.golang.org,direct
 RUN go mod download
 
 # 复制源代码

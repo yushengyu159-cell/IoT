@@ -237,7 +237,7 @@ func ProcessRoleBasedRegistration(user *UserRegistration) (*model.RegisterRespon
 			Success:     true,
 			Message:     "Owner注册完成",
 			UserID:      fmt.Sprintf("user_%d", time.Now().Unix()),
-			RedirectURL: "/static/dashboard.html",
+			RedirectURL: "/static/esg-dashboard.html",
 		}, nil
 
 	case "property_manager":
@@ -247,7 +247,7 @@ func ProcessRoleBasedRegistration(user *UserRegistration) (*model.RegisterRespon
 			Success:     true,
 			Message:     "Property Manager注册完成",
 			UserID:      fmt.Sprintf("user_%d", time.Now().Unix()),
-			RedirectURL: "/static/dashboard.html",
+			RedirectURL: "/static/esg-dashboard.html",
 		}, nil
 
 	case "institution":
@@ -257,7 +257,7 @@ func ProcessRoleBasedRegistration(user *UserRegistration) (*model.RegisterRespon
 			Success:     true,
 			Message:     "Institution注册完成",
 			UserID:      fmt.Sprintf("user_%d", time.Now().Unix()),
-			RedirectURL: "/static/dashboard.html",
+			RedirectURL: "/static/esg-dashboard.html",
 		}, nil
 
 	default:
@@ -329,35 +329,12 @@ func HashPassword(password string) string {
 }
 
 // ValidatePasswordHash 验证密码哈希
-// 对于 belucksapi 用户（18027473816@163.com），同时支持两个密码：
-// 1. 12345678 (哈希: ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f)
-// 2. i6a6LKS783W7ffsr# (哈希: fb50f430cbb295bef4557f7157816a86ba72a5cab96dfee08865c45fbf32f65a)
 func ValidatePasswordHash(password, hashedPassword string) bool {
-	// 计算输入密码的哈希值
 	inputHash := HashPassword(password)
-	
-	// 如果匹配存储的密码哈希，直接返回true
-	if inputHash == hashedPassword {
-		return true
-	}
-	
-	// 特殊处理：对于 belucksapi 用户，支持两个密码都能验证通过
-	// 检查是否是 belucksapi 用户的密码（通过检查两个已知密码的哈希）
-	belucksapiPassword1Hash := "ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f" // 12345678
-	belucksapiPassword2Hash := "fb50f430cbb295bef4557f7157816a86ba72a5cab96dfee08865c45fbf32f65a" // i6a6LKS783W7ffsr#
-	
-	// 如果存储的密码是 belucksapi 的密码1，则同时接受两个密码
-	if hashedPassword == belucksapiPassword1Hash {
-		return inputHash == belucksapiPassword1Hash || inputHash == belucksapiPassword2Hash
-	}
-	
-	// 如果存储的密码是 belucksapi 的密码2，则同时接受两个密码
-	if hashedPassword == belucksapiPassword2Hash {
-		return inputHash == belucksapiPassword1Hash || inputHash == belucksapiPassword2Hash
-	}
-	
-	return false
+	return inputHash == hashedPassword
 }
+
+
 
 // GetUserRegistration 获取用户注册信息
 func GetUserRegistration(email string) (*UserRegistration, bool) {

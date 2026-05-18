@@ -1,0 +1,94 @@
+name: "fabric-sdk-config"
+version: 1.0.0
+
+client:
+  organization: Org1
+  credentialStore:
+    path: "/tmp/fabric-sdk-go/credentialStore"
+    cryptoStore:
+      path: "/tmp/fabric-sdk-go/cryptoStore"
+  BCCSP:
+    security:
+      enabled: true
+      default:
+        provider: "SW"
+      hashAlgorithm: "SHA2"
+      softVerify: true
+      level: 256
+
+channels:
+  mychannel:
+    orderers:
+      - orderer1.example.com
+      - orderer2.example.com
+      - orderer3.example.com
+      - orderer4.example.com
+    peers:
+      peer0.org1.example.com:
+        endorsingPeer: true
+        chaincodeQuery: true
+        ledgerQuery: true
+        eventSource: true
+      peer0.org2.example.com:
+        endorsingPeer: true
+        chaincodeQuery: true
+        ledgerQuery: true
+        eventSource: true
+
+organizations:
+  Org1:
+    mspid: Org1MSP
+    cryptoPath: peerOrganizations/org1.example.com/users/{username}@org1.example.com/msp
+    peers:
+      - peer0.org1.example.com
+  Org2:
+    mspid: Org2MSP
+    cryptoPath: peerOrganizations/org2.example.com/users/{username}@org2.example.com/msp
+    peers:
+      - peer0.org2.example.com
+
+orderers:
+  orderer1.example.com:
+    url: grpcs://localhost:7050
+    tlsCACerts:
+      path: /root/home/go/fabric-samples/test-network/organizations/ordererOrganizations/example.com/orderers/orderer1.example.com/tls/ca.crt
+    grpcOptions:
+      ssl-target-name-override: orderer1.example.com
+      hostnameOverride: orderer1.example.com
+  orderer2.example.com:
+    url: grpcs://localhost:8050
+    tlsCACerts:
+      path: /root/home/go/fabric-samples/test-network/organizations/ordererOrganizations/example.com/orderers/orderer2.example.com/tls/ca.crt
+    grpcOptions:
+      ssl-target-name-override: orderer2.example.com
+      hostnameOverride: orderer2.example.com
+  orderer3.example.com:
+    url: grpcs://localhost:9050
+    tlsCACerts:
+      path: /root/home/go/fabric-samples/test-network/organizations/ordererOrganizations/example.com/orderers/orderer3.example.com/tls/ca.crt
+    grpcOptions:
+      ssl-target-name-override: orderer3.example.com
+      hostnameOverride: orderer3.example.com
+  orderer4.example.com:
+    url: grpcs://localhost:10050
+    tlsCACerts:
+      path: /root/home/go/fabric-samples/test-network/organizations/ordererOrganizations/example.com/orderers/orderer4.example.com/tls/ca.crt
+    grpcOptions:
+      ssl-target-name-override: orderer4.example.com
+      hostnameOverride: orderer4.example.com
+
+peers:
+  peer0.org1.example.com:
+    url: grpcs://localhost:7051
+    tlsCACerts:
+      path: /root/home/go/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt
+    grpcOptions:
+      ssl-target-name-override: peer0.org1.example.com
+      hostnameOverride: peer0.org1.example.com
+  peer0.org2.example.com:
+    url: grpcs://localhost:9051
+    tlsCACerts:
+      path: /root/home/go/fabric-samples/test-network/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt
+    grpcOptions:
+      ssl-target-name-override: peer0.org2.example.com
+      hostnameOverride: peer0.org2.example.com

@@ -1,9 +1,10 @@
 version: '3.8'
 
 services:
-  # Fabric SDK 主服务
   fabric-sdk:
-    build: .
+    build:
+      context: .
+      network: host
     container_name: fabric-sdk-app
     restart: unless-stopped
     ports:
@@ -15,6 +16,7 @@ services:
       - FABRIC_SDK_GO_MSP_VERIFY=false
       - MYSQL_DSN=root:Test@123456@tcp(fabric-sdk-mysql:3306)/esg?charset=utf8mb4&parseTime=True&loc=Local
       - IPFS_API=http://fabric-sdk-ipfs:5001
+      - FABRIC_PEER_URL=peer0.org1.example.com:7051
     volumes:
       - ./configs:/app/configs:ro
       - ./keystore:/app/keystore:ro
@@ -23,6 +25,7 @@ services:
       - ./manifest/config/config.yaml:/app/manifest/config/config.yaml:ro
     networks:
       - fabric-network
+      - fabric-test
     deploy:
       resources:
         limits:
@@ -42,3 +45,6 @@ networks:
   fabric-network:
     external: true
     name: fabric-sdk_fabric-network
+  fabric-test:
+    external: true
+    name: fabric_test

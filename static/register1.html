@@ -189,28 +189,33 @@
                 showStatusMessage('DID验证成功，正在跳转...', 'success');
                 
 const userInfo = {
-                    Email: email,
-                    FullName: result.data.FullName || email,
-                    Name: result.data.FullName || email,
-                    Role: result.data.Role || 'user',
-                    Phone: result.data.Phone || '',
-                    Age: result.data.Age || 20,
+                    Email: result.data.email || email,
+                    FullName: result.data.fullname || result.data.fullName || email,
+                    Name: result.data.fullname || result.data.fullName || email,
+                    Role: result.data.role || 'user',
+                    Phone: result.data.phone || '',
+                    Age: result.data.age || 20,
                     DID: result.data.did || '',
-                    RegisterTime: result.data.RegisterTime || result.data.CreatedAt || '',
-                    // Additional fields from backend API
-                    BuildingName: result.data.BuildingName || '',
-                    BuildingAddr: result.data.BuildingAddr || '',
-                    BuildingType: result.data.BuildingType || '',
-                    PropertyName: result.data.PropertyName || '',
-                    Occupation: result.data.Occupation || '',
-                    Institution: result.data.Institution || '',
+                    RegisterTime: result.data.registertime || result.data.createdAt || '',
+                    BuildingName: result.data.buildingname || result.data.buildingName || '',
+                    BuildingAddr: result.data.buildingaddr || result.data.buildingAddr || '',
+                    BuildingType: result.data.buildingtype || result.data.buildingType || '',
+                    PropertyName: result.data.propertyname || result.data.propertyName || '',
+                    Occupation: result.data.occupation || '',
+                    Institution: result.data.institution || '',
                     isLoggedIn: true
                 };
                 localStorage.setItem('userInfo', JSON.stringify(userInfo));
                 localStorage.setItem('isLoggedIn', 'true');
+                localStorage.setItem('esg_email', userInfo.Email);
+                localStorage.setItem('esg_fullName', userInfo.FullName || '');
+                localStorage.setItem('esg_phone', userInfo.Phone || '');
+                if (result.data && result.data.token) {
+                    localStorage.setItem('userToken', result.data.token);
+                }
                 
                 // 根据用户邮箱决定跳转页面
-                let redirectUrl = '/static/esg-dashboard.html'; // 默认跳转到仪表板
+                let redirectUrl = '/static/esg-dashboard.html?v=1779004153'; // 默认跳转到仪表板
                 
                 // 只有 esgvisa@gmail.com 可以进入权限管理界面
                 if (email === 'esgvisa@gmail.com') {
@@ -220,19 +225,9 @@ const userInfo = {
                     console.log('普通用户，跳转到仪表板界面');
                 }
                 
-                try {
-                    history.replaceState(null, '', redirectUrl);
-                } catch (_) {}
-                
-                try {
-                    window.location.replace(redirectUrl);
-                } catch (_) {}
-                
                 setTimeout(() => {
-                    if (!redirectUrl.includes(window.location.pathname)) {
-                        window.location.href = redirectUrl;
-                    }
-                }, 120);
+                    window.location.href = redirectUrl;
+                }, 500);
                 
             } else {
                 throw new Error(result.message || 'DID验证失败');

@@ -2,9 +2,30 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
     <title>ESG VISA - Frontend Prototype</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#10B981',
+                        'primary-light': '#D1FAE5',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        info: '#3B82F6',
+                        success: '#10B981',
+                        border: '#E2E8F0',
+                    },
+                    boxShadow: {
+                        'sm-card': '0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px -1px rgba(0,0,0,0.1)',
+                    }
+                }
+            }
+        }
+    </script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -14,11 +35,16 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .sparkline { stroke: #10B981; stroke-width: 2; fill: none; }
+        .sparkline-warning { stroke: #F59E0B; stroke-width: 2; fill: none; }
+        .page-content { min-height: 100%; }
     </style>
 </head>
 <body class="bg-gray-50 m-0 p-0 overflow-hidden">
     <div id="root"></div>
+    <div id="jsx-error" style="display:none;padding:40px;color:red;font-size:14px;white-space:pre-wrap;font-family:monospace;"></div>
     <script type="text/babel">
+        window.addEventListener("error", function(e) { document.getElementById("jsx-error").style.display="block"; document.getElementById("jsx-error").textContent = "ERROR: " + (e.message||e) + "\n" + (e.stack||""); });
         const { useState, createContext, useContext } = React;
 
         const translations = {
@@ -78,6 +104,9 @@
                 carbonAssetId: "Carbon Asset ID",
                 qrCodeAccess: "QR Code Access",
                 downloadQr: "Download QR",
+                loading: "Loading...",
+                noBuildingData: "No building data yet",
+                addBuildingInfo: "Initialize Building Profile",
                 occupancyMix: "OCCUPANCY & TENANT MIX",
                 occupancyRate: "Occupancy Rate",
                 avgLeaseDuration: "Avg. Lease Duration",
@@ -220,8 +249,130 @@
                 subscribersData: "3 Subscribers (Real Data Assets)",
                 sellBldgData: "Sell Building Data",
                 manageMarketplace: "Manage Marketplace →"
+            ,
+                energyCost: "Energy Cost",
+                carbonEmissions: "Carbon Emissions",
+                scopeTotal: "Scope 1+2 Total",
+                vsLastYear: "vs Last Year",
+                deviceStatusGood: "Device status good",
+                highRisk: "High Risk",
+                hvacAnomaly: "HVAC System Anomaly",
+                hvacAnomalyShort: "Zone 3 HVAC anomaly, carbon +15%",
+                viewAnalysis: "View Analysis",
+                oneClickOptimize: "One-Click Optimize",
+                complianceReminder: "Compliance",
+                viewDetails: "View Details",
+                goToUpdate: "Go to Update",
+                opportunityId: "Opportunity",
+                startAssessment: "Start Assessment",
+                researchLabel: "Research",
+                shareReport: "Share Report",
+                iotTrend: "IoT Real-time Trend",
+                deviceDistribution: "Device Distribution",
+                deviceTotal: "Total Devices",
+                realtimeDataList: "Real-time Data List",
+                sensorName: "Sensor Name",
+                categoryCol: "Category",
+                location: "Location",
+                realtimeValue: "Real-time Value",
+                lastUpdate: "Last Update",
+                analysisCol: "Analysis",
+                normal: "Normal",
+                slightlyHigh: "Slightly High",
+                envMonitoring: "Env Monitoring",
+                airQualityCol: "Air Quality",
+                energyMonitoring: "Energy Monitoring",
+                good: "Good",
+                greenBuildingRating: "Green Building Rating",
+                greenBuildingDesc: "Track and improve green building certifications.",
+                esgReport: "ESG Reports",
+                buildingDesc: "Generate and manage ESG reports.",
+                susOverview: "Sustainability Overview",
+                overallEsg: "Overall ESG Score",
+                energyIntensity: "Energy Intensity",
+                waterIntensity: "Water Intensity",
+                wasteRecyclingRate: "Waste Recycling Rate",
+                esgTrend: "ESG Performance Trend",
+                envE: "Environmental (E)",
+                socS: "Social (S)",
+                govG: "Governance (G)",
+                esgTotal: "ESG Total",
+                esgKeyIssues: "ESG Key Issues",
+                currentPeriod: "Current Period",
+                previousPeriod: "Previous Period",
+                latestReports: "Latest Reports",
+                esgQ2Report: "ESG Quarterly Report Q2 2025",
+                carbonReport2024: "Carbon Report 2024",
+                tcfdReport2024: "TCFD Disclosure Report 2024",
+                published: "Published",
+                viewAllReports: "View All Reports",
+                keyInsights: "Key Insights",
+                energyEffImproved: "Energy Efficiency Improved",
+                energyEffDesc: "Energy intensity down 5.6% this month from HVAC optimization.",
+                carbonAlert: "Carbon Alert",
+                carbonAlertDesc: "Carbon intensity 10% above target.",
+                waterPerformanceGood: "Water Performance Good",
+                waterGoodDesc: "Water intensity improved, down 3.1%.",
+                indoorEnvQuality: "Indoor Environmental Quality",
+                indoorEnvDesc: "IAQ index at good level.",
+                susReport: "Sustainability Report",
+                greenBuildingPage: "Green Building Rating",
+                overallPreAssessment: "Overall Pre-Assessment",
+                categoryOverview: "Category Performance",
+                certProgress: "Certification Progress",
+                currentProgress: "Current Progress",
+                totalReqs: "Total Requirements",
+                achieved: "Achieved",
+                inProgress: "In Progress",
+                notAchieved: "Not Achieved",
+                viewAllReqs: "View All Requirements",
+                improvementSuggestions: "Improvement Suggestions",
+                aboutBeamPlus: "About BEAM Plus",
+                beamPlusDesc: "BEAM Plus by HKGBC.",
+                aiAgentAssistant: "AI Agent Assistant",
+                allMembers: "All Members",
+                onlineStatus: "Online",
+                coordinateLabel: "Coordinate | Analyze | Decide",
+                all: "All",
+                focusOnPage: "Focus on this page",
+                hvacCarbon15: "HVAC anomaly, carbon +15%",
+                fireCert30d: "Fire safety cert expiring 30 days",
+                urbanismWELL: "Urbanism upgrade WELL +3",
+                whyCo2Rise: "Why did CO2 rise today?",
+                optimizeMeeting: "Optimize meeting room management",
+                adjustAhu: "Adjust AHU-03 airflow settings",
+                suggestion: "Suggestion:",
+                co2Analysis: "CO2 rise caused by:",
+                meetingUsage: "12:00-16:00 Meeting Room B increased",
+                freshAirDrop: "AHU-03 airflow dropped 15%",
+                outdoorCo2: "Outdoor CO2 +12ppm vs yesterday",
+                generateWorkOrder: "Generate Work Order",
+                shareAnalysis: "Share Analysis",
+                poweredBy: "Powered by ESG VISA Multi-Agent System",
+                hoursAgo2: "2 hours ago",
+                hoursAgo5: "5 hours ago",
+                dayAgo1: "1 day ago",
+                daysAgo2: "2 days ago",
+                recommendedSystem: "Recommended Rating System",
+                bestMatch: "Best Match",
+                beamPlusOrg: "HK Green Building Council",
+                bestFit: "Best Fit",
+                startBeamAssessment: "Start BEAM Plus Assessment",
+                viewOtherSystems: "View Other Rating Systems",
+                certGuide: "Certification Guide",
+                downloadManual: "Download BEAM Plus Manual",
+                contactConsultant: "Contact Certification Consultant",
+                viewSuggestion: "View Suggestion",
+                exportReport: "Export Report",
+                viewTrend: "View Trend",
+                spikingAnomaly: "Spiking due to anomaly",
+                minsAgo2: "2 mins ago",
+                minsAgo1: "1 min ago",
+                secAgo30: "30 sec ago",
+                viewScoringDetails: "View Scoring Details",
             },
             'zh-CN': {
+                vs: "vs",
                 dashboard: "首页工作台",
                 assetProfile: "资产档案",
                 dataInfo: "数据资料",
@@ -270,6 +421,9 @@
                 carbonAssetId: "碳资产 ID",
                 qrCodeAccess: "二维码访问",
                 downloadQr: "下载二维码",
+                loading: "加载中...",
+                noBuildingData: "暂无建筑数据",
+                addBuildingInfo: "初始化建筑资料",
                 occupancyMix: "入驻率与租户组合",
                 occupancyRate: "入驻率",
                 avgLeaseDuration: "平均租期",
@@ -400,8 +554,130 @@
                 subscribersData: "3 个订阅者 (真实数据资产)",
                 sellBldgData: "出售建筑数据",
                 manageMarketplace: "管理市场 →"
+            ,
+                energyCost: "本期耗电成本",
+                carbonEmissions: "本期碳排放量",
+                scopeTotal: "Scope 1+2 合计",
+                vsLastYear: "较去年",
+                deviceStatusGood: "设备状态良好",
+                highRisk: "高风险",
+                hvacAnomaly: "HVAC 系统异常",
+                hvacAnomalyShort: "3 楼冷气异常，碳排预计超标 15%",
+                viewAnalysis: "查看分析",
+                oneClickOptimize: "一键优化",
+                complianceReminder: "合规提醒",
+                viewDetails: "查看详情",
+                goToUpdate: "前往更新",
+                opportunityId: "机会识别",
+                startAssessment: "开始评估",
+                researchLabel: "调研",
+                shareReport: "分享报告",
+                iotTrend: "IoT 即时趋势",
+                deviceDistribution: "设备分布状态",
+                deviceTotal: "设备总数",
+                realtimeDataList: "实时数据列表",
+                sensorName: "传感器名称",
+                categoryCol: "类别",
+                location: "位置",
+                realtimeValue: "即时数值",
+                lastUpdate: "最后更新",
+                analysisCol: "操作",
+                normal: "正常",
+                slightlyHigh: "略微偏高",
+                envMonitoring: "环境监测",
+                airQualityCol: "空气质量",
+                energyMonitoring: "能源监测",
+                good: "良好",
+                greenBuildingRating: "绿色建筑评级",
+                greenBuildingDesc: "查看及追踪建筑评级表现。",
+                esgReport: "ESG 报告",
+                buildingDesc: "生成及管理 ESG 报告。",
+                susOverview: "可持续表现总览",
+                overallEsg: "总体 ESG 评分",
+                energyIntensity: "能源强度",
+                waterIntensity: "用水强度",
+                wasteRecyclingRate: "废弃物回收率",
+                esgTrend: "ESG 表现趋势",
+                envE: "环境 (E)",
+                socS: "社会 (S)",
+                govG: "治理 (G)",
+                esgTotal: "ESG 总分",
+                esgKeyIssues: "ESG 主要议题表现",
+                currentPeriod: "本期表现",
+                previousPeriod: "上期表现",
+                latestReports: "最新报告",
+                esgQ2Report: "ESG 季度报告 Q2 2025",
+                carbonReport2024: "碳排放报告 2024",
+                tcfdReport2024: "TCFD 披露报告 2024",
+                published: "已发布",
+                viewAllReports: "查看全部报告",
+                keyInsights: "近期重点洞察",
+                energyEffImproved: "能源效率提升",
+                energyEffDesc: "本月能源强度较上月下降 5.6%。",
+                carbonAlert: "碳排放关注",
+                carbonAlertDesc: "碳排强度高于目标值 10%。",
+                waterPerformanceGood: "用水表现良好",
+                waterGoodDesc: "用水强度持续改善，下降 3.1%。",
+                indoorEnvQuality: "室内环境质量",
+                indoorEnvDesc: "IAQ 指数良好。",
+                susReport: "可持续报表",
+                greenBuildingPage: "绿色建筑评级",
+                overallPreAssessment: "整体预评分",
+                categoryOverview: "范畴表现概览",
+                certProgress: "认证进度",
+                currentProgress: "目前进度",
+                totalReqs: "总要求",
+                achieved: "已达成",
+                inProgress: "进行中",
+                notAchieved: "未达成",
+                viewAllReqs: "查看全部要求",
+                improvementSuggestions: "提升建议",
+                aboutBeamPlus: "关于 BEAM Plus",
+                beamPlusDesc: "BEAM Plus 是香港绿色建筑议会推出的评估工具。",
+                aiAgentAssistant: "AI Agent 助理",
+                allMembers: "全部成员",
+                onlineStatus: "线上",
+                coordinateLabel: "统筹协调 · 分析 · 决策",
+                all: "全部",
+                focusOnPage: "本页重点关注",
+                hvacCarbon15: "HVAC系统异常，碳排预计超标 15%",
+                fireCert30d: "消防安检证书即将到期 30 天后过期",
+                urbanismWELL: "Urbanism升级可提升 WELL 认证 3",
+                whyCo2Rise: "为什么今天 CO2 浓度会上升？",
+                optimizeMeeting: "优化建议会议室的管理",
+                adjustAhu: "调整 AHU-03 风量设定",
+                suggestion: "建议：",
+                co2Analysis: "CO2浓度上升由于：",
+                meetingUsage: "12:00-16:00 会议室 B 使用率上升",
+                freshAirDrop: "AHU-03 风量下降 15%",
+                outdoorCo2: "室外 CO2浓度较昨上升 (+12ppm)",
+                generateWorkOrder: "生成工单",
+                shareAnalysis: "分享分析",
+                poweredBy: "由 ESG VISA 多智能体系统提供支持",
+                hoursAgo2: "2 小时前",
+                hoursAgo5: "5 小时前",
+                dayAgo1: "1 天前",
+                daysAgo2: "2 天前",
+                recommendedSystem: "推荐评级体系",
+                bestMatch: "最佳匹配",
+                beamPlusOrg: "香港绿色建筑协会",
+                bestFit: "最适合",
+                startBeamAssessment: "开始 BEAM Plus 评估",
+                viewOtherSystems: "查看其他评级体系",
+                certGuide: "认证流程指南",
+                downloadManual: "下载 BEAM Plus 手册",
+                contactConsultant: "联络认证顾问",
+                viewSuggestion: "查看建议",
+                exportReport: "导出报表",
+                viewTrend: "查看趋势",
+                spikingAnomaly: "减碳策略需部署",
+                minsAgo2: "2 分钟前",
+                minsAgo1: "1 分钟前",
+                secAgo30: "30 秒前",
+                viewScoringDetails: "查看评分详情",
             },
             'zh-TW': {
+                vs: "vs",
                 dashboard: "首頁工作台",
                 assetProfile: "資產檔案",
                 dataInfo: "數據資料",
@@ -450,6 +726,9 @@
                 carbonAssetId: "碳資產 ID",
                 qrCodeAccess: "二維碼訪問",
                 downloadQr: "下載二維碼",
+                loading: "載入中...",
+                noBuildingData: "暫無建築資料",
+                addBuildingInfo: "初始化建築資料",
                 occupancyMix: "入駐率與租戶組合",
                 occupancyRate: "入駐率",
                 avgLeaseDuration: "平均租期",
@@ -580,6 +859,127 @@
                 subscribersData: "3 個訂閱者 (真實數據資產)",
                 sellBldgData: "出售建築數據",
                 manageMarketplace: "管理市場 →"
+            ,
+                energyCost: "本期耗電成本",
+                carbonEmissions: "本期碳排量",
+                scopeTotal: "Scope 1+2 合計",
+                vsLastYear: "較去年",
+                deviceStatusGood: "設備狀態良好",
+                highRisk: "高風險",
+                hvacAnomaly: "HVAC 系統異常",
+                hvacAnomalyShort: "3 樓冷氣異常，碳排預計超標 15%",
+                viewAnalysis: "查看分析",
+                oneClickOptimize: "一鍵優化",
+                complianceReminder: "合規提醒",
+                viewDetails: "查看詳情",
+                goToUpdate: "前往更新",
+                opportunityId: "機會識別",
+                startAssessment: "開始評估",
+                researchLabel: "調研",
+                shareReport: "分享報告",
+                iotTrend: "IoT 即時趨勢",
+                deviceDistribution: "設備分佈狀態",
+                deviceTotal: "設備總數",
+                realtimeDataList: "實時數據列表",
+                sensorName: "傳感器名稱",
+                categoryCol: "類別",
+                location: "位置",
+                realtimeValue: "即時數值",
+                lastUpdate: "最後更新",
+                analysisCol: "操作",
+                normal: "正常",
+                slightlyHigh: "略微偏高",
+                envMonitoring: "環境監測",
+                airQualityCol: "空氣質素",
+                energyMonitoring: "能源監測",
+                good: "良好",
+                greenBuildingRating: "綠色建築評級",
+                greenBuildingDesc: "查看及追蹤建築評級表現。",
+                esgReport: "ESG 報告",
+                buildingDesc: "生成及管理 ESG 報告。",
+                susOverview: "可持續表現總覽",
+                overallEsg: "總體 ESG 評分",
+                energyIntensity: "能源強度",
+                waterIntensity: "用水強度",
+                wasteRecyclingRate: "廢棄物回收率",
+                esgTrend: "ESG 表現趨勢",
+                envE: "環境 (E)",
+                socS: "社會 (S)",
+                govG: "治理 (G)",
+                esgTotal: "ESG 總分",
+                esgKeyIssues: "ESG 主要議題表現",
+                currentPeriod: "本期表現",
+                previousPeriod: "上期表現",
+                latestReports: "最新報告",
+                esgQ2Report: "ESG 季度報告 Q2 2025",
+                carbonReport2024: "碳排放報告 2024",
+                tcfdReport2024: "TCFD 披露報告 2024",
+                published: "已發布",
+                viewAllReports: "查看全部報告",
+                keyInsights: "近期重點洞察",
+                energyEffImproved: "能源效率提升",
+                energyEffDesc: "本月能源強度較上月下降 5.6%。",
+                carbonAlert: "碳排放關注",
+                carbonAlertDesc: "碳排強度高於目標值 10%。",
+                waterPerformanceGood: "用水表現良好",
+                waterGoodDesc: "用水強度持續改善，下降 3.1%。",
+                indoorEnvQuality: "室內環境質量",
+                indoorEnvDesc: "IAQ 指數良好。",
+                susReport: "可持續報表",
+                greenBuildingPage: "綠色建築評級",
+                overallPreAssessment: "整體預評分",
+                categoryOverview: "範疇表現概覽",
+                certProgress: "認證進度",
+                currentProgress: "目前進度",
+                totalReqs: "總要求",
+                achieved: "已達成",
+                inProgress: "進行中",
+                notAchieved: "未達成",
+                viewAllReqs: "查看全部要求",
+                improvementSuggestions: "提升建議",
+                aboutBeamPlus: "關於 BEAM Plus",
+                beamPlusDesc: "BEAM Plus 是香港綠色建築議會推出的評估工具。",
+                aiAgentAssistant: "AI Agent 助理",
+                allMembers: "全部成員",
+                onlineStatus: "線上",
+                coordinateLabel: "統籌協調 · 分析 · 決策",
+                all: "全部",
+                focusOnPage: "本頁重點關注",
+                hvacCarbon15: "HVAC系統異常，碳排預計超標 15%",
+                fireCert30d: "消防安檢證書即將到期 30 天後過期",
+                urbanismWELL: "Urbanism升級可提升 WELL 認證 3",
+                whyCo2Rise: "為什麼今天 CO₂ 濃度會上升？",
+                optimizeMeeting: "優化建議會議室的管理",
+                adjustAhu: "調整 AHU-03 風量設定",
+                suggestion: "建議：",
+                co2Analysis: "CO₂濃度上升由於：",
+                meetingUsage: "12:00-16:00 會議室 B 使用率上升",
+                freshAirDrop: "AHU-03 風量下降 15%",
+                outdoorCo2: "室外 CO₂濃度較昨上升 (+12ppm)",
+                generateWorkOrder: "生成工單",
+                shareAnalysis: "分享分析",
+                poweredBy: "由 ESG VISA 多智能體系統提供支持",
+                hoursAgo2: "2 小時前",
+                hoursAgo5: "5 小時前",
+                dayAgo1: "1 天前",
+                daysAgo2: "2 天前",
+                recommendedSystem: "推薦評級體系",
+                bestMatch: "最佳匹配",
+                beamPlusOrg: "香港綠色建築協會",
+                bestFit: "最適合",
+                startBeamAssessment: "開始 BEAM Plus 評估",
+                viewOtherSystems: "查看其他評級體系",
+                certGuide: "認證流程指南",
+                downloadManual: "下載 BEAM Plus 手冊",
+                contactConsultant: "聯絡認證顧問",
+                viewSuggestion: "查看建議",
+                exportReport: "導出報表",
+                viewTrend: "查看趨勢",
+                spikingAnomaly: "減碳策略需部署",
+                minsAgo2: "2 分鐘前",
+                minsAgo1: "1 分鐘前",
+                secAgo30: "30 秒前",
+                viewScoringDetails: "查看評分詳情",
             }
         };
 
@@ -597,81 +997,407 @@
 
         const useI18n = () => useContext(I18nContext);
 
+        // Multi-Channel API Helper
+        var mcApi = {
+            BUILDING_ID: 'AST-B1-X',
+            query: async function(ch, fn, args) {
+                args = args || [];
+                try {
+                    var r = await fetch('/api/multichannel/query?channel='+encodeURIComponent(ch)+'&fn='+encodeURIComponent(fn)+'&args='+encodeURIComponent(JSON.stringify(args||[])));
+                    var j = await r.json();
+                    return j.code === 0 ? j.data : null;
+                } catch(e) { console.error(e); return null; }
+            },
+            invoke: async function(ch, fn, args) {
+                args = args || [];
+                try {
+                    var r = await fetch('/api/multichannel/invoke?channel='+encodeURIComponent(ch)+'&fn='+encodeURIComponent(fn)+'&args='+encodeURIComponent(JSON.stringify(args||[])));
+                    var j = await r.json();
+                    return j.code === 0 ? j.data : null;
+                } catch(e) { console.error(e); return null; }
+            },
+            now: function() { return new Date().toISOString().split('.')[0]+'Z'; },
+            sd: function() { return new Date().toISOString().split('T')[0]; }
+        };
+
         // --- View Components ---
 
         const Dashboard = () => {
             const { t } = useI18n();
+            
+            React.useEffect(() => {
+                let iotChart, deviceChart, esgTrendChart, esgRadarChart;
+                
+                // Initialize IoT Chart
+                const ctxIoT = document.getElementById('chartIoT');
+                if (ctxIoT && window.Chart) {
+                    iotChart = new Chart(ctxIoT, {
+                        type: 'line',
+                        data: {
+                            labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '24:00'],
+                            datasets: [{
+                                label: 'PM2.5',
+                                data: [18, 19, 21, 24, 25, 23, 20],
+                                borderColor: '#A855F7',
+                                backgroundColor: 'transparent',
+                                borderWidth: 1.5,
+                                tension: 0.4,
+                                pointRadius: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                y: { display: true, min: 0, max: 1250, grid: { color: '#f1f5f9' }, border: { display: false }, ticks: { font: { size: 9 }, color: '#94a3b8', stepSize: 350 } },
+                                x: { display: true, grid: { display: false }, border: { display: false }, ticks: { font: { size: 9 }, color: '#94a3b8' } }
+                            }
+                        }
+                    });
+                }
+
+                // Initialize Device Chart
+                const ctxDevice = document.getElementById('chartDevice');
+                if (ctxDevice && window.Chart) {
+                    deviceChart = new Chart(ctxDevice, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['HVAC', '照明', '電力', '水資源', '垃圾處理', '其他'],
+                            datasets: [{
+                                data: [88, 66, 48, 32, 12, 10],
+                                backgroundColor: ['#3B82F6', '#A855F7', '#F97316', '#10B981', '#84CC16', '#94A3B8'],
+                                borderWidth: 3,
+                                borderColor: '#ffffff',
+                                hoverOffset: 4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            cutout: '75%',
+                            plugins: { legend: { display: false } }
+                        }
+                    });
+                }
+
+
+                return () => {
+                    if (iotChart) iotChart.destroy();
+                    if (deviceChart) deviceChart.destroy();
+                };
+            }, []);
+
             return (
-            <div className="space-y-6 max-w-full mx-auto">
-                <div className="grid grid-cols-3 gap-6">
-                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                        <div className="text-gray-500 text-sm mb-2">{t('esgScoreTitle')}</div>
-                        <div className="text-4xl font-bold text-gray-800">82<span className="text-xl text-gray-400 font-normal">/100</span></div>
-                        <div className="text-emerald-500 text-sm mt-3 font-medium flex items-center">{t('upLastMonth')}</div>
-                    </div>
-                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                        <div className="text-gray-500 text-sm mb-2">{t('carbonIntensityTitle')}</div>
-                        <div className="text-4xl font-bold text-gray-800">45.2 <span className="text-xl text-gray-400 font-normal">kg CO₂/m²</span></div>
-                        <div className="text-red-500 text-sm mt-3 font-medium flex items-center">{t('spikingAnomaly')}</div>
-                    </div>
-                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                        <div className="text-gray-500 text-sm mb-2">{t('rulTitle')}</div>
-                        <div className="text-4xl font-bold text-gray-800">94%</div>
-                        <div className="text-amber-500 text-sm mt-3 font-medium flex items-center">{t('pendingWorkOrders')}</div>
-                    </div>
-                </div>
-
-                <div className="mt-8">
-                    <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        <span className="text-indigo-500">🤖</span> {t('agentPush')} ({t('godfreyCentre')})
-                    </h3>
-                    <div className="space-y-4">
-                        <div className="bg-red-50/50 border border-red-100 p-5 rounded-xl flex items-start gap-4">
-                            <div className="mt-1 bg-red-100 p-2 rounded-lg text-red-500 text-xl">⚠</div>
-                            <div className="flex-1">
-                                <div className="flex items-center gap-3 mb-1">
-                                    <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded font-bold tracking-wide">{t('urgentAlert')}</span>
-                                    <span className="text-gray-500 text-xs font-medium">Agent 1 (BMS) & Agent 2 (Energy)</span>
+                    <div id="page1" className="page-content flex-1 overflow-y-auto p-6">
+                        {/* Header */}
+                        <div className="flex items-center justify-between mb-5">
+                            <h1 className="text-xl font-bold text-gray-800">{t('dashboard')}</h1>
+                            <div className="flex items-center gap-3 text-xs">
+                                <div className="flex items-center gap-2 bg-white border border-border px-3 py-1.5 rounded-md text-gray-600">
+                                    <i className="fa-regular fa-calendar"></i> 2025/05/20 - 2025/05/26
                                 </div>
-                                <h4 className="font-bold text-gray-900 mb-1.5 text-lg">{t('hvacAnomalyTitle')}</h4>
-                                <p className="text-gray-600 text-sm mb-4 leading-relaxed">{t('hvacAnomalyDesc')}</p>
-                                <button className="bg-red-600 text-white px-5 py-2 rounded hover:bg-red-700 text-sm font-medium shadow-sm transition-colors">{t('dispatchWorkOrder')}</button>
+                                <div className="flex items-center gap-2 text-gray-500">
+                                    <i className="fa-solid fa-rotate-right"></i> 自動更新 <span className="text-gray-400">每 30 秒</span>
+                                </div>
+                                <button className="bg-white border border-border px-3 py-1.5 rounded-md text-gray-600 hover:bg-gray-50 flex items-center gap-1.5">
+                                    <i className="fa-solid fa-sliders"></i> 設定
+                                </button>
                             </div>
                         </div>
-
-                        <div className="bg-blue-50/50 border border-blue-100 p-5 rounded-xl flex items-start gap-4">
-                            <div className="mt-1 bg-blue-100 p-2 rounded-lg text-blue-500 text-xl">📄</div>
-                            <div className="flex-1">
-                                <div className="flex items-center gap-3 mb-1">
-                                    <span className="bg-blue-500 text-white text-xs px-2 py-0.5 rounded font-bold tracking-wide">{t('complianceAlert')}</span>
-                                    <span className="text-gray-500 text-xs font-medium">Agent 3 (Legislation)</span>
+            
+                        {/* Top KPIs */}
+                        <div className="grid grid-cols-5 gap-4 mb-5">
+                            <div className="bg-white p-4 rounded-xl shadow-sm-card border border-border/50 relative overflow-hidden">
+                                <div className="text-gray-500 mb-1">{t('esgScoreTitle')}</div>
+                                <div className="flex items-baseline gap-1">
+                                    <span className="text-2xl font-bold text-primary">82</span><span className="text-gray-400 text-xs">/100</span>
                                 </div>
-                                <h4 className="font-bold text-gray-900 mb-1.5 text-lg">{t('fireCertExpiring')}</h4>
-                                <p className="text-gray-600 text-sm mb-4 leading-relaxed">{t('fireCertDesc')}</p>
-                                <button className="bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700 text-sm font-medium shadow-sm transition-colors">{t('goToDataVault')}</button>
+                                <div className="text-primary text-xs mt-1 flex items-center gap-1">
+                                    <i className="fa-solid fa-arrow-trend-up"></i> +2.4% 較上月
+                                </div>
+                                <svg className="absolute bottom-0 right-0 w-24 h-12 opacity-50" viewBox="0 0 100 30"><path className="sparkline" d="M0,25 L20,20 L40,22 L60,10 L80,15 L100,5"></path></svg>
+                            </div>
+                            <div className="bg-white p-4 rounded-xl shadow-sm-card border border-border/50 relative overflow-hidden">
+                                <div className="text-gray-500 mb-1">{t('carbonIntensityTitle')}</div>
+                                <div className="flex items-baseline gap-1">
+                                    <span className="text-2xl font-bold text-warning">45.2</span><span className="text-gray-400 text-xs">kg CO₂/m²</span>
+                                </div>
+                                <div className="text-warning text-xs mt-1 flex items-center gap-1">
+                                    <i className="fa-solid fa-triangle-exclamation"></i> 減碳策略需部署
+                                </div>
+                                <svg className="absolute bottom-0 right-0 w-24 h-12 opacity-50" viewBox="0 0 100 30"><path className="sparkline-warning" d="M0,20 L20,15 L40,18 L60,5 L80,8 L100,2"></path></svg>
+                            </div>
+                            <div className="bg-white p-4 rounded-xl shadow-sm-card border border-border/50 relative overflow-hidden">
+                                <div className="text-gray-500 mb-1">{t('rulTitle')}</div>
+                                <div className="flex items-baseline gap-1">
+                                    <span className="text-2xl font-bold text-primary">94</span><span className="text-gray-400 text-xs">%</span>
+                                </div>
+                                <div className="text-primary text-xs mt-1 flex items-center gap-1">
+                                    <i className="fa-solid fa-circle-check"></i> 設備狀態良好
+                                </div>
+                                <svg className="absolute bottom-0 right-0 w-24 h-12 opacity-50" viewBox="0 0 100 30"><path className="sparkline" d="M0,25 L20,15 L40,20 L60,10 L80,12 L100,5"></path></svg>
+                            </div>
+                            <div className="bg-white p-4 rounded-xl shadow-sm-card border border-border/50 relative overflow-hidden">
+                                <div className="text-gray-500 mb-1">{t('energyCost')}</div>
+                                <div className="flex items-baseline gap-1">
+                                    <span className="text-xl font-bold text-info">HKD 182,400</span>
+                                </div>
+                                <div className="text-info text-xs mt-1 flex items-center gap-1">
+                                    <i className="fa-solid fa-arrow-trend-down"></i> -12.3% 較去年
+                                </div>
+                                <svg className="absolute bottom-0 right-0 w-24 h-12 opacity-50" viewBox="0 0 100 30"><path style={{stroke: "#3B82F6", strokeWidth: 2, fill: "none"}} d="M0,5 L20,10 L40,8 L60,20 L80,18 L100,25"></path></svg>
+                            </div>
+                            <div className="bg-white p-4 rounded-xl shadow-sm-card border border-border/50 relative overflow-hidden">
+                                <div className="text-gray-500 mb-1">{t('carbonEmissions')}</div>
+                                <div className="flex items-baseline gap-1">
+                                    <span className="text-2xl font-bold text-primary">128</span><span className="text-gray-400 text-xs">tCO₂e</span>
+                                </div>
+                                <div className="text-gray-400 text-[11px] mt-1">{t('scopeTotal')}</div>
+                                <svg className="absolute bottom-0 right-0 w-24 h-12 opacity-50" viewBox="0 0 100 30"><path className="sparkline" d="M0,10 L20,8 L40,15 L60,12 L80,20 L100,25"></path></svg>
                             </div>
                         </div>
-
-                        <div className="bg-emerald-50/50 border border-emerald-100 p-5 rounded-xl flex items-start gap-4">
-                            <div className="mt-1 bg-emerald-100 p-2 rounded-lg text-emerald-500 text-xl">💡</div>
-                            <div className="flex-1">
-                                <div className="flex items-center gap-3 mb-1">
-                                    <span className="bg-emerald-500 text-white text-xs px-2 py-0.5 rounded font-bold tracking-wide">{t('optimizationIdea')}</span>
-                                    <span className="text-gray-500 text-xs font-medium">Agent 4 (Urbanism)</span>
+            
+                        {/* Agent 推送 */}
+                        <div className="bg-white rounded-xl shadow-sm-card border border-border/50 p-4 mb-5">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-2 font-semibold">
+                                    <i className="fa-solid fa-house-chimney text-gray-400"></i> Agent 智能推送 <span className="text-gray-400 font-normal">(5)</span>
                                 </div>
-                                <h4 className="font-bold text-gray-900 mb-1.5 text-lg">{t('roofGreeningTitle')}</h4>
-                                <p className="text-gray-600 text-sm mb-4 leading-relaxed">{t('roofGreeningDesc')}</p>
-                                <button className="bg-emerald-600 text-white px-5 py-2 rounded hover:bg-emerald-700 text-sm font-medium shadow-sm transition-colors">{t('checkROI')}</button>
+                                <a href="#" className="text-info text-xs hover:underline">{t('all')}查看 <i className="fa-solid fa-chevron-right text-[10px]"></i></a>
                             </div>
+                            <div className="grid grid-cols-4 gap-4">
+                                {/* Card 1 */}
+                                <div className="border border-slate-200 border-t-2 border-t-danger bg-white rounded-lg p-3.5 flex flex-col justify-between shadow-sm">
+                                    <div>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="text-danger text-xs flex items-center gap-1.5 font-medium"><i className="fa-solid fa-bolt"></i> Energy Agent</span>
+                                            <span className="bg-red-50 text-danger text-[10px] px-1.5 py-0.5 rounded">{t('highRisk')}</span>
+                                        </div>
+                                        <div className="font-bold text-[14px] mb-1.5 text-gray-800">{t('hvacAnomaly')}</div>
+                                        <div className="text-gray-500 text-[11px] leading-relaxed">3 樓冷氣異常，碳排預計超標 15% 影響：+15% 碳排</div>
+                                    </div>
+                                    <div className="flex gap-2 mt-4">
+                                        <button className="flex-1 bg-white border border-border text-gray-600 rounded py-1.5 text-xs hover:bg-gray-50">{t('viewAnalysis')}</button>
+                                        <button className="flex-1 bg-danger text-white rounded py-1.5 text-xs hover:bg-red-600">{t('oneClickOptimize')}</button>
+                                    </div>
+                                </div>
+                                {/* Card 2 */}
+                                <div className="border border-slate-200 border-t-2 border-t-warning bg-white rounded-lg p-3.5 flex flex-col justify-between shadow-sm">
+                                    <div>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="text-warning text-xs flex items-center gap-1.5 font-medium"><i className="fa-solid fa-scale-balanced"></i> Legislation Agent</span>
+                                            <span className="bg-orange-50 text-warning text-[10px] px-1.5 py-0.5 rounded">{t('complianceReminder')}</span>
+                                        </div>
+                                        <div className="font-bold text-[14px] mb-1.5 text-gray-800">{t('fireCertExpiring')}</div>
+                                        <div className="text-gray-500 text-[11px] leading-relaxed">Data Vault 識別顯示，消防安檢 證書剩餘 30 天後過期。</div>
+                                    </div>
+                                    <div className="flex gap-2 mt-4">
+                                        <button className="flex-1 bg-white border border-border text-gray-600 rounded py-1.5 text-xs hover:bg-gray-50">{t('viewDetails')}</button>
+                                        <button className="flex-1 bg-warning text-white rounded py-1.5 text-xs hover:bg-orange-600">{t('goToUpdate')}</button>
+                                    </div>
+                                </div>
+                                {/* Card 3 */}
+                                <div className="border border-slate-200 border-t-2 border-t-info bg-white rounded-lg p-3.5 flex flex-col justify-between shadow-sm">
+                                    <div>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="text-info text-xs flex items-center gap-1.5 font-medium"><i className="fa-solid fa-city"></i> Urbanism Agent</span>
+                                            <span className="bg-blue-50 text-info text-[10px] px-1.5 py-0.5 rounded">{t('opportunityId')}</span>
+                                        </div>
+                                        <div className="font-bold text-[14px] mb-1.5 text-gray-800">{t('roofGreeningTitle')}</div>
+                                        <div className="text-gray-500 text-[11px] leading-relaxed">對比市場基準，可提升 WELL 認證 3 分，並符合政府綠色補貼標準。</div>
+                                    </div>
+                                    <div className="flex gap-2 mt-4">
+                                        <button className="flex-1 bg-white border border-border text-gray-600 rounded py-1.5 text-xs hover:bg-gray-50">查看分析</button>
+                                        <button className="flex-1 bg-info text-white rounded py-1.5 text-xs hover:bg-blue-600">{t('startAssessment')}</button>
+                                    </div>
+                                </div>
+                                {/* Card 4 */}
+                                <div className="border border-slate-200 border-t-2 border-t-primary bg-white rounded-lg p-3.5 flex flex-col justify-between shadow-sm">
+                                    <div>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="text-primary text-xs flex items-center gap-1.5 font-medium"><i className="fa-solid fa-book-open"></i> Knowledge Agent</span>
+                                            <span className="bg-green-50 text-primary text-[10px] px-1.5 py-0.5 rounded">{t('researchLabel')}</span>
+                                        </div>
+                                        <div className="font-bold text-[14px] mb-1.5 text-gray-800">{t('waterPerformanceGood')}</div>
+                                        <div className="text-gray-500 text-[11px] leading-relaxed">用水建造機構指數良好，較上月下降 3.1%，以滿足合規綠色標準。</div>
+                                    </div>
+                                    <div className="flex gap-2 mt-4">
+                                        <button className="flex-1 bg-white border border-border text-gray-600 rounded py-1.5 text-xs hover:bg-gray-50">{t('viewTrend')}</button>
+                                        <button className="flex-1 bg-primary text-white rounded py-1.5 text-xs hover:bg-green-600">{t('shareReport')}</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+            
+                        {/* Charts Row */}
+                        <div className="grid grid-cols-3 gap-5 mb-5">
+                            <div className="col-span-2 bg-white rounded-xl shadow-sm-card border border-border/50 p-4">
+                                <div className="flex justify-between items-center mb-4">
+                                    <div className="font-semibold">{t('iotTrend')}</div>
+                                    <div className="text-xs text-gray-400">24 小時</div>
+                                </div>
+                                <div className="flex gap-4 text-[11px] mb-2">
+                                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-500"></span> 溫度 (°C)</span>
+                                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500"></span> 濕度 (%)</span>
+                                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-500"></span> CO₂ (ppm)</span>
+                                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-purple-500"></span> PM2.5 (μg/m³)</span>
+                                </div>
+                                <div className="h-48 relative w-full">
+                                    <canvas id="chartIoT"></canvas>
+                                </div>
+                            </div>
+                            <div className="col-span-1 bg-white rounded-xl shadow-sm-card border border-border/50 p-4">
+                                <div className="font-semibold mb-4">{t('deviceDistribution')}</div>
+                                <div className="flex items-center h-48">
+                                    <div className="w-1/2 relative h-full flex items-center justify-center">
+                                        <canvas id="chartDevice"></canvas>
+                                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                                            <span className="text-2xl font-bold">256</span>
+                                            <span className="text-[10px] text-gray-400">{t('deviceTotal')}</span>
+                                        </div>
+                                    </div>
+                                    <div className="w-1/2 pl-4 flex flex-col gap-2 text-xs">
+                                        <div className="flex items-center justify-between"><span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-500"></span> HVAC 系統</span> <span className="font-semibold">88 <span className="text-gray-400 font-normal">(34%)</span></span></div>
+                                        <div className="flex items-center justify-between"><span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-purple-500"></span> 照明系統</span> <span className="font-semibold">66 <span className="text-gray-400 font-normal">(26%)</span></span></div>
+                                        <div className="flex items-center justify-between"><span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-orange-500"></span> 電力系統</span> <span className="font-semibold">48 <span className="text-gray-400 font-normal">(19%)</span></span></div>
+                                        <div className="flex items-center justify-between"><span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500"></span> 水資源系統</span> <span className="font-semibold">32 <span className="text-gray-400 font-normal">(13%)</span></span></div>
+                                        <div className="flex items-center justify-between"><span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-lime-500"></span> 垃圾處理系統</span> <span className="font-semibold">12 <span className="text-gray-400 font-normal">(5%)</span></span></div>
+                                        <div className="flex items-center justify-between"><span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-slate-400"></span> 其他設備</span> <span className="font-semibold">10 <span className="text-gray-400 font-normal">(3%)</span></span></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+            
+                        {/* Table */}
+                        <div className="bg-white rounded-xl shadow-sm-card border border-border/50 p-4">
+                            <div className="flex justify-between items-center mb-4">
+                                <div className="font-semibold">{t('realtimeDataList')}</div>
+                                <div className="flex gap-2">
+                                    <div className="relative">
+                                        <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                                        <input type="text" placeholder="搜索設備編號..." className="pl-8 pr-3 py-1.5 text-xs border border-border rounded-md w-48 focus:outline-none focus:border-primary"/>
+                                    </div>
+                                    <button className="border border-border px-3 py-1.5 rounded-md text-xs text-gray-600 hover:bg-gray-50 flex items-center gap-1.5">
+                                        <i className="fa-solid fa-filter"></i> 篩選
+                                    </button>
+                                </div>
+                            </div>
+                            <table className="w-full text-left text-xs">
+                                <thead>
+                                    <tr className="text-gray-400 border-b border-border/50">
+                                        <th className="pb-3 font-medium">{t('sensorName')}</th>
+                                        <th className="pb-3 font-medium">{t('categoryCol')}</th>
+                                        <th className="pb-3 font-medium">{t('location')}</th>
+                                        <th className="pb-3 font-medium">{t('realtimeValue')}</th>
+                                        <th className="pb-3 font-medium">狀態</th>
+                                        <th className="pb-3 font-medium">趨勢 (24h)</th>
+                                        <th className="pb-3 font-medium">{t('lastUpdate')}</th>
+                                        <th className="pb-3 font-medium text-right">{t('analysisCol')}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr className="border-b border-border/30 hover:bg-gray-50">
+                                        <td className="py-3 flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-primary"></span> T-01 溫度感應器</td>
+                                        <td className="py-3"><span className="text-primary bg-primary-light px-2 py-0.5 rounded text-[10px]">{t('envMonitoring')}</span></td>
+                                        <td className="py-3 text-gray-500">3/F 辦公園區 A</td>
+                                        <td className="py-3 font-semibold">24.6 °C</td>
+                                        <td className="py-3 text-primary flex items-center gap-1"><i className="fa-solid fa-circle text-[8px]"></i> {t('normal')}</td>
+                                        <td className="py-3"><svg className="w-12 h-4"><path className="sparkline" d="M0,10 L10,8 L20,12 L30,5 L40,6 L50,2"></path></svg></td>
+                                        <td className="py-3 text-gray-400">{t('minsAgo2')}</td>
+                                        <td className="py-3 text-right"><button className="text-gray-500 hover:text-primary">分析 <i className="fa-solid fa-ellipsis-vertical ml-2"></i></button></td>
+                                    </tr>
+                                    <tr className="border-b border-border/30 hover:bg-gray-50">
+                                        <td className="py-3 flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-primary"></span> H-01 濕度感應器</td>
+                                        <td className="py-3"><span className="text-primary bg-primary-light px-2 py-0.5 rounded text-[10px]">環境監測</span></td>
+                                        <td className="py-3 text-gray-500">3/F 辦公園區 A</td>
+                                        <td className="py-3 font-semibold">58.3 %</td>
+                                        <td className="py-3 text-primary flex items-center gap-1"><i className="fa-solid fa-circle text-[8px]"></i> 正常</td>
+                                        <td className="py-3"><svg className="w-12 h-4"><path className="sparkline" d="M0,12 L10,10 L20,15 L30,8 L40,5 L50,2"></path></svg></td>
+                                        <td className="py-3 text-gray-400">2 分鐘前</td>
+                                        <td className="py-3 text-right"><button className="text-gray-500 hover:text-primary">分析 <i className="fa-solid fa-ellipsis-vertical ml-2"></i></button></td>
+                                    </tr>
+                                    <tr className="border-b border-border/30 hover:bg-gray-50">
+                                        <td className="py-3 flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-warning"></span> CO2-01 CO₂ 感應器</td>
+                                        <td className="py-3"><span className="text-warning bg-orange-50 px-2 py-0.5 rounded text-[10px]">{t('airQualityCol')}</span></td>
+                                        <td className="py-3 text-gray-500">3/F 會議室 B</td>
+                                        <td className="py-3 font-semibold">687 ppm</td>
+                                        <td className="py-3 text-warning flex items-center gap-1"><i className="fa-solid fa-circle text-[8px]"></i> {t('slightlyHigh')}</td>
+                                        <td className="py-3"><svg className="w-12 h-4"><path className="sparkline-warning" d="M0,15 L10,12 L20,10 L30,5 L40,3 L50,0"></path></svg></td>
+                                        <td className="py-3 text-gray-400">{t('minsAgo1')}</td>
+                                        <td className="py-3 text-right"><button className="text-gray-500 hover:text-primary">分析 <i className="fa-solid fa-ellipsis-vertical ml-2"></i></button></td>
+                                    </tr>
+                                    <tr className="border-b border-border/30 hover:bg-gray-50">
+                                        <td className="py-3 flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-primary"></span> PM2.5-01 PM2.5 感應器</td>
+                                        <td className="py-3"><span className="text-warning bg-orange-50 px-2 py-0.5 rounded text-[10px]">空氣質素</span></td>
+                                        <td className="py-3 text-gray-500">2/F 接待大堂</td>
+                                        <td className="py-3 font-semibold">12 μg/m³</td>
+                                        <td className="py-3 text-primary flex items-center gap-1"><i className="fa-solid fa-circle text-[8px]"></i> 正常</td>
+                                        <td className="py-3"><svg className="w-12 h-4"><path style={{stroke: "#8B5CF6", strokeWidth: 2, fill: "none"}} d="M0,10 L10,12 L20,8 L30,5 L40,8 L50,5"></path></svg></td>
+                                        <td className="py-3 text-gray-400">1 分鐘前</td>
+                                        <td className="py-3 text-right"><button className="text-gray-500 hover:text-primary">分析 <i className="fa-solid fa-ellipsis-vertical ml-2"></i></button></td>
+                                    </tr>
+                                    <tr className="hover:bg-gray-50">
+                                        <td className="py-3 flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-primary"></span> E-01 電力監測器</td>
+                                        <td className="py-3"><span className="text-info bg-blue-50 px-2 py-0.5 rounded text-[10px]">{t('energyMonitoring')}</span></td>
+                                        <td className="py-3 text-gray-500">機電房/配電箱</td>
+                                        <td className="py-3 font-semibold">45.2 kW</td>
+                                        <td className="py-3 text-primary flex items-center gap-1"><i className="fa-solid fa-circle text-[8px]"></i> 正常</td>
+                                        <td className="py-3"><svg className="w-12 h-4"><path className="sparkline" d="M0,5 L10,8 L20,5 L30,12 L40,10 L50,15"></path></svg></td>
+                                        <td className="py-3 text-gray-400">{t('secAgo30')}</td>
+                                        <td className="py-3 text-right"><button className="text-gray-500 hover:text-primary">分析 <i className="fa-solid fa-ellipsis-vertical ml-2"></i></button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-                </div>
-            </div>
+            
             );
         };
-
         const DataInfo = () => {
             const { t } = useI18n();
+            const [digitalId, setDigitalId] = React.useState('...');
+            const [carbonId, setCarbonId] = React.useState('...');
+            const [showQrModal, setShowQrModal] = React.useState(false);
+            const qrRef = React.useRef(null);
+
+            React.useEffect(function() {
+                try {
+                    var u = JSON.parse(localStorage.getItem('userInfo') || '{}');
+                    var email = u.Email || u.email || '';
+                    if (!email) return;
+                    fetch('/api/profile/building?email=' + encodeURIComponent(email))
+                        .then(function(r) { return r.json(); })
+                        .then(function(d) {
+                            if (d && d.data) {
+                                if (d.data.digitalAssetId) setDigitalId(d.data.digitalAssetId);
+                                if (d.data.carbonAssetId) setCarbonId(d.data.carbonAssetId);
+                            }
+                        });
+                } catch(e) {}
+            }, []);
+
+            React.useEffect(function() {
+                if (showQrModal && qrRef.current && digitalId !== '...' && carbonId !== '...') {
+                    qrRef.current.innerHTML = '';
+                    new QRCode(qrRef.current, {
+                        text: 'Digital Asset: ' + digitalId + ' | Carbon Asset: ' + carbonId,
+                        width: 200,
+                        height: 200,
+                        colorDark: '#1e293b',
+                        colorLight: '#ffffff',
+                    });
+                }
+            }, [showQrModal, digitalId, carbonId]);
+
+            var downloadQr = function() {
+                var canvas = qrRef.current ? qrRef.current.querySelector('canvas') : null;
+                if (!canvas) return;
+                var link = document.createElement('a');
+                link.download = 'ESG-VISA-QR-' + digitalId + '.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            };
             return (
             <div className="space-y-6 max-w-full mx-auto">
                 <div className="flex justify-between items-start mb-2">
@@ -704,10 +1430,11 @@
                         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                             <h3 className="text-xs font-bold text-gray-400 mb-5 tracking-widest uppercase">{t('digitalIdentity')}</h3>
                             <div className="space-y-5">
-                                <div className="flex justify-between items-center"><span className="text-gray-500 text-sm">{t('digitalAssetId')}</span><span className="font-mono text-sm text-gray-800">0xDA...B1</span></div>
-                                <div className="flex justify-between items-center"><span className="text-gray-500 text-sm">{t('carbonAssetId')}</span><span className="font-mono text-sm text-gray-800">0xCA...B442</span></div>
-                                <div className="flex justify-between items-center"><span className="text-gray-500 text-sm">{t('qrCodeAccess')}</span><a href="#" className="text-blue-600 text-sm font-medium hover:underline">{t('downloadQr')}</a></div>
+                                <div className="flex justify-between items-center"><span className="text-gray-500 text-sm">{t('digitalAssetId')}</span><span className="font-mono text-sm text-gray-800">{digitalId}</span></div>
+                                <div className="flex justify-between items-center"><span className="text-gray-500 text-sm">{t('carbonAssetId')}</span><span className="font-mono text-sm text-gray-800">{carbonId}</span></div>
+                                <div className="flex justify-between items-center"><span className="text-gray-500 text-sm">{t('qrCodeAccess')}</span><button onClick={function(){ setShowQrModal(true); }} className="text-blue-600 text-sm font-medium hover:underline cursor-pointer">{t("downloadQr")}</button></div>
                             </div>
+                        {showQrModal && (                            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={function(){ setShowQrModal(false); }}>                                <div className="bg-white rounded-2xl p-8 max-w-sm w-full mx-4 shadow-2xl" onClick={function(e){ e.stopPropagation(); }}>                                    <div className="flex justify-between items-center mb-6">                                        <h3 className="text-lg font-bold text-gray-800">{t("qrCodeAccess")}</h3>                                        <button onClick={function(){ setShowQrModal(false); }} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>                                    </div>                                    <div className="flex justify-center mb-6">                                        <div ref={qrRef} className="p-4 border border-gray-200 rounded-xl"></div>                                    </div>                                    <button onClick={downloadQr} className="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-3 rounded-lg font-bold transition-colors">{t("downloadQr")}</button>                                </div>                            </div>                        )}
                         </div>
                         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                             <h3 className="text-xs font-bold text-gray-400 mb-5 tracking-widest uppercase">{t('occupancyMix')}</h3>
@@ -729,6 +1456,7 @@
             );
         };
 
+        
         const DeviceMgt = () => {
             const { t } = useI18n();
             return (
@@ -822,6 +1550,19 @@
                             </tr>
                         </tbody>
                     </table>
+
+                {/* Blockchain Access Control */}
+                <div className="mt-6 border-t-2 border-indigo-200 pt-6">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="font-bold text-gray-800 flex items-center gap-2">{t('agentPush')} - {t('deviceMgt')} <span className="text-xs text-gray-400 font-normal">(access-channel)</span></h3>
+                        <div className="flex gap-2">
+                            <button id="btnAccessRefresh" className="bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-1.5 rounded text-xs font-medium">{t('loading')}</button>
+                            <button id="btnGrantAccess" className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded text-xs font-bold">+ {t('addNewDevice')}</button>
+                            <button id="btnSimAccess" className="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded text-xs font-bold">Test</button>
+                        </div>
+                    </div>
+                    <div id="accessChainData" className="text-center text-gray-400 py-4 text-sm">Click refresh to load blockchain data</div>
+                </div>
                 </div>
             </div>
             );
@@ -836,7 +1577,7 @@
                         <h2 className="text-2xl font-bold text-gray-900">{t('godfreyCentre')} - {t('dataVault')}</h2>
                         <p className="text-gray-500 text-sm mt-1.5">{t('dataVaultTitle')}</p>
                     </div>
-                    <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg shadow-sm text-sm font-bold flex items-center gap-2 transition-colors">
+                    <button id="btnDataVaultUpload" className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg shadow-sm text-sm font-bold flex items-center gap-2 transition-colors">
                         ☁ {t('uploadDoc')}
                     </button>
                 </div>
@@ -858,27 +1599,22 @@
                                 <th className="p-4 font-semibold text-center w-32">{t('action')}</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100">
-                            <tr className="hover:bg-gray-50/50 transition-colors">
-                                <td className="p-4 pl-6 flex items-center gap-3 text-gray-800 font-medium"><span className="text-indigo-400 text-lg">📄</span> {t('carbonPlan')}</td>
-                                <td className="p-4 text-center text-gray-500">ESG Documentation</td>
-                                <td className="p-4 text-center"><span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">✓ {t('verified')}</span></td>
-                                <td className="p-4 text-center"><button className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-1.5 rounded text-xs font-bold transition-colors">{t('docDetails')}</button></td>
-                            </tr>
-                            <tr className="hover:bg-gray-50/50 transition-colors">
-                                <td className="p-4 pl-6 flex items-center gap-3 text-gray-800 font-medium"><span className="text-indigo-400 text-lg">📄</span> {t('titleDeed')}</td>
-                                <td className="p-4 text-center text-gray-500">Asset Documents</td>
-                                <td className="p-4 text-center"><span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">✓ {t('verified')}</span></td>
-                                <td className="p-4 text-center"><button className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-1.5 rounded text-xs font-bold transition-colors">{t('docDetails')}</button></td>
-                            </tr>
-                            <tr className="hover:bg-gray-50/50 transition-colors bg-red-50/20">
-                                <td className="p-4 pl-6 flex items-center gap-3 text-gray-800 font-medium"><span className="text-indigo-400 text-lg">📄</span> {t('fireCert')}</td>
-                                <td className="p-4 text-center text-gray-500">Asset Documents</td>
-                                <td className="p-4 text-center"><span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-600 border border-amber-200">⚠ {t('expiring30d')}</span></td>
-                                <td className="p-4 text-center"><button className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-1.5 rounded text-xs font-bold transition-colors">{t('docDetails')}</button></td>
-                            </tr>
+                        <tbody id="dataVaultTableBody" className="divide-y divide-gray-100"><tr id="dataVaultLoading"><td colspan="4" className="p-8 text-center text-gray-400"><i className="fa-solid fa-spinner fa-spin"></i> Loading files...</td></tr>
                         </tbody>
                     </table>
+
+                {/* Blockchain ESG Vault */}
+                <div className="mt-6 border-t-2 border-emerald-200 pt-6">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="font-bold text-gray-800 flex items-center gap-2">{t('dataVault')} - ESG <span className="text-xs text-gray-400 font-normal">(esg-channel)</span></h3>
+                        <div className="flex gap-2">
+                            <button id="btnEsgRefresh" className="bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-1.5 rounded text-xs font-medium">{t('loading')}</button>
+                            <button id="btnEsgUpload" className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded text-xs font-bold">{t('uploadDoc')}</button>
+                            <button id="btnEsgReport" className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded text-xs font-bold">ESG Report</button>
+                        </div>
+                    </div>
+                    <div id="esgChainData" className="text-center text-gray-400 py-4 text-sm">Click refresh to load blockchain data</div>
+                </div>
                 </div>
             </div>
             );
@@ -886,94 +1622,540 @@
 
         const Sustainability = () => {
             const { t } = useI18n();
+            const [showGreenBuilding, setShowGreenBuilding] = React.useState(false);
+
+            React.useEffect(() => {
+                let esgTrendChart, esgRadarChart;
+                
+                // Initialize ESG Trend Chart
+                const ctxESGTrend = document.getElementById('chartESGTrend');
+                if (ctxESGTrend && window.Chart) {
+                    esgTrendChart = new Chart(ctxESGTrend, {
+                        type: 'line',
+                        data: {
+                            labels: ['12月', '1月', '2月', '3月', '4月', '5月'],
+                            datasets: [
+                                {
+                                    label: '環境 (E)',
+                                    data: [88, 92, 90, 88, 95, 93],
+                                    borderColor: '#A855F7',
+                                    backgroundColor: 'transparent',
+                                    borderWidth: 2,
+                                    tension: 0.4,
+                                    pointRadius: 0
+                                },
+                                {
+                                    label: '社會 (S)',
+                                    data: [72, 75, 73, 68, 78, 76],
+                                    borderColor: '#10B981',
+                                    backgroundColor: 'transparent',
+                                    borderWidth: 2,
+                                    tension: 0.4,
+                                    pointRadius: 0
+                                },
+                                {
+                                    label: '治理 (G)',
+                                    data: [50, 55, 53, 48, 58, 55],
+                                    borderColor: '#F97316',
+                                    backgroundColor: 'transparent',
+                                    borderWidth: 2,
+                                    tension: 0.4,
+                                    pointRadius: 0
+                                },
+                                {
+                                    label: 'ESG 總分',
+                                    data: [35, 40, 38, 35, 45, 42],
+                                    borderColor: '#10B981',
+                                    backgroundColor: 'transparent',
+                                    borderWidth: 2,
+                                    borderDash: [5, 5],
+                                    tension: 0.4,
+                                    pointRadius: 0
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                y: { min: 0, max: 100, ticks: { stepSize: 25, font: { size: 9 }, color: '#94a3b8' }, border: { display: false }, grid: { color: '#f1f5f9' } },
+                                x: { ticks: { font: { size: 9 }, color: '#94a3b8' }, border: { display: false }, grid: { display: false } }
+                            }
+                        }
+                    });
+                }
+
+                // Initialize ESG Radar Chart
+                const ctxESGRadar = document.getElementById('chartESGRadar');
+                if (ctxESGRadar && window.Chart) {
+                    esgRadarChart = new Chart(ctxESGRadar, {
+                        type: 'radar',
+                        data: {
+                            labels: ['能源管理', '碳排放', '水資源管理', '廢棄物管理', '室內環境質量', '供應鏈管理', '社區參與', '公司治理'],
+                            datasets: [
+                                {
+                                    label: '本期表現',
+                                    data: [85, 70, 90, 80, 85, 75, 80, 85],
+                                    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                                    borderColor: '#10B981',
+                                    pointBackgroundColor: '#10B981',
+                                    pointBorderColor: '#fff',
+                                    borderWidth: 2,
+                                    pointRadius: 0
+                                },
+                                {
+                                    label: '上期表現',
+                                    data: [75, 65, 85, 75, 80, 70, 75, 80],
+                                    backgroundColor: 'transparent',
+                                    borderColor: '#10B981',
+                                    borderDash: [5, 5],
+                                    pointBackgroundColor: '#10B981',
+                                    pointBorderColor: '#fff',
+                                    borderWidth: 2,
+                                    pointRadius: 0
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                r: {
+                                    angleLines: { color: '#f1f5f9' },
+                                    grid: { color: '#f1f5f9' },
+                                    pointLabels: { font: { size: 9 }, color: '#64748b' },
+                                    ticks: { display: false, min: 0, max: 100 }
+                                }
+                            }
+                        }
+                    });
+                }
+
+                return () => {
+                    if (esgTrendChart) esgTrendChart.destroy();
+                    if (esgRadarChart) esgRadarChart.destroy();
+                };
+            }, []);
+
             return (
-            <div className="space-y-6 max-w-full mx-auto">
-                <div className="flex justify-between items-end mb-6">
-                    <div>
-                        <h2 className="text-2xl font-bold text-gray-900">{t('godfreyCentre')} - {t('susPerformance')}</h2>
-                        <p className="text-gray-500 text-sm mt-1.5">{t('susDesc')}</p>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm bg-white px-4 py-2 rounded-lg border border-gray-200 shadow-sm">
-                        <span className="text-gray-400">📊 {t('benchmarkVs')}</span>
-                        <span className="font-bold text-gray-800">{t('cityAverage')}</span>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-6">
-                    <div className="col-span-1 bg-gradient-to-b from-[#2a2c5a] to-[#1e1f40] rounded-2xl shadow-xl p-8 text-white relative overflow-hidden border border-[#3b3d75]">
-                        <div className="absolute -top-4 -right-4 p-4 opacity-10 text-9xl pointer-events-none">🍃</div>
-                        <div className="text-indigo-200 text-sm font-medium mb-3">{t('esgScoreTitle')}</div>
-                        <div className="text-7xl font-bold mb-10 text-white">82</div>
+                    <>
+                    <div id="page2" className={`page-content flex-1 overflow-y-auto p-6 ${showGreenBuilding ? 'hidden' : ''}`}>
+                        <h1 className="text-xl font-bold text-gray-800 mb-5">{t('susReport')}</h1>
                         
-                        <div className="space-y-5">
-                            <div>
-                                <div className="flex justify-between text-sm mb-2"><span className="text-indigo-100">{t('environmental')}</span><span className="font-bold text-white">78/100</span></div>
-                                <div className="w-full bg-black/30 rounded-full h-2"><div className="bg-emerald-400 h-2 rounded-full" style={{width: '78%'}}></div></div>
+                        {/* Two big banners */}
+                        <div className="grid grid-cols-2 gap-5 mb-6">
+                            <div className="bg-white rounded-xl shadow-sm-card border border-border/50 p-5 flex items-center justify-between relative overflow-hidden">
+                                <div className="relative z-10 w-full">
+                                    <h2 className="text-lg font-bold mb-2">{t('greenBuildingRating')}</h2>
+                                    <p className="text-gray-500 text-xs mb-4 max-w-[220px] leading-relaxed">{t('greenBuildingDesc')}</p>
+                                    <button onClick={() => setShowGreenBuilding(true)} className="bg-[#00B47D] text-white px-4 py-2.5 rounded text-xs font-bold shadow hover:bg-green-600 transition-colors">
+                                        進入綠色建築評級 ↗
+                                    </button>
+                                </div>
+                                <div className="absolute right-0 bottom-0 transform translate-x-2 translate-y-2 opacity-30 text-[#00B47D]">
+                                    <svg width="120" height="120" viewBox="0 0 24 24" fill="currentColor"><path d="M15 3h6v18h-6V3zm-2 18H3V9h10v12zm1-8h2v2h-2v-2zm0 4h2v2h-2v-2zm0-8h2v2h-2V9zm-8 4h2v2H6v-2zm0 4h2v2H6v-2zm0-8h2v2H6V9zm4 0h2v2h-2V9zm0 4h2v2h-2v-2zm0 4h2v2h-2v-2z"></path></svg>
+                                </div>
                             </div>
-                            <div>
-                                <div className="flex justify-between text-sm mb-2"><span className="text-indigo-100">{t('social')}</span><span className="font-bold text-white">85/100</span></div>
-                                <div className="w-full bg-black/30 rounded-full h-2"><div className="bg-blue-400 h-2 rounded-full" style={{width: '85%'}}></div></div>
+                            <div className="bg-white rounded-xl shadow-sm-card border border-border/50 p-5 flex items-center justify-between relative overflow-hidden">
+                                <div className="relative z-10 w-full">
+                                    <h2 className="text-lg font-bold mb-2">{t('esgReport')}</h2>
+                                    <p className="text-gray-500 text-xs mb-4 max-w-[220px] leading-relaxed">{t('buildingDesc')}</p>
+                                    <button className="bg-[#00B47D] text-white px-4 py-2.5 rounded text-xs font-bold shadow hover:bg-green-600 transition-colors">
+                                        進入 ESG 報告 ↗
+                                    </button>
+                                </div>
+                                <div className="absolute right-0 bottom-0 transform translate-x-2 translate-y-2 opacity-30 text-[#00B47D]">
+                                    <svg width="120" height="120" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM6 20V4h7v5h5v11H6zm10-9H8v2h8v-2zm-3 4H8v2h5v-2z"></path></svg>
+                                </div>
                             </div>
-                            <div>
-                                <div className="flex justify-between text-sm mb-2"><span className="text-indigo-100">{t('governance')}</span><span className="font-bold text-white">88/100</span></div>
-                                <div className="w-full bg-black/30 rounded-full h-2"><div className="bg-purple-400 h-2 rounded-full" style={{width: '88%'}}></div></div>
+                        </div>
+            
+                        {/* KPIs */}
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="font-bold text-base">{t('susOverview')}</h3>
+                            <div className="flex gap-3">
+                                <div className="flex items-center gap-2 bg-white border border-border px-3 py-1.5 rounded text-xs text-gray-600 shadow-sm">
+                                    2025/05/20 - 2025/05/26 <i className="fa-regular fa-calendar ml-1 text-gray-400"></i>
+                                </div>
+                                <button className="bg-white border border-border px-3 py-1.5 rounded text-xs text-gray-600 hover:bg-gray-50 flex items-center gap-1.5 shadow-sm">
+                                    <i className="fa-solid fa-download text-gray-400"></i> 導出報表
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-5 gap-4 mb-6">
+                            {/* 5 small cards (similar to page 1 but different data) */}
+                            <div className="bg-white p-5 rounded-xl shadow-sm-card border border-border/50">
+                                <div className="text-gray-500 mb-2 text-[13px] font-medium">{t('overallEsg')}</div>
+                                <div className="flex items-baseline gap-1"><span className="text-[42px] leading-none font-bold text-[#00B47D]">82</span><span className="text-gray-400 text-[10px] font-medium ml-1">/100</span></div>
+                                <div className="text-[#00B47D] text-[11px] mt-4 font-medium">↗ +2.4% 較上月</div>
+                            </div>
+                            <div className="bg-white p-5 rounded-xl shadow-sm-card border border-border/50">
+                                <div className="text-gray-500 mb-2 text-[13px] font-medium">碳排強度</div>
+                                <div className="flex items-baseline gap-1"><span className="text-[42px] leading-none font-bold text-orange-500">45.2</span><span className="text-gray-400 text-[10px] font-medium ml-1">kg CO₂/m²</span></div>
+                                <div className="text-orange-500 text-[11px] mt-4 font-medium">⚠ 需減碳策略部署</div>
+                            </div>
+                            <div className="bg-white p-5 rounded-xl shadow-sm-card border border-border/50">
+                                <div className="text-gray-500 mb-2 text-[13px] font-medium">{t('energyIntensity')}</div>
+                                <div className="flex items-baseline gap-1"><span className="text-[42px] leading-none font-bold text-[#00B47D]">128</span><span className="text-gray-400 text-[10px] font-medium ml-1">kWh/m²</span></div>
+                                <div className="text-[#00B47D] text-[11px] mt-4 font-medium">↘ -5.6% 較上月</div>
+                            </div>
+                            <div className="bg-white p-5 rounded-xl shadow-sm-card border border-border/50">
+                                <div className="text-gray-500 mb-2 text-[13px] font-medium">{t('waterIntensity')}</div>
+                                <div className="flex items-baseline gap-1"><span className="text-[42px] leading-none font-bold text-blue-500">0.68</span><span className="text-gray-400 text-[10px] font-medium ml-1">m³/m²</span></div>
+                                <div className="text-[#00B47D] text-[11px] mt-4 font-medium">↘ -3.1% 較上月</div>
+                            </div>
+                            <div className="bg-white p-5 rounded-xl shadow-sm-card border border-border/50">
+                                <div className="text-gray-500 mb-2 text-[13px] font-medium">{t('wasteRecyclingRate')}</div>
+                                <div className="flex items-baseline gap-1"><span className="text-[42px] leading-none font-bold text-purple-600">76</span><span className="text-gray-400 text-xs font-medium ml-1">%</span></div>
+                                <div className="text-[#00B47D] text-[11px] mt-4 font-medium">↗ +4.2% 較上月</div>
+                            </div>
+                        </div>
+            
+                        {/* Charts Row 2 */}
+                        <div className="grid grid-cols-4 gap-5 mb-6">
+                            <div className="col-span-2 bg-white rounded-xl shadow-sm-card border border-border/50 p-4 relative flex flex-col">
+                                <div className="font-semibold mb-2">{t('esgTrend')}</div>
+                                <div className="flex gap-6 text-[11px] text-gray-600 font-medium ml-2 shrink-0">
+                                    <span className="flex items-center gap-1.5"><div className="w-4 h-0.5 bg-[#A855F7]"></div> 環境 (E)</span>
+                                    <span className="flex items-center gap-1.5"><div className="w-4 h-0.5 bg-[#10B981]"></div> 社會 (S)</span>
+                                    <span className="flex items-center gap-1.5"><div className="w-4 h-0.5 bg-[#F97316]"></div> 治理 (G)</span>
+                                    <span className="flex items-center gap-1.5"><div className="w-4 h-0.5 border-t-2 border-dashed border-[#10B981]"></div> ESG 總分</span>
+                                </div>
+                                <div className="w-full relative mt-4 h-[260px]"><canvas id="chartESGTrend"></canvas></div>
+                            </div>
+                            <div className="col-span-1 bg-white rounded-xl shadow-sm-card border border-border/50 p-4 flex flex-col">
+                                <div className="font-semibold mb-6 shrink-0">{t('esgKeyIssues')}</div>
+                                <div className="w-full relative h-[220px] flex items-center justify-center"><canvas id="chartESGRadar"></canvas></div>
+                                <div className="flex gap-6 text-[11px] justify-center mt-auto pt-4 text-gray-600 font-medium shrink-0">
+                                    <span className="flex items-center gap-1.5">
+                                        <div className="flex items-center"><div className="w-2.5 h-0.5 bg-[#10B981]"></div><div className="w-2 h-2 rounded-full bg-[#10B981] border border-[#10B981] -ml-0.5 -mr-0.5 z-10"></div><div className="w-2.5 h-0.5 bg-[#10B981]"></div></div> {t('currentPeriod')}
+                                    </span>
+                                    <span className="flex items-center gap-1.5">
+                                        <div className="flex items-center"><div className="w-2.5 h-0 border-t-2 border-dashed border-[#10B981]"></div><div className="w-2 h-2 rounded-full bg-white border border-[#10B981] -ml-0.5 -mr-0.5 z-10"></div><div className="w-2.5 h-0 border-t-2 border-dashed border-[#10B981]"></div></div> {t('previousPeriod')}
+                                    </span>
+                                </div>
+                            </div>
+                            <div className="col-span-1 bg-white rounded-xl shadow-sm-card border border-border/50 p-4 flex flex-col">
+                                <div className="font-semibold mb-4">{t('latestReports')}</div>
+                                <div className="flex-1 flex flex-col gap-3">
+                                    <div className="flex items-center justify-between p-3.5 border border-border/50 rounded-lg hover:bg-gray-50 cursor-pointer shadow-sm">
+                                        <div>
+                                            <div className="font-semibold text-[13px] text-gray-800">{t('esgQ2Report')}</div>
+                                            <div className="text-[11px] text-gray-400 mt-1">2025/05/15</div>
+                                        </div>
+                                        <span className="text-[10px] bg-[#00B47D]/10 text-[#00B47D] px-2 py-0.5 rounded font-medium">{t('published')}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between p-3.5 border border-border/50 rounded-lg hover:bg-gray-50 cursor-pointer shadow-sm">
+                                        <div>
+                                            <div className="font-semibold text-[13px] text-gray-800">{t('carbonReport2024')}</div>
+                                            <div className="text-[11px] text-gray-400 mt-1">2025/01/20</div>
+                                        </div>
+                                        <span className="text-[10px] bg-[#00B47D]/10 text-[#00B47D] px-2 py-0.5 rounded font-medium">已發布</span>
+                                    </div>
+                                    <div className="flex items-center justify-between p-3.5 border border-border/50 rounded-lg hover:bg-gray-50 cursor-pointer shadow-sm">
+                                        <div>
+                                            <div className="font-semibold text-[13px] text-gray-800">{t('tcfdReport2024')}</div>
+                                            <div className="text-[11px] text-gray-400 mt-1">2025/01/10</div>
+                                        </div>
+                                        <span className="text-[10px] bg-[#00B47D]/10 text-[#00B47D] px-2 py-0.5 rounded font-medium">已發布</span>
+                                    </div>
+                                </div>
+                                <a href="#" className="text-[#00B47D] text-xs font-bold text-center mt-5 hover:underline">{t('viewAllReports')} ↗</a>
+                            </div>
+                        </div>
+            
+                        {/* Bottom Insights */}
+                        <h3 className="font-bold text-base mb-4">{t('keyInsights')}</h3>
+                        <div className="grid grid-cols-4 gap-4">
+                            <div className="bg-white border-l-[3px] border-[#10B981] border-y border-r border-border/50 p-4 rounded-r-xl flex gap-3 shadow-sm-card">
+                                <div className="w-9 h-9 rounded bg-[#10B981]/10 flex items-center justify-center text-[#10B981] shrink-0 text-lg"><i className="fa-solid fa-bolt"></i></div>
+                                <div>
+                                    <div className="font-bold text-sm mb-1 text-[#10B981]">{t('energyEffImproved')}</div>
+                                    <div className="text-xs text-gray-500 mb-2 leading-relaxed">{t('energyEffDesc')}</div>
+                                    <div className="text-[10px] text-gray-400">{t('hoursAgo2')}</div>
+                                </div>
+                            </div>
+                            <div className="bg-white border-l-[3px] border-[#F97316] border-y border-r border-border/50 p-4 rounded-r-xl flex gap-3 shadow-sm-card">
+                                <div className="w-9 h-9 rounded bg-[#F97316]/10 flex items-center justify-center text-[#F97316] shrink-0 text-lg"><i className="fa-solid fa-bullseye"></i></div>
+                                <div>
+                                    <div className="font-bold text-sm mb-1 text-[#F97316]">{t('carbonAlert')}</div>
+                                    <div className="text-xs text-gray-500 mb-2 leading-relaxed">{t('carbonAlertDesc')}</div>
+                                    <div className="text-[10px] text-gray-400">{t('hoursAgo5')}</div>
+                                </div>
+                            </div>
+                            <div className="bg-white border-l-[3px] border-[#3B82F6] border-y border-r border-border/50 p-4 rounded-r-xl flex gap-3 shadow-sm-card">
+                                <div className="w-9 h-9 rounded bg-[#3B82F6]/10 flex items-center justify-center text-[#3B82F6] shrink-0 text-lg"><i className="fa-solid fa-droplet"></i></div>
+                                <div>
+                                    <div className="font-bold text-sm mb-1 text-[#3B82F6]">用水表現良好</div>
+                                    <div className="text-xs text-gray-500 mb-2 leading-relaxed">{t('waterGoodDesc')}</div>
+                                    <div className="text-[10px] text-gray-400">{t('dayAgo1')}</div>
+                                </div>
+                            </div>
+                            <div className="bg-white border-l-[3px] border-[#A855F7] border-y border-r border-border/50 p-4 rounded-r-xl flex gap-3 shadow-sm-card">
+                                <div className="w-9 h-9 rounded bg-[#A855F7]/10 flex items-center justify-center text-[#A855F7] shrink-0 text-lg"><i className="fa-solid fa-seedling"></i></div>
+                                <div>
+                                    <div className="font-bold text-sm mb-1 text-[#A855F7]">{t('indoorEnvQuality')}</div>
+                                    <div className="text-xs text-gray-500 mb-2 leading-relaxed">{t('indoorEnvDesc')}</div>
+                                    <div className="text-[10px] text-gray-400">{t('daysAgo2')}</div>
+                                </div>
                             </div>
                         </div>
                     </div>
-
-                    <div className="col-span-2 grid grid-cols-2 gap-6">
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col">
-                            <div className="flex justify-between items-start mb-6">
-                                <h3 className="text-gray-500 font-bold flex items-center gap-2"><span className="text-xl">💨</span> {t('carbonMgt')}</h3>
-                                <span className="text-xs bg-red-50 text-red-600 px-2 py-1 rounded border border-red-100 font-bold">Scope 1+2</span>
+            
+                    {/* PAGE 3: 綠色建築評級 (BEAM Plus) */}
+                    <div id="page3" className={`page-content flex-1 overflow-y-auto p-6 ${showGreenBuilding ? '' : 'hidden'}`}>
+                        <div className="text-xs text-gray-400 mb-4 flex items-center gap-2">
+                            <a href="#" onClick={(e) => { e.preventDefault(); setShowGreenBuilding(false); }} className="hover:text-primary">可持續報表</a> <i className="fa-solid fa-chevron-right text-[8px]"></i> <span className="text-gray-800 font-semibold">綠色建築評級</span>
+                        </div>
+                        
+                        {/* Banner */}
+                        <div className="bg-white rounded-xl shadow-sm-card border border-border/50 p-6 mb-6 flex items-center justify-between">
+                            <div>
+                                <div className="flex items-center gap-3 mb-2">
+                                    <span className="text-sm font-semibold text-gray-500">{t('recommendedSystem')}</span>
+                                    <span className="bg-primary text-white text-[10px] px-2 py-0.5 rounded shadow-sm">{t('bestMatch')}</span>
+                                </div>
+                                <p className="text-xs text-gray-500 mb-4">根據建築類型、所在地區及數據表現，系統推薦最適合的綠色建築評級體系。</p>
+                                
+                                <div className="flex items-start gap-8">
+                                    <div>
+                                        <h2 className="text-2xl font-bold text-primary mb-1">BEAM Plus</h2>
+                                        <div className="text-xs text-gray-500 mb-1">{t('beamPlusOrg')}</div>
+                                        <span className="text-[10px] border border-primary text-primary px-1.5 py-0.5 rounded">{t('bestFit')}</span>
+                                    </div>
+                                    <ul className="text-xs text-gray-600 space-y-2 border-l border-border pl-6">
+                                        <li className="flex items-center gap-2"><i className="fa-solid fa-circle text-primary text-[6px]"></i> 匹配度高 建築類型與 BEAM Plus 要求高度匹配</li>
+                                        <li className="flex items-center gap-2"><i className="fa-solid fa-circle text-primary text-[6px]"></i> 數據覆蓋率高 已收集 92% 所需數據</li>
+                                        <li className="flex items-center gap-2"><i className="fa-solid fa-circle text-primary text-[6px]"></i> 認證成功率高 同類建築認證成功率達 87%</li>
+                                    </ul>
+                                </div>
                             </div>
-                            <div className="text-4xl font-bold text-gray-800">45.2 <span className="text-sm font-medium text-gray-500 block mt-1">kg CO₂/m² {t('intensity')}</span></div>
-                            <div className="text-red-500 text-xs mt-4 font-medium flex items-center gap-1"><span className="bg-red-50 px-2 py-1 rounded">⚠ {t('carbonSpiking')}</span></div>
-                            <div className="mt-auto pt-5 border-t border-gray-100 flex justify-between items-center text-sm">
-                                <span className="text-gray-500">{t('carbonOffsetProj')}</span>
-                                <span className="text-indigo-600 font-bold">1,200 {t('creditsGenerated')}</span>
+                            <div className="flex flex-col items-end gap-3">
+                                <img src="https://api.iconify.design/twemoji:cityscape.svg" className="h-20 opacity-80" alt="city" />
+                                <div className="flex gap-2">
+                                    <button className="bg-primary text-white px-4 py-2 rounded-lg text-xs font-semibold shadow hover:bg-green-600">{t('startBeamAssessment')} <i className="fa-solid fa-arrow-right ml-1"></i></button>
+                                    <button className="border border-border bg-white text-gray-600 px-4 py-2 rounded-lg text-xs hover:bg-gray-50">{t('viewOtherSystems')}</button>
+                                </div>
                             </div>
                         </div>
-
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col">
-                            <div className="flex justify-between items-start mb-6">
-                                <h3 className="text-gray-500 font-bold flex items-center gap-2"><span className="text-xl">⚡</span> {t('energyPerformance')}</h3>
-                                <span className="text-xs bg-amber-50 text-amber-600 px-2 py-1 rounded border border-amber-100 font-bold">EUI</span>
+            
+                        {/* Main Assessment Area */}
+                        <div className="flex gap-5 mb-5">
+                            {/* Left: Overall Score */}
+                            <div className="w-1/4 bg-white rounded-xl shadow-sm-card border border-border/50 p-5 flex flex-col items-center justify-center relative">
+                                <div className="absolute top-4 left-4 font-semibold text-sm">{t('overallPreAssessment')}</div>
+                                <div className="mt-8 relative w-32 h-32 flex items-center justify-center">
+                                    {/* CSS Circle */}
+                                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                                        <path className="text-gray-100" stroke-width="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                        <path className="text-primary" stroke-dasharray="78, 100" stroke-width="3" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                    </svg>
+                                    <div className="absolute flex flex-col items-center">
+                                        <span className="text-3xl font-bold text-gray-800">78<span className="text-sm text-gray-400 font-normal">/100</span></span>
+                                        <span className="text-primary font-semibold text-xs mt-1">{t('good')}</span>
+                                    </div>
+                                </div>
+                                <div className="mt-4 flex text-warning text-sm gap-1">
+                                    <i className="fa-solid fa-star"></i><i className="fa-solid fa-star"></i><i className="fa-solid fa-star"></i><i className="fa-solid fa-star"></i><i className="fa-regular fa-star text-gray-300"></i>
+                                </div>
+                                <div className="text-[10px] text-gray-400 mt-2">BEAM Plus 最終認證預估</div>
                             </div>
-                            <div className="text-4xl font-bold text-gray-800">115 <span className="text-sm font-medium text-gray-500 block mt-1">kWh/m²/yr</span></div>
-                            <div className="mt-auto pt-5 border-t border-gray-100 flex justify-between items-center text-sm">
-                                <span className="text-gray-500">{t('solarProd')}</span>
-                                <span className="text-emerald-600 font-bold">12% {t('ofTotal')}</span>
+            
+                            {/* Right: Categories */}
+                            <div className="w-3/4 bg-white rounded-xl shadow-sm-card border border-border/50 p-5">
+                                <div className="flex justify-between items-center mb-6">
+                                    <div className="font-semibold text-sm">{t('categoryOverview')}</div>
+                                    <a href="#" className="text-primary text-xs hover:underline"><i className="fa-solid fa-chart-bar mr-1"></i> 查看評分詳情</a>
+                                </div>
+                                <div className="grid grid-cols-6 gap-2">
+                                    {/* Category A */}
+                                    <div className="flex flex-col border-r border-border/50 pr-2">
+                                        <div className="text-[11px] text-gray-500 mb-2 h-8">A. 場地可持續發展</div>
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <i className="fa-solid fa-leaf text-primary"></i>
+                                            <span className="text-xl font-bold">82<span className="text-[10px] text-gray-400 font-normal">/100</span></span>
+                                        </div>
+                                        <div className="w-full bg-gray-100 h-1.5 rounded-full mb-1"><div className="bg-primary h-1.5 rounded-full" style={{width: "82%"}}></div></div>
+                                        <div className="text-[10px] text-primary mt-1">良好</div>
+                                    </div>
+                                    {/* Category B */}
+                                    <div className="flex flex-col border-r border-border/50 px-2">
+                                        <div className="text-[11px] text-gray-500 mb-2 h-8">B. 能源使用</div>
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <i className="fa-solid fa-bolt text-blue-500"></i>
+                                            <span className="text-xl font-bold">76<span className="text-[10px] text-gray-400 font-normal">/100</span></span>
+                                        </div>
+                                        <div className="w-full bg-gray-100 h-1.5 rounded-full mb-1"><div className="bg-blue-500 h-1.5 rounded-full" style={{width: "76%"}}></div></div>
+                                        <div className="text-[10px] text-blue-500 mt-1">良好</div>
+                                    </div>
+                                    {/* Category C */}
+                                    <div className="flex flex-col border-r border-border/50 px-2">
+                                        <div className="text-[11px] text-gray-500 mb-2 h-8">C. 用水效益</div>
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <i className="fa-solid fa-droplet text-teal-500"></i>
+                                            <span className="text-xl font-bold">71<span className="text-[10px] text-gray-400 font-normal">/100</span></span>
+                                        </div>
+                                        <div className="w-full bg-gray-100 h-1.5 rounded-full mb-1"><div className="bg-teal-500 h-1.5 rounded-full" style={{width: "71%"}}></div></div>
+                                        <div className="text-[10px] text-teal-500 mt-1">良好</div>
+                                    </div>
+                                    {/* Category D */}
+                                    <div className="flex flex-col border-r border-border/50 px-2">
+                                        <div className="text-[11px] text-gray-500 mb-2 h-8">D. 物料與資源</div>
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <i className="fa-solid fa-recycle text-orange-500"></i>
+                                            <span className="text-xl font-bold">69<span className="text-[10px] text-gray-400 font-normal">/100</span></span>
+                                        </div>
+                                        <div className="w-full bg-gray-100 h-1.5 rounded-full mb-1"><div className="bg-orange-500 h-1.5 rounded-full" style={{width: "69%"}}></div></div>
+                                        <div className="text-[10px] text-orange-500 mt-1">良好</div>
+                                    </div>
+                                    {/* Category E */}
+                                    <div className="flex flex-col border-r border-border/50 px-2">
+                                        <div className="text-[11px] text-gray-500 mb-2 h-8">E. 室內環境質素</div>
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <i className="fa-solid fa-wind text-purple-500"></i>
+                                            <span className="text-xl font-bold">88<span className="text-[10px] text-gray-400 font-normal">/100</span></span>
+                                        </div>
+                                        <div className="w-full bg-gray-100 h-1.5 rounded-full mb-1"><div className="bg-purple-500 h-1.5 rounded-full" style={{width: "88%"}}></div></div>
+                                        <div className="text-[10px] text-purple-500 mt-1">優秀</div>
+                                    </div>
+                                    {/* Category F */}
+                                    <div className="flex flex-col pl-2">
+                                        <div className="text-[11px] text-gray-500 mb-2 h-8">F. 創新與額外加分</div>
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <i className="fa-regular fa-star text-warning"></i>
+                                            <span className="text-xl font-bold">60<span className="text-[10px] text-gray-400 font-normal">/100</span></span>
+                                        </div>
+                                        <div className="w-full bg-gray-100 h-1.5 rounded-full mb-1"><div className="bg-warning h-1.5 rounded-full" style={{width: "60%"}}></div></div>
+                                        <div className="text-[10px] text-warning mt-1">普通</div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col">
-                            <div className="flex justify-between items-start mb-6">
-                                <h3 className="text-gray-500 font-bold flex items-center gap-2"><span className="text-xl">💧</span> {t('waterPerformance')}</h3>
+            
+                        {/* Bottom 3 columns */}
+                        <div className="grid grid-cols-3 gap-5 mb-5">
+                            {/* Progress */}
+                            <div className="bg-white rounded-xl shadow-sm-card border border-border/50 p-5">
+                                <div className="font-semibold text-sm mb-4">{t('certProgress')}</div>
+                                <div className="text-[11px] text-gray-500 mb-1">{t('currentProgress')}</div>
+                                <div className="text-3xl font-bold mb-2">63%</div>
+                                <div className="w-full bg-gray-100 h-2 rounded-full mb-2"><div className="bg-primary h-2 rounded-full" style={{width: "63%"}}></div></div>
+                                <div className="flex justify-between text-[10px] text-gray-400 mb-6">
+                                    <span>已獲評分 47 / 總分 75</span>
+                                    <span>還差到 50 分以上</span>
+                                </div>
+                                
+                                <div className="space-y-3">
+                                    <div className="flex items-center justify-between text-xs">
+                                        <span className="flex items-center gap-2"><i className="fa-solid fa-circle-check text-primary"></i> 必備條件</span>
+                                        <span className="font-semibold text-primary bg-primary-light px-2 py-0.5 rounded">12/12</span>
+                                    </div>
+                                    <div className="w-full h-[1px] bg-border/50"></div>
+                                    <div className="flex items-center justify-between text-xs">
+                                        <span className="flex items-center gap-2"><i className="fa-regular fa-circle-dot text-blue-500"></i> 基本要求</span>
+                                        <span className="font-semibold text-blue-500 bg-blue-50 px-2 py-0.5 rounded">28/36</span>
+                                    </div>
+                                    <div className="w-full h-[1px] bg-border/50"></div>
+                                    <div className="flex items-center justify-between text-xs">
+                                        <span className="flex items-center gap-2"><i className="fa-regular fa-star text-warning"></i> 額外加分</span>
+                                        <span className="font-semibold text-warning bg-orange-50 px-2 py-0.5 rounded">7/27</span>
+                                    </div>
+                                </div>
                             </div>
-                            <div className="text-4xl font-bold text-gray-800">0.85 <span className="text-sm font-medium text-gray-500 block mt-1">m³/m²/yr</span></div>
-                            <div className="mt-auto pt-5 border-t border-gray-100 flex justify-between items-center text-sm">
-                                <span className="text-gray-500">{t('rainwaterHarvest')}</span>
-                                <span className="text-emerald-600 font-bold">{t('activeOffset')}</span>
+            
+                            {/* Donut Chart */}
+                            <div className="bg-white rounded-xl shadow-sm-card border border-border/50 p-5">
+                                <div className="font-semibold text-sm mb-2">要求條件狀態</div>
+                                <div className="flex items-center h-40">
+                                    <div className="w-1/2 relative h-full flex items-center justify-center">
+                                        <canvas id="chartBeamReq"></canvas>
+                                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                                            <span className="text-2xl font-bold">75</span>
+                                            <span className="text-[10px] text-gray-400">{t('totalReqs')}</span>
+                                        </div>
+                                    </div>
+                                    <div className="w-1/2 pl-4 flex flex-col gap-3 text-xs">
+                                        <div>
+                                            <div className="flex items-center gap-1.5 mb-0.5"><span className="w-2 h-2 rounded-full bg-primary"></span> {t('achieved')}</div>
+                                            <div className="font-semibold pl-3.5">47 <span className="text-gray-400 font-normal text-[10px]">(63%)</span></div>
+                                        </div>
+                                        <div>
+                                            <div className="flex items-center gap-1.5 mb-0.5"><span className="w-2 h-2 rounded-full bg-blue-500"></span> {t('inProgress')}</div>
+                                            <div className="font-semibold pl-3.5">18 <span className="text-gray-400 font-normal text-[10px]">(24%)</span></div>
+                                        </div>
+                                        <div>
+                                            <div className="flex items-center gap-1.5 mb-0.5"><span className="w-2 h-2 rounded-full bg-warning"></span> {t('notAchieved')}</div>
+                                            <div className="font-semibold pl-3.5">10 <span className="text-gray-400 font-normal text-[10px]">(13%)</span></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="text-center mt-2">
+                                    <a href="#" className="text-primary text-xs hover:underline">{t('viewAllReqs')} <i className="fa-solid fa-chevron-right text-[10px] ml-1"></i></a>
+                                </div>
+                            </div>
+            
+                            {/* Suggestions */}
+                            <div className="bg-white rounded-xl shadow-sm-card border border-border/50 p-5 flex flex-col">
+                                <div className="font-semibold text-sm mb-4">{t('improvementSuggestions')}</div>
+                                <div className="flex-1 flex flex-col gap-3">
+                                    <div className="flex items-center justify-between p-3 border border-orange-100 bg-orange-50/30 rounded-lg">
+                                        <div className="flex gap-3 items-start">
+                                            <i className="fa-solid fa-bolt text-warning mt-0.5"></i>
+                                            <div>
+                                                <div className="font-medium text-xs text-gray-800 mb-0.5">能源表現提升空間</div>
+                                                <div className="text-[11px] text-gray-500">優化 HVAC 系統效率，可提升 6-8 分</div>
+                                            </div>
+                                        </div>
+                                        <button className="text-xs text-gray-500 border border-border bg-white px-2 py-1 rounded hover:bg-gray-50 shrink-0">{t('viewSuggestion')}</button>
+                                    </div>
+                                    <div className="flex items-center justify-between p-3 border border-blue-100 bg-blue-50/30 rounded-lg">
+                                        <div className="flex gap-3 items-start">
+                                            <i className="fa-solid fa-droplet text-info mt-0.5"></i>
+                                            <div>
+                                                <div className="font-medium text-xs text-gray-800 mb-0.5">用水效益改善建議</div>
+                                                <div className="text-[11px] text-gray-500">安裝節水裝置，可提升 4-6 分</div>
+                                            </div>
+                                        </div>
+                                        <button className="text-xs text-gray-500 border border-border bg-white px-2 py-1 rounded hover:bg-gray-50 shrink-0">查看建議</button>
+                                    </div>
+                                    <div className="flex items-center justify-between p-3 border border-purple-100 bg-purple-50/30 rounded-lg">
+                                        <div className="flex gap-3 items-start">
+                                            <i className="fa-solid fa-wind text-purple-500 mt-0.5"></i>
+                                            <div>
+                                                <div className="font-medium text-xs text-gray-800 mb-0.5">室內環境質素優化</div>
+                                                <div className="text-[11px] text-gray-500">增加新風量監測，可提升 3-5 分</div>
+                                            </div>
+                                        </div>
+                                        <button className="text-xs text-gray-500 border border-border bg-white px-2 py-1 rounded hover:bg-gray-50 shrink-0">查看建議</button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col">
-                            <div className="flex justify-between items-start mb-6">
-                                <h3 className="text-gray-500 font-bold flex items-center gap-2"><span className="text-xl">♻</span> {t('wasteMgt')}</h3>
+            
+                        {/* Footer banner */}
+                        <div className="bg-gray-50 border border-border rounded-lg p-4 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded bg-primary text-white flex items-center justify-center font-bold text-xs"><i className="fa-solid fa-leaf"></i></div>
+                                <div>
+                                    <div className="font-semibold text-xs text-gray-800 mb-0.5">{t('aboutBeamPlus')}</div>
+                                    <div className="text-[11px] text-gray-500 max-w-2xl">BEAM Plus 是香港綠色建築議會推出的綠色建築評估工具，從多個範疇評估建築物的環境表現，推動可持續發展。</div>
+                                </div>
                             </div>
-                            <div className="text-4xl font-bold text-gray-800">45% <span className="text-sm font-medium text-gray-500 block mt-1">{t('diversionRate')}</span></div>
-                            <div className="mt-auto pt-5 border-t border-gray-100 flex justify-between items-center text-sm">
-                                <span className="text-gray-500">{t('wasteGen')}</span>
-                                <span className="text-gray-800 font-bold">{t('upYtd')}</span>
+                            <div className="flex gap-4 text-xs">
+                                <a href="#" className="text-gray-500 hover:text-primary flex items-center gap-1"><i className="fa-solid fa-book"></i> 認證流程指南</a>
+                                <a href="#" className="text-gray-500 hover:text-primary flex items-center gap-1"><i className="fa-solid fa-download"></i> 下載 BEAM Plus 手冊</a>
+                                <a href="#" className="text-gray-500 hover:text-primary flex items-center gap-1"><i className="fa-solid fa-phone"></i> 聯絡認證顧問</a>
                             </div>
                         </div>
+            
                     </div>
-                </div>
-            </div>
+            
+                    </>
             );
         };
-
         const Maintenance = () => {
             const { t } = useI18n();
             return (
@@ -1045,6 +2227,19 @@
                             <p className="text-sm text-gray-500">{t('avgPerfRating')}</p>
                         </div>
                     </div>
+
+                {/* Blockchain Maintenance */}
+                <div className="mt-6 border-t-2 border-blue-200 pt-6">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="font-bold text-gray-800 flex items-center gap-2">{t('maintenance')} - {t('activeWorkOrders')} <span className="text-xs text-gray-400 font-normal">(maintain-channel)</span></h3>
+                        <div className="flex gap-2">
+                            <button id="btnMaintRefresh" className="bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-1.5 rounded text-xs font-medium">{t('loading')}</button>
+                            <button id="btnMaintCreate" className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded text-xs font-bold">+ Create</button>
+                            <button id="btnMaintQuick" className="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded text-xs font-bold">Test</button>
+                        </div>
+                    </div>
+                    <div id="maintChainData" className="text-center text-gray-400 py-4 text-sm">Click refresh to load blockchain data</div>
+                </div>
                 </div>
             </div>
             );
@@ -1053,114 +2248,177 @@
         const Finance = () => {
             const { t } = useI18n();
             return (
-            <div className="space-y-6 max-w-full mx-auto">
-                <div className="mb-6">
-                    <h2 className="text-2xl font-bold text-gray-900">{t('godfreyCentre')} - {t('greenFinance')}</h2>
-                    <p className="text-gray-500 text-sm mt-1.5">{t('financeDesc')}</p>
-                </div>
-
-                <div className="grid grid-cols-4 gap-4">
-                    <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm relative">
-                        <span className="absolute top-4 right-4 bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded text-xs font-bold border border-emerald-100">{t('active')}</span>
-                        <div className="w-10 h-10 rounded-full bg-red-50 text-red-400 flex items-center justify-center text-xl mb-4">🔥</div>
-                        <h4 className="font-bold text-gray-900 text-lg">{t('fireInsure')}</h4>
-                        <p className="text-xs text-gray-500 mb-6">SafeGuard Insure</p>
-                        <div className="text-xs text-gray-400 mb-1">{t('esgPremiumDisc')}</div>
-                        <div className="font-bold text-emerald-600">5% {t('fireCertTag')}</div>
+                <div id="page4" className="page-content flex-1 overflow-y-auto p-8">
+                    <div className="mb-8">
+                        <h1 className="text-2xl font-bold text-gray-800 tracking-tight">Godfrey Centre - Green Finance & Insurance</h1>
+                        <p className="text-gray-500 mt-2 text-sm">Financial services, active insurance policies & risk analytics linked to ESG performance</p>
                     </div>
                     
-                    <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm relative">
-                        <span className="absolute top-4 right-4 bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded text-xs font-bold border border-emerald-100">{t('active')}</span>
-                        <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-400 flex items-center justify-center text-xl mb-4">🏢</div>
-                        <h4 className="font-bold text-gray-900 text-lg">{t('propInsure')}</h4>
-                        <p className="text-xs text-gray-500 mb-6">Global Asset Cover</p>
-                        <div className="text-xs text-gray-400 mb-1">{t('esgPremiumDisc')}</div>
-                        <div className="font-bold text-emerald-600">3% {t('leedPlatTag')}</div>
-                    </div>
-
-                    <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm relative">
-                        <span className="absolute top-4 right-4 bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded text-xs font-bold border border-emerald-100">{t('active')}</span>
-                        <div className="w-10 h-10 rounded-full bg-purple-50 text-purple-400 flex items-center justify-center text-xl mb-4">👥</div>
-                        <h4 className="font-bold text-gray-900 text-lg">{t('thirdPartyLiab')}</h4>
-                        <p className="text-xs text-gray-500 mb-6">City Trust Insure</p>
-                        <div className="text-xs text-gray-400 mb-1">{t('policyRenewal')}</div>
-                        <div className="font-medium text-gray-800">2026-08-10</div>
-                    </div>
-
-                    <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm relative">
-                        <span className="absolute top-4 right-4 bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded text-xs font-bold border border-emerald-100">{t('active')}</span>
-                        <div className="w-10 h-10 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center text-xl mb-4">🌧</div>
-                        <h4 className="font-bold text-gray-900 text-lg leading-tight mb-1">{t('climateRiskInsure')}</h4>
-                        <p className="text-xs text-gray-500 mb-5">EcoProtect Global</p>
-                        <div className="text-xs text-gray-400 mb-1">{t('esgPremiumDisc')}</div>
-                        <div className="font-bold text-emerald-600">10% {t('floodMitigTag')}</div>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-6 mt-6">
-                    <div className="bg-[#fffdf7] border border-amber-200 rounded-xl p-6 shadow-sm">
-                        <div className="flex justify-between items-start mb-6">
-                            <h3 className="text-xl font-bold text-emerald-700 flex items-center gap-2"><span>$</span> {t('greenFinancingLoans')}</h3>
-                            <span className="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-bold border border-amber-200">{t('riskRateIncPending')}</span>
+                    {/* Top Row: 4 Insurance Cards */}
+                    <div className="grid grid-cols-4 gap-5 mb-6">
+                        {/* Card 1 */}
+                        <div className="bg-white rounded-xl p-5 shadow-sm-card border border-border/50 relative">
+                            <span className="absolute top-5 right-5 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">Active</span>
+                            <div className="w-10 h-10 rounded-lg bg-rose-50 flex items-center justify-center text-rose-500 text-lg mb-4">
+                                <i className="fa-solid fa-fire"></i>
+                            </div>
+                            <div className="font-bold text-gray-800 text-base">Fire Insurance</div>
+                            <div className="text-gray-400 text-[11px] mt-1">SafeGuard Insure</div>
+                            <div className="mt-5 pt-4 border-t border-gray-100">
+                                <div className="text-[10px] text-gray-400 mb-1">ESG Premium Discount</div>
+                                <div className="text-emerald-500 font-bold text-sm">5% (Fire Safety Cert)</div>
+                            </div>
                         </div>
                         
-                        <div className="space-y-4">
-                            <div className="flex justify-between items-center border-b border-amber-100 pb-3">
-                                <span className="text-gray-600 text-sm">{t('susLinkedLoanRate')}</span>
-                                <span className="font-bold text-gray-900">4.25% <span className="text-emerald-600 text-sm">{t('greenDisc')}</span></span>
+                        {/* Card 2 */}
+                        <div className="bg-white rounded-xl p-5 shadow-sm-card border border-border/50 relative">
+                            <span className="absolute top-5 right-5 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">Active</span>
+                            <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500 text-lg mb-4">
+                                <i className="fa-regular fa-building"></i>
                             </div>
-                            <div className="flex justify-between items-center border-b border-amber-100 pb-3">
-                                <span className="text-gray-600 text-sm">{t('greenBondsIssued')}</span>
-                                <span className="font-bold text-gray-900">EcoBank Global ($5M)</span>
+                            <div className="font-bold text-gray-800 text-base">Property Insurance</div>
+                            <div className="text-gray-400 text-[11px] mt-1">Global Asset Cover</div>
+                            <div className="mt-5 pt-4 border-t border-gray-100">
+                                <div className="text-[10px] text-gray-400 mb-1">ESG Premium Discount</div>
+                                <div className="text-emerald-500 font-bold text-sm">3% (LEED Platinum)</div>
                             </div>
-                            <div className="flex justify-between items-center border-b border-amber-100 pb-3">
-                                <span className="text-gray-600 text-sm">{t('esgRatingInv')}</span>
-                                <span className="font-bold text-emerald-600">AA {t('impactEligible')}</span>
-                            </div>
-                            <div className="flex justify-between items-center pt-1">
-                                <span className="text-gray-600 text-sm">{t('compContractStatus')}</span>
-                                <span className="font-bold text-amber-600 flex items-center gap-1">⚠ {t('fireCertExpiring')}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-                        <div className="flex justify-between items-start mb-8">
-                            <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2"><span>📈</span> {t('riskAnalytics')}</h3>
-                            <span className="text-xs text-gray-400">{t('linkedToInsure')}</span>
                         </div>
                         
-                        <div className="space-y-6">
-                            <div>
-                                <div className="flex justify-between text-sm mb-2"><span className="text-gray-600">{t('climateRiskExp')}</span><span className="font-bold text-emerald-500">{t('low')}</span></div>
-                                <div className="w-full bg-gray-100 rounded-full h-1.5"><div className="bg-emerald-400 h-1.5 rounded-full" style={{width: '20%'}}></div></div>
+                        {/* Card 3 */}
+                        <div className="bg-white rounded-xl p-5 shadow-sm-card border border-border/50 relative">
+                            <span className="absolute top-5 right-5 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">Active</span>
+                            <div className="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center text-purple-500 text-lg mb-4">
+                                <i className="fa-solid fa-user-shield"></i>
                             </div>
-                            <div>
-                                <div className="flex justify-between text-sm mb-2"><span className="text-gray-600">{t('floodRisk')}</span><span className="font-bold text-emerald-500">{t('mitigatedZoneC')}</span></div>
-                                <div className="w-full bg-gray-100 rounded-full h-1.5"><div className="bg-emerald-400 h-1.5 rounded-full" style={{width: '10%'}}></div></div>
+                            <div className="font-bold text-gray-800 text-base">Third Party Liability</div>
+                            <div className="text-gray-400 text-[11px] mt-1">City Trust Insure</div>
+                            <div className="mt-5 pt-4 border-t border-gray-100">
+                                <div className="text-[10px] text-gray-400 mb-1">Policy Renewal Date</div>
+                                <div className="text-gray-700 font-semibold text-sm">2026-08-10</div>
                             </div>
-                            <div>
-                                <div className="flex justify-between text-sm mb-2"><span className="text-gray-600">{t('energyPriceRisk')}</span><span className="font-bold text-amber-500">{t('moderate')}</span></div>
-                                <div className="w-full bg-gray-100 rounded-full h-1.5"><div className="bg-amber-400 h-1.5 rounded-full" style={{width: '60%'}}></div></div>
+                        </div>
+                        
+                        {/* Card 4 */}
+                        <div className="bg-white rounded-xl p-5 shadow-sm-card border border-border/50 relative">
+                            <span className="absolute top-5 right-5 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">Active</span>
+                            <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-500 text-lg mb-4">
+                                <i className="fa-solid fa-cloud-sun-rain"></i>
+                            </div>
+                            <div className="font-bold text-gray-800 text-base">Climate Risk Insurance</div>
+                            <div className="text-gray-400 text-[11px] mt-1">EcoProtect Global</div>
+                            <div className="mt-5 pt-4 border-t border-gray-100">
+                                <div className="text-[10px] text-gray-400 mb-1">ESG Premium Discount</div>
+                                <div className="text-emerald-500 font-bold text-sm">10% (Flood Mitigated)</div>
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <div className="bg-[#134e4a] rounded-xl p-6 shadow-md flex justify-between items-center text-white mt-6">
-                    <div>
-                        <div className="text-emerald-200 text-xs font-bold tracking-widest uppercase mb-1">{t('incentivesSubsidies')}</div>
-                        <h3 className="text-2xl font-bold mb-2">{t('govGreenInc')}</h3>
-                        <p className="text-emerald-100/80 text-sm max-w-2xl">{t('govGreenDesc')}</p>
+                    
+                    {/* Middle Row: 2 Cards */}
+                    <div className="grid grid-cols-2 gap-5 mb-6">
+                        {/* Left Card: Green Financing & Loans */}
+                        <div className="bg-[#FFFFFA] rounded-xl p-6 shadow-sm-card border border-[#FDE047]/60">
+                            <div className="flex items-center justify-between mb-6">
+                                <div className="flex items-center gap-3">
+                                    <span className="text-emerald-500 text-xl font-bold"><i className="fa-solid fa-dollar-sign"></i></span>
+                                    <h2 className="text-lg font-bold text-gray-800">Green Financing & Loans</h2>
+                                </div>
+                                <span className="text-[10px] font-bold text-amber-600 bg-amber-100/50 px-2 py-1 rounded">Risk: Rate Increase Pending</span>
+                            </div>
+                            
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-gray-500 text-xs">Sustainability Linked Loan Rate</span>
+                                    <span className="font-bold text-gray-800 text-sm">4.25% <span className="text-emerald-600 font-semibold">(Green Discount)</span></span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-gray-500 text-xs">Green Bonds Issued</span>
+                                    <span className="font-bold text-gray-800 text-sm">EcoBank Global ($5M)</span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-gray-500 text-xs">ESG Rating for Investors</span>
+                                    <span className="font-bold text-emerald-500 text-sm">AA (Impact Eligible)</span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-gray-500 text-xs">Compliance Contracts Status</span>
+                                    <span className="font-bold text-amber-500 text-sm"><i className="fa-solid fa-triangle-exclamation mr-1"></i> Fire Safety Cert Expiring</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {/* Right Card: Risk Analytics */}
+                        <div className="bg-white rounded-xl p-6 shadow-sm-card border border-border/50">
+                            <div className="flex items-center justify-between mb-6">
+                                <div className="flex items-center gap-3">
+                                    <i className="fa-solid fa-chart-line text-indigo-500 text-lg"></i>
+                                    <h2 className="text-lg font-bold text-gray-800">Risk Analytics</h2>
+                                </div>
+                                <span className="text-[10px] text-gray-400">Linked to Insurance Pricing</span>
+                            </div>
+                            
+                            <div className="space-y-5">
+                                <div>
+                                    <div className="flex justify-between text-xs mb-1.5">
+                                        <span className="text-gray-500">Climate Risk Exposure</span>
+                                        <span className="text-emerald-500 font-bold">Low</span>
+                                    </div>
+                                    <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                                        <div className="h-full bg-emerald-400 w-1/4 rounded-full"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div className="flex justify-between text-xs mb-1.5">
+                                        <span className="text-gray-500">Flood Risk</span>
+                                        <span className="text-emerald-500 font-bold">Mitigated (Zone C)</span>
+                                    </div>
+                                    <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                                        <div className="h-full bg-emerald-400 w-1/5 rounded-full"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div className="flex justify-between text-xs mb-1.5">
+                                        <span className="text-gray-500">Energy Price Risk</span>
+                                        <span className="text-amber-500 font-bold">Moderate</span>
+                                    </div>
+                                    <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                                        <div className="h-full bg-amber-400 w-[60%] rounded-full"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <button className="bg-white text-emerald-900 px-6 py-3 rounded-lg font-bold shadow-sm hover:bg-gray-50 transition-colors">
-                        {t('applySmartContract')}
-                    </button>
+                    
+                    {/* Bottom Banner */}
+                    <div className="bg-[#0f3f35] rounded-xl p-6 text-white relative overflow-hidden shadow-md">
+                        <div className="relative z-10 flex items-center justify-between">
+                            <div>
+                                <div className="text-[10px] font-bold tracking-wider text-emerald-300 mb-1 uppercase">INCENTIVES & SUBSIDIES</div>
+                                <h2 className="text-xl font-bold mb-2">Government Green Incentives & Tax Rebates</h2>
+                                <p className="text-emerald-50/80 text-xs max-w-2xl leading-relaxed">
+                                    Your planned Roof Greening project qualifies for the Urban Biodiversity Tax Rebate & Carbon Reduction Subsidies. Estimated value: $100,000.
+                                </p>
+                            </div>
+                            <button className="bg-white text-[#0f3f35] hover:bg-gray-50 px-5 py-2.5 rounded text-sm font-bold shadow-sm transition-colors whitespace-nowrap shrink-0">
+                                Apply via Smart Contract
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Blockchain Billing */}
+                    <div className="mt-6 border-t-2 border-amber-200 pt-6">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="font-bold text-gray-800 flex items-center gap-2">{t('finance')} - Billing <span className="text-xs text-gray-400 font-normal">(billing-channel)</span></h3>
+                            <div className="flex gap-2">
+                                <button id="btnBillRefresh" className="bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-1.5 rounded text-xs font-medium">{t('loading')}</button>
+                                <button id="btnBillCreate" className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded text-xs font-bold">+ Create Bill</button>
+                                <button id="btnBillMeter" className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-xs font-bold">Meter Reading</button>
+                                <button id="btnBillQuick" className="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded text-xs font-bold">Test</button>
+                            </div>
+                        </div>
+                        <div id="billChainData" className="text-center text-gray-400 py-4 text-sm">Click refresh to load blockchain data</div>
+                    </div>
                 </div>
-            </div>
             );
         };
-
         const DigitalAssets = () => {
             const { t } = useI18n();
             return (
@@ -1267,8 +2525,13 @@
             return (
                 <div className="w-[280px] bg-[#0f172a] text-white flex flex-col h-full shrink-0 shadow-2xl z-20">
                     <div className="p-6 flex items-center gap-3 border-b border-slate-800/80 mb-4">
-                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white font-bold italic shadow-lg shadow-emerald-500/30 text-lg">V</div>
-                        <span className="text-xl font-black tracking-widest text-slate-100">ESG VISA</span>
+                        <div className="flex-shrink-0 bg-white rounded-full p-1 shadow-md shadow-emerald-500/20 overflow-hidden flex items-center justify-center" style={{width: "48px", height: "48px"}}>
+                            <img src="a9002e684ff2b96e824997f8dc410417.png" alt="ESG VISA Logo" className="rounded-full mix-blend-multiply" style={{width: "100%", height: "100%", objectFit: "contain"}} />
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="text-[22px] font-black tracking-widest text-slate-100 leading-tight">ESG VISA</span>
+                            <span className="text-[7px] text-slate-400 font-medium tracking-wider">Verified Intelligence for Sustainable Architecture</span>
+                        </div>
                     </div>
                     
                     <div className="flex-1 overflow-y-auto py-2 px-4">
@@ -1373,6 +2636,160 @@
             );
         };
 
+        const AIAgentPanel = () => {
+            const { t } = useI18n();
+            return (
+                <div className="w-[360px] bg-white border-l border-slate-200 flex flex-col h-full flex-shrink-0 z-10 shadow-sm">
+                    {/* Header */}
+                    <div className="flex items-center justify-between p-4 border-b border-slate-100">
+                        <h2 className="font-bold text-base flex items-center gap-2">
+                            AI Agent 助理
+                        </h2>
+                        <div className="flex items-center gap-2 text-slate-400">
+                            <svg className="w-4 h-4 cursor-pointer hover:text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
+                            <svg className="w-5 h-5 cursor-pointer hover:text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </div>
+                    </div>
+
+                    {/* Content Body */}
+                    <div className="flex-1 overflow-y-auto flex flex-col">
+                        {/* Agent Info */}
+                        <div className="p-4 flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm">AL</div>
+                            <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                    <span className="font-bold text-sm">{t('allMembers')}</span>
+                                    <div className="flex items-center gap-1 text-[10px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                        線上
+                                    </div>
+                                </div>
+                                <div className="text-xs text-slate-500 mt-0.5">{t('coordinateLabel')}</div>
+                            </div>
+                        </div>
+
+                        {/* Tabs */}
+                        <div className="flex items-center gap-4 px-4 border-b border-slate-100 text-xs overflow-x-auto whitespace-nowrap pb-2" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
+                            <span className="text-blue-600 font-medium border-b-2 border-blue-600 pb-2 -mb-2">全部</span>
+                            <span className="text-slate-500 hover:text-slate-700 cursor-pointer pb-2 -mb-2 flex items-center gap-1"><span className="text-orange-500">⚡</span> Energy</span>
+                            <span className="text-slate-500 hover:text-slate-700 cursor-pointer pb-2 -mb-2 flex items-center gap-1"><span className="text-amber-500">⚖</span> Legislation</span>
+                            <span className="text-slate-500 hover:text-slate-700 cursor-pointer pb-2 -mb-2 flex items-center gap-1"><span className="text-blue-500">🏢</span> Urbanism</span>
+                            <span className="text-slate-500 hover:text-slate-700 cursor-pointer pb-2 -mb-2 flex items-center gap-1"><span className="text-emerald-500">📗</span> Knowledge</span>
+                        </div>
+
+                        <div className="p-4 flex flex-col gap-4">
+                            {/* Key Focus */}
+                            <div>
+                                <h3 className="text-xs font-bold text-slate-700 mb-3">{t('focusOnPage')}</h3>
+                                <div className="flex flex-col gap-2">
+                                    <div className="flex items-start gap-2 bg-slate-50 rounded-lg p-2 border border-slate-100">
+                                        <span className="text-red-500 mt-0.5 text-xs">⚡</span>
+                                        <div className="flex-1">
+                                            <div className="flex justify-between items-start">
+                                                <span className="text-xs font-medium text-slate-700">{t('hvacCarbon15')}</span>
+                                                <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded flex-shrink-0">高風險</span>
+                                            </div>
+                                        </div>
+                                        <svg className="w-3 h-3 text-slate-400 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
+                                    </div>
+                                    
+                                    <div className="flex items-start gap-2 bg-slate-50 rounded-lg p-2 border border-slate-100">
+                                        <span className="text-amber-500 mt-0.5 text-xs">⚖</span>
+                                        <div className="flex-1">
+                                            <div className="flex justify-between items-start">
+                                                <span className="text-xs font-medium text-slate-700">{t('fireCert30d')}</span>
+                                                <span className="text-[10px] bg-amber-100 text-amber-600 px-1.5 py-0.5 rounded flex-shrink-0">合規提醒</span>
+                                            </div>
+                                        </div>
+                                        <svg className="w-3 h-3 text-slate-400 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
+                                    </div>
+                                    
+                                    <div className="flex items-start gap-2 bg-slate-50 rounded-lg p-2 border border-slate-100">
+                                        <span className="text-blue-500 mt-0.5 text-xs">🏢</span>
+                                        <div className="flex-1">
+                                            <div className="flex justify-between items-start">
+                                                <span className="text-xs font-medium text-slate-700">{t('urbanismWELL')}</span>
+                                                <span className="text-[10px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded flex-shrink-0">機會識別</span>
+                                            </div>
+                                        </div>
+                                        <svg className="w-3 h-3 text-slate-400 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
+                                    </div>
+                                    
+                                    <div className="flex items-start gap-2 bg-slate-50 rounded-lg p-2 border border-slate-100">
+                                        <span className="text-emerald-500 mt-0.5 text-xs">📗</span>
+                                        <div className="flex-1">
+                                            <div className="flex justify-between items-start">
+                                                <span className="text-xs font-medium text-slate-700">{t('waterPerformanceGood')}</span>
+                                                <span className="text-[10px] bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded flex-shrink-0">調研</span>
+                                            </div>
+                                        </div>
+                                        <svg className="w-3 h-3 text-slate-400 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Chat History */}
+                            <div className="mt-4 flex flex-col gap-4">
+                                {/* User Message */}
+                                <div className="flex flex-col items-end">
+                                    <div className="bg-emerald-500 text-white text-xs px-3 py-2 rounded-2xl rounded-tr-sm max-w-[85%] shadow-sm">
+                                        為什麼今天 CO₂ 濃度會上升？
+                                    </div>
+                                    <span className="text-[10px] text-slate-400 mt-1 mr-1">10:24 AM</span>
+                                </div>
+
+                                {/* Agent Message */}
+                                <div className="flex gap-2">
+                                    <div className="w-6 h-6 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-1">EA</div>
+                                    <div className="flex flex-col flex-1">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <span className="text-[10px] font-bold text-slate-600">Energy Agent</span>
+                                            <span className="text-[10px] text-slate-400">10:24 AM</span>
+                                        </div>
+                                        <div className="bg-slate-50 text-slate-700 text-xs p-3 rounded-2xl rounded-tl-sm border border-slate-100 shadow-sm leading-relaxed">
+                                            <ul className="list-disc pl-4 mb-2 space-y-1">
+                                                <li>{t('optimizeMeeting')}</li>
+                                                <li>{t('adjustAhu')}</li>
+                                            </ul>
+                                            <div className="font-semibold mt-2 mb-1">{t('suggestion')}</div>
+                                            <p className="mb-1">{t('co2Analysis')}</p>
+                                            <ol className="list-decimal pl-4 space-y-1">
+                                                <li>{t('meetingUsage')}</li>
+                                                <li>{t('freshAirDrop')}</li>
+                                                <li>{t('outdoorCo2')}</li>
+                                            </ol>
+                                            
+                                            <div className="flex gap-2 mt-3 pt-3 border-t border-slate-200">
+                                                <button className="text-[10px] text-slate-600 hover:text-blue-600 font-medium">查看詳情</button>
+                                                <button className="text-[10px] text-slate-600 hover:text-blue-600 font-medium">{t('generateWorkOrder')}</button>
+                                                <button className="text-[10px] text-slate-600 hover:text-blue-600 font-medium">{t('shareAnalysis')}</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Input Area */}
+                    <div className="p-3 border-t border-slate-100 bg-slate-50">
+                        <div className="flex items-center gap-2 text-xs text-slate-500 mb-2 px-1">
+                            指定 Agent <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                        <div className="relative">
+                            <input type="text" placeholder="輸入您的問題，或 @Agent..." className="w-full text-xs bg-white border border-slate-200 rounded-lg pl-3 pr-10 py-2.5 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 shadow-sm" />
+                            <button className="absolute right-2 top-1/2 -translate-y-1/2 text-emerald-500 hover:text-emerald-600">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                            </button>
+                        </div>
+                        <div className="text-center mt-2">
+                            <span className="text-[9px] text-slate-400">{t('poweredBy')}</span>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
         const AppContent = () => {
             const [activeTab, setActiveTab] = useState('dashboard');
 
@@ -1392,6 +2809,7 @@
                             {activeTab === 'digitalAssets' && <DigitalAssets />}
                         </main>
                     </div>
+                    <AIAgentPanel />
                 </div>
             );
         };
@@ -1402,8 +2820,319 @@
             </I18nProvider>
         );
 
+
+        // === Blockchain Multi-Channel Integration (vanilla JS, no JSX) ===
+        (function(){
+            var BID = 'AST-B1-X';
+            function esc(s){ return encodeURIComponent(s); }
+            async function mcQuery(ch, fn, args) {
+                try { var r = await fetch('/api/multichannel/query?channel='+esc(ch)+'&fn='+esc(fn)+'&args='+esc(JSON.stringify(args||[]))); var j = await r.json(); return j.code===0?j.data:null; }
+                catch(e){ console.error(e); return null; }
+            }
+            async function mcInvoke(ch, fn, args) {
+                try { var r = await fetch('/api/multichannel/invoke?channel='+esc(ch)+'&fn='+esc(fn)+'&args='+esc(JSON.stringify(args||[]))); var j = await r.json(); return j.code===0?j.data:null; }
+                catch(e){ console.error(e); return null; }
+            }
+            function sd(){ return new Date().toISOString().split('T')[0]; }
+            function $(id){ return document.getElementById(id); }
+            function setHTML(id, h){ var el=$(id); if(el) el.innerHTML=h; }
+
+            function makeTable(headers, rows, rowFn) {
+                if(!rows||!rows.length) return '<div style="text-align:center;color:#999;padding:16px">No data on blockchain yet</div>';
+                var h='<table style="width:100%;text-align:left;font-size:13px"><thead style="background:#f9fafb;color:#6b7280;border-bottom:1px solid #e5e7eb"><tr>';
+                headers.forEach(function(hd){ h+='<th style="padding:10px 12px">'+hd+'</th>'; });
+                h+='</tr></thead><tbody>';
+                rows.forEach(function(r,i){ h+=rowFn(r,i); });
+                return h+'</tbody></table>';
+            }
+
+            // ---- Access Channel ----
+            var ar=$('btnAccessRefresh'), ag=$('btnGrantAccess'), as=$('btnSimAccess');
+            if(ar) ar.onclick=async function(){
+                setHTML('accessChainData','<div style="text-align:center;color:#999;padding:16px"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div>');
+                var d=await mcQuery('access-channel','QueryAccessLogs',[BID]);
+                var logs=Array.isArray(d)?d:[];
+                var g=logs.filter(function(l){return l.result==='granted'}).length;
+                var dn=logs.filter(function(l){return l.result==='denied'}).length;
+                var html='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">'
+                    +'<div style="background:#eff6ff;padding:12px;border-radius:8px;text-align:center"><div style="font-size:24px;font-weight:700;color:#2563eb">'+logs.length+'</div><div style="font-size:11px;color:#6b7280">Total Logs</div></div>'
+                    +'<div style="background:#ecfdf5;padding:12px;border-radius:8px;text-align:center"><div style="font-size:24px;font-weight:700;color:#059669">'+g+'</div><div style="font-size:11px;color:#6b7280">Granted</div></div>'
+                    +'<div style="background:#fef2f2;padding:12px;border-radius:8px;text-align:center"><div style="font-size:24px;font-weight:700;color:#dc2626">'+dn+'</div><div style="font-size:11px;color:#6b7280">Denied</div></div>'
+                    +'</div>';
+                html+=makeTable(['User','Door','Result','Time'],logs,function(l){
+                    var c=l.result==='granted'?'#059669':'#dc2626';
+                    return '<tr style="border-bottom:1px solid #f1f5f9"><td style="padding:8px 12px">'+(l.userName||l.userID||'-')+'</td><td style="padding:8px 12px;font-family:monospace;font-size:11px">'+(l.doorID||'-')+'</td><td style="padding:8px 12px;color:'+c+';font-weight:700">'+(l.result==='granted'?'Pass':'Denied')+'</td><td style="padding:8px 12px;color:#9ca3af;font-size:11px">'+(l.timestamp||'-')+'</td></tr>';
+                });
+                setHTML('accessChainData',html);
+            };
+            if(ag) ag.onclick=async function(){
+                var door=prompt('Door ID:','DOOR-01');if(!door)return;
+                var user=prompt('User ID:','USER-001');if(!user)return;
+                var name=prompt('User Name:','Alice');
+                await mcInvoke('access-channel','GrantAccess',[BID,door,user,name||user,'regular',sd(),'2027-12-31']);
+                if(ar)ar.click();
+            };
+            if(as) as.onclick=async function(){
+                await mcInvoke('access-channel','LogAccess',[BID,'DOOR-01','USER-TEST','TestUser','granted']);
+                if(ar)ar.click();
+            };
+
+            // ---- ESG Channel ----
+            var er=$('btnEsgRefresh'), eu=$('btnEsgUpload'), ep=$('btnEsgReport');
+            if(er) er.onclick=async function(){
+                setHTML('esgChainData','<div style="text-align:center;color:#999;padding:16px"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div>');
+                var d=await mcQuery('esg-channel','QueryESGFilesByBuilding',[BID]);
+                var files=Array.isArray(d)?d:[];
+                var v=files.filter(function(f){return f.verification==='verified'}).length;
+                var html='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">'
+                    +'<div style="background:#eff6ff;padding:12px;border-radius:8px;text-align:center"><div style="font-size:24px;font-weight:700;color:#2563eb">'+files.length+'</div><div style="font-size:11px;color:#6b7280">Files on Chain</div></div>'
+                    +'<div style="background:#ecfdf5;padding:12px;border-radius:8px;text-align:center"><div style="font-size:24px;font-weight:700;color:#059669">'+v+'</div><div style="font-size:11px;color:#6b7280">Verified</div></div>'
+                    +'<div style="background:#fffbeb;padding:12px;border-radius:8px;text-align:center"><div style="font-size:24px;font-weight:700;color:#d97706">'+(files.length-v)+'</div><div style="font-size:11px;color:#6b7280">Pending</div></div>'
+                    +'</div>';
+                html+=makeTable(['File Name','Category','Status','Action'],files,function(f){
+                    var vs=f.verification==='verified'?'<span style="color:#059669;font-weight:700">Verified</span>':(f.verification==='rejected'?'<span style="color:#dc2626;font-weight:700">Rejected</span>':'<span style="color:#d97706;font-weight:700">Pending</span>');
+                    var rid=f.recordID||'';
+                    var act=(f.verification!=='verified'&&f.verification!=='rejected')?'<button onclick="window._esgV(\''+rid+'\',\'verified\')" style="color:#059669;font-weight:700;font-size:12px;margin-right:8px">Pass</button><button onclick="window._esgV(\''+rid+'\',\'rejected\')" style="color:#dc2626;font-weight:700;font-size:12px">Reject</button>':'-';
+                    return '<tr style="border-bottom:1px solid #f1f5f9"><td style="padding:8px 12px">'+(f.fileName||'-')+'</td><td style="padding:8px 12px">'+(f.category||'-')+'</td><td style="padding:8px 12px">'+vs+'</td><td style="padding:8px 12px">'+act+'</td></tr>';
+                });
+                setHTML('esgChainData',html);
+            };
+            // Real file upload - MutationObserver binds when React renders the button
+            var _fileInput=document.createElement('input');
+            _fileInput.type='file';
+            _fileInput.accept='.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.png,.jpg,.jpeg';
+            _fileInput.style.display='none';
+            document.body.appendChild(_fileInput);
+            _fileInput.onchange=async function(){
+                    var file=_fileInput.files[0];
+                    if(!file){alert("No file selected");return;}
+                var cat=prompt('Category (ESG Documentation / Asset Documents / Operational Data):','ESG Documentation');
+                if(cat===null) return;
+                var _btn=document.getElementById('btnEsgUpload');
+                if(_btn){_btn.disabled=true; _btn.textContent='Uploading...';}
+                var _topBtn=document.getElementById('btnDataVaultUpload');
+                if(_topBtn){_topBtn.disabled=true; _topBtn.textContent='Uploading...';}
+                var _tb=document.getElementById('dataVaultTableBody');
+                var _nr=null,_statusCell=null;
+                if(_tb){
+                    _nr=document.createElement('tr');
+                    _nr.className='hover:bg-gray-50/50 transition-colors bg-blue-50/30';
+                    _nr.innerHTML="<td class='p-4 pl-6 flex items-center gap-3 text-gray-800 font-medium'><span class='text-indigo-400 text-lg'>📄</span> "+file.name+"</td><td class='p-4 text-center text-gray-500'>"+(cat||'ESG Documentation')+"</td><td class='p-4 text-center _dvstatus'><span class='inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-600 border border-blue-200'>⏳ Uploading</span></td><td class='p-4 text-center'><button class='bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-1.5 rounded text-xs font-bold transition-colors'>View</button></td>";
+                    var _uvb=_nr.querySelector('button');
+                    if(_uvb)_uvb.onclick=function(){alert('File is uploading, please wait...');};
+                    _tb.insertBefore(_nr,_tb.firstChild);
+                    _statusCell=_nr.querySelector('._dvstatus');
+                }
+                try {
+                    var fd=new FormData();
+                    var _uEmail=(JSON.parse(localStorage.getItem('userInfo')||'{}').Email)||localStorage.getItem('esg_email')||'admin';
+                    fd.append('file',file);
+                    fd.append('uploader',_uEmail);
+                    fd.append('desc',cat||'ESG Documentation');
+                                        var _tk=localStorage.getItem('userToken')||'';if(_tk)fd._headers={'Authorization':'Bearer '+_tk};var resp=await fetch('/api/esg/upload',{method:'POST',body:fd,headers:_tk?{'Authorization':'Bearer '+_tk}:{}});
+                                        var json=await resp.json();
+                                        if(json.code===0 || json.code===200){
+                        var d=json.data||{};
+                        var cid=(d&&d.cid)||(d&&d.Cid)||(d&&d.IPFSHash)||'';
+                        var fsize=file.size;
+                        var ftype=file.name.split('.').pop()||'pdf';
+                        await mcInvoke('esg-channel','UploadESGFile',['ESG-'+Date.now(),BID,file.name,ftype,String(fsize),cid,_uEmail,cat||'ESG Documentation','Uploaded via dashboard']);
+                        var _rb=document.getElementById('btnEsgRefresh');
+                        if(_rb)_rb.click();
+                        if(_statusCell) _statusCell.innerHTML='<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">✓ Verified</span>'; _loadDataVaultFiles();
+                        if(_nr) _nr.className='hover:bg-gray-50/50 transition-colors';
+                    } else {
+                        if(_statusCell) _statusCell.innerHTML='<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-600 border border-amber-200">⏳ Pending</span>';
+                        if(_nr) _nr.className='hover:bg-gray-50/50 transition-colors';
+                    }
+                } catch(e) {
+                    if(_statusCell) _statusCell.innerHTML='<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-600 border border-amber-200">⏳ Pending</span>';
+                    if(_nr) _nr.className='hover:bg-gray-50/50 transition-colors';
+                }
+                if(_btn){_btn.disabled=false; _btn.textContent='☁ Upload Doc';}
+                var _topBtn2=document.getElementById('btnDataVaultUpload');
+                if(_topBtn2){_topBtn2.disabled=false; _topBtn2.textContent='☁ Upload Document';}
+                _fileInput.value='';
+            };
+            // Event delegation: catch clicks on upload buttons regardless of when React renders them
+            document.addEventListener('click', function(e){
+                var t=e.target;
+                while(t && t!==document.body){
+                    if(t.id==='btnDataVaultUpload' || t.id==='btnEsgUpload'){
+                        e.preventDefault();
+                        e.stopPropagation();
+                        _fileInput.click();
+                        return;
+                    }
+                    t=t.parentElement;
+                }
+            }, true);
+            // Auto-load file list when DataVault page renders
+            function showFileInfoModal(info){
+                var modal=document.createElement("div");
+                modal.style.cssText="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;padding:20px;display:flex;align-items:center;overflow-y:auto;";
+                var mc=document.createElement("div");
+                mc.style.cssText="background:white;border-radius:12px;max-width:500px;width:100%;margin:auto;box-shadow:0 20px 25px -5px rgba(0,0,0,0.1);max-height:95vh;overflow-y:auto;";
+                var hd=document.createElement("div");
+                hd.style.cssText="padding:20px;text-align:center;border-bottom:1px solid #e2e8f0;";
+                hd.innerHTML="<h2 style='margin:0;display:flex;align-items:center;justify-content:center;gap:10px;color:#1e293b;'><span style='width:40px;height:40px;background:linear-gradient(135deg,#059669,#10b981);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:20px;'>&#128196;</span>File Information</h2>";
+                var ct=document.createElement("div");
+                ct.style.cssText="padding:20px;";
+                var sz=info.fileSize;
+                var szStr=sz<1024?sz+" B":sz<1048576?(sz/1024).toFixed(1)+" KB":(sz/1048576).toFixed(2)+" MB";
+                var fields=[
+                    {label:"File Name",value:info.filename},
+                    {label:"CID",value:info.cid},
+                    {label:"File Size",value:sz>0?szStr:"Unknown"},
+                    {label:"Category",value:info.desc},
+                    {label:"Uploader",value:info.uploader},
+                    {label:"Upload Time",value:info.uploadAt}
+                ];
+                var h="";
+                fields.forEach(function(f){
+                    if(f.value){
+                        var bg=f.label==="CID"?"#f0fdf4;border:1px solid #bbf7d0":"#f8fafc;border:1px solid #e2e8f0";
+                        h+="<div style='margin-bottom:14px;'><label style='display:block;font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;margin-bottom:6px;'>"+f.label+"</label><div style='font-size:13px;color:#1e293b;padding:10px 12px;background-color:"+bg+";border-radius:6px;word-wrap:break-word;font-family:monospace;'>"+f.value+"</div></div>";
+                    }
+                });
+                ct.innerHTML=h;
+                var ft=document.createElement("div");
+                ft.style.cssText="padding:20px;border-top:1px solid #e2e8f0;display:flex;gap:10px;";
+                ft.innerHTML="<button id='fi-close-btn' style='flex:1;padding:12px 20px;background:#e2e8f0;color:#1e293b;border:none;border-radius:8px;font-weight:600;cursor:pointer;'>Close</button><button id='fi-download-btn' style='flex:1;padding:12px 20px;background:#059669;color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;'>Download</button>";
+                mc.appendChild(hd);mc.appendChild(ct);mc.appendChild(ft);modal.appendChild(mc);document.body.appendChild(modal);
+                document.getElementById("fi-close-btn").onclick=function(){modal.remove();};
+                document.getElementById("fi-download-btn").onclick=function(){window.open("/api/ipfs/download?cid="+encodeURIComponent(info.cid),"_blank");};
+                modal.onclick=function(e){if(e.target===modal)modal.remove();};
+            }
+            var _dvLoadedCid="";
+            function _loadDataVaultFiles(){
+                var _tb=document.getElementById("dataVaultTableBody");
+                if(!_tb) return;
+                (function(){var _em=(JSON.parse(localStorage.getItem("userInfo")||"{}").Email)||localStorage.getItem("esg_email")||"all";var _h={};var _t=localStorage.getItem("userToken");if(_t)_h["Authorization"]="Bearer "+_t;return fetch("/api/esg/list?userEmail="+encodeURIComponent(_em),{headers:_h})})().then(function(r){return r.json();}).then(function(j){
+                    _tb=document.getElementById("dataVaultTableBody");
+                    if(!_tb) return;
+                    var _lr=document.getElementById("dataVaultLoading");
+                    if(_lr) _lr.remove();
+                    if(j.code!==200||!j.data||!j.data.length){
+                        if(!_tb.children.length||_tb.querySelector("#dataVaultLoading")){
+                            _tb.innerHTML="<tr><td colspan=4 style=padding:32px;text-align:center;color:#9ca3af>No files uploaded yet</td></tr>";
+                        }
+                        return;
+                    }
+                    var cids=j.data.map(function(f){return f.cid||""}).join(",");
+                    if(cids===_dvLoadedCid) return;
+                    _dvLoadedCid=cids;
+                    _tb.innerHTML="";
+                    j.data.forEach(function(f){
+                        var fname=f.filename||"Unknown";
+                        var nr=document.createElement("tr");
+                        nr.className="hover:bg-gray-50/50 transition-colors";
+                        nr.innerHTML="<td class=p-4 pl-6 style=display:flex;align-items:center;gap:12px><span style=color:#818cf8;font-size:1.2em>📄</span> "+fname+"</td><td class=p-4 style=text-align:center;color:#6b7280>"+(f.desc||"ESG Documentation")+"</td><td class=p-4 style=text-align:center><span style=display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:9999px;font-size:12px;font-weight:700;background:#ecfdf5;color:#059669;border:1px solid #a7f3d0>✓ Verified</span></td><td class=p-4 style=text-align:center><button style=background:#059669;color:#fff;padding:6px 16px;border-radius:4px;font-size:12px;font-weight:700;border:none;cursor:pointer>View</button></td>";
+                        var _vb=nr.querySelector("button");
+                        if(_vb){var _vf={cid:f.cid,filename:fname,desc:f.desc||"ESG Documentation",uploader:f.uploader||"admin",uploadAt:f.uploadAt||"",fileSize:f.fileSize||0};_vb.onclick=function(){showFileInfoModal(_vf);};}
+                        _tb.insertBefore(nr, _tb.firstChild);
+                    });
+                }).catch(function(){});
+            }
+            setInterval(_loadDataVaultFiles, 5000);
+
+            if(ep) ep.onclick=async function(){
+                var period=prompt('Report period:','2025-Q2');if(!period)return;
+                var score=prompt('ESG Score:','82');
+                await mcInvoke('esg-channel','SubmitESGReport',['RPT-'+Date.now(),BID,period,45.2,128.5,76,parseFloat(score)||82]);
+                alert('ESG report submitted to blockchain');
+                if(er)er.click();
+            };
+            window._esgV=async function(rid,st){await mcInvoke('esg-channel','VerifyESGFile',[rid,st]);if(er)er.click();};
+
+            // ---- Maintain Channel ----
+            var mr=$('btnMaintRefresh'), mc=$('btnMaintCreate'), mq=$('btnMaintQuick');
+            if(mr) mr.onclick=async function(){
+                setHTML('maintChainData','<div style="text-align:center;color:#999;padding:16px"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div>');
+                var d=await mcQuery('maintain-channel','QueryMaintenanceByBuilding',[BID]);
+                var recs=Array.isArray(d)?d:[];
+                var p=recs.filter(function(r){return r.status==='pending'}).length;
+                var a=recs.filter(function(r){return r.status==='assigned'}).length;
+                var c=recs.filter(function(r){return r.status==='completed'}).length;
+                var html='<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:12px">'
+                    +'<div style="background:#fffbeb;padding:12px;border-radius:8px;text-align:center"><div style="font-size:24px;font-weight:700;color:#d97706">'+p+'</div><div style="font-size:11px;color:#6b7280">Pending</div></div>'
+                    +'<div style="background:#eff6ff;padding:12px;border-radius:8px;text-align:center"><div style="font-size:24px;font-weight:700;color:#2563eb">'+a+'</div><div style="font-size:11px;color:#6b7280">Assigned</div></div>'
+                    +'<div style="background:#ecfdf5;padding:12px;border-radius:8px;text-align:center"><div style="font-size:24px;font-weight:700;color:#059669">'+c+'</div><div style="font-size:11px;color:#6b7280">Completed</div></div>'
+                    +'<div style="background:#f9fafb;padding:12px;border-radius:8px;text-align:center"><div style="font-size:24px;font-weight:700;color:#4b5563">'+recs.length+'</div><div style="font-size:11px;color:#6b7280">Total</div></div>'
+                    +'</div>';
+                html+=makeTable(['Device','Type','Priority','Status','Action'],recs,function(r){
+                    var sc=r.status==='pending'?'#d97706':(r.status==='assigned'?'#2563eb':'#059669');
+                    var rid=r.recordID||'';
+                    var act=r.status==='pending'?'<button onclick="window._mtA(\''+rid+'\')" style="color:#2563eb;font-weight:700;font-size:12px">Assign</button>':(r.status==='assigned'?'<button onclick="window._mtC(\''+rid+'\')" style="color:#059669;font-weight:700;font-size:12px">Complete</button>':'-');
+                    return '<tr style="border-bottom:1px solid #f1f5f9"><td style="padding:8px 12px">'+(r.deviceName||r.deviceID||'-')+'</td><td style="padding:8px 12px">'+(r.maintainType||'-')+'</td><td style="padding:8px 12px">'+(r.priority||'-')+'</td><td style="padding:8px 12px;color:'+sc+';font-weight:700">'+r.status+'</td><td style="padding:8px 12px">'+act+'</td></tr>';
+                });
+                setHTML('maintChainData',html);
+            };
+            if(mc) mc.onclick=async function(){
+                var dev=prompt('Device ID:','HVAC-001');if(!dev)return;
+                var name=prompt('Device Name:','HVAC Chiller Unit');if(!name)return;
+                var desc=prompt('Description:','Routine maintenance');
+                var pri=prompt('Priority (low/medium/high/critical):','medium');
+                await mcInvoke('maintain-channel','CreateMaintenance',['MAINT-'+Date.now(),BID,dev,name,'preventive',desc||'','admin',pri||'medium']);
+                if(mr)mr.click();
+            };
+            if(mq) mq.onclick=async function(){
+                await mcInvoke('maintain-channel','CreateMaintenance',['MAINT-'+Date.now(),BID,'HVAC-001','HVAC Chiller Unit','corrective','Vibration anomaly detected','admin','high']);
+                if(mr)mr.click();
+            };
+            window._mtA=async function(rid){await mcInvoke('maintain-channel','AssignMaintenance',[rid,'HANDLER-001',sd()]);if(mr)mr.click();};
+            window._mtC=async function(rid){await mcInvoke('maintain-channel','CompleteMaintenance',[rid]);if(mr)mr.click();};
+
+            // ---- Billing Channel ----
+            var br=$('btnBillRefresh'), bc=$('btnBillCreate'), bm=$('btnBillMeter'), bq=$('btnBillQuick');
+            if(br) br.onclick=async function(){
+                setHTML('billChainData','<div style="text-align:center;color:#999;padding:16px"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div>');
+                var d=await mcQuery('billing-channel','QueryBillsByBuilding',[BID]);
+                var bills=Array.isArray(d)?d:[];
+                var up=bills.filter(function(b){return b.status==='unpaid'});
+                var total=up.reduce(function(s,b){return s+(b.amount||0)},0);
+                var html='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">'
+                    +'<div style="background:#eff6ff;padding:12px;border-radius:8px;text-align:center"><div style="font-size:24px;font-weight:700;color:#2563eb">'+bills.length+'</div><div style="font-size:11px;color:#6b7280">Total Bills</div></div>'
+                    +'<div style="background:#fef2f2;padding:12px;border-radius:8px;text-align:center"><div style="font-size:24px;font-weight:700;color:#dc2626">HKD '+total.toFixed(0)+'</div><div style="font-size:11px;color:#6b7280">Unpaid</div></div>'
+                    +'<div style="background:#ecfdf5;padding:12px;border-radius:8px;text-align:center"><div style="font-size:24px;font-weight:700;color:#059669">'+(bills.length-up.length)+'</div><div style="font-size:11px;color:#6b7280">Paid</div></div>'
+                    +'</div>';
+                var typeMap={electric:'Electric',water:'Water',gas:'Gas',management:'Mgmt Fee',other:'Other'};
+                html+=makeTable(['Bill ID','Type','Unit','Amount','Status','Action'],bills,function(b){
+                    var sc=b.status==='paid'?'<span style="color:#059669;font-weight:700">Paid</span>':'<span style="color:#dc2626;font-weight:700">Unpaid</span>';
+                    var bid=b.billID||'';
+                    var act=b.status!=='paid'?'<button onclick="window._bp(\''+bid+'\')" style="background:#059669;color:white;padding:4px 12px;border-radius:4px;font-size:12px;font-weight:700;border:none;cursor:pointer">Pay on Chain</button>':'-';
+                    return '<tr style="border-bottom:1px solid #f1f5f9"><td style="padding:8px 12px;font-family:monospace;font-size:11px">'+bid+'</td><td style="padding:8px 12px">'+(typeMap[b.billType]||b.billType||'-')+'</td><td style="padding:8px 12px">'+(b.unitID||'-')+'</td><td style="padding:8px 12px;text-align:right;font-weight:700">HKD '+(b.amount||0).toFixed(2)+'</td><td style="padding:8px 12px">'+sc+'</td><td style="padding:8px 12px">'+act+'</td></tr>';
+                });
+                setHTML('billChainData',html);
+            };
+            if(bc) bc.onclick=async function(){
+                var unit=prompt('Unit ID:','UNIT-12F-A');if(!unit)return;
+                var type=prompt('Type (electric/water/gas/management):','electric');
+                var amt=prompt('Amount (HKD):','2850.00');if(!amt)return;
+                var period=prompt('Period:','2025-05');
+                await mcInvoke('billing-channel','CreateBill',['BILL-'+Date.now(),BID,unit,'USER-001',type||'electric',parseFloat(amt)||0,period||sd()]);
+                if(br)br.click();
+            };
+            if(bm) bm.onclick=async function(){
+                var unit=prompt('Unit ID:','UNIT-12F-A');if(!unit)return;
+                var type=prompt('Meter type (electric/water/gas):','electric');
+                var prev=prompt('Previous reading:','1000');
+                var curr=prompt('Current reading:','1150');if(!curr)return;
+                await mcInvoke('billing-channel','RecordMeterReading',['MTR-'+Date.now(),BID,unit,type||'electric',parseFloat(prev)||0,parseFloat(curr)||0]);
+                alert('Meter reading recorded on blockchain');
+                if(br)br.click();
+            };
+            if(bq) bq.onclick=async function(){
+                await mcInvoke('billing-channel','CreateBill',['BILL-'+Date.now(),BID,'UNIT-12F-A','USER-001','electric',2850.50,'2025-05']);
+                if(br)br.click();
+            };
+            window._bp=async function(bid){if(!confirm('Pay bill '+bid+'?'))return;await mcInvoke('billing-channel','PayBill',[bid]);if(br)br.click();};
+        })();
+
+
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
+<script src="user-info-handler.js?v=1778981961"></script>
 </body>
 </html>

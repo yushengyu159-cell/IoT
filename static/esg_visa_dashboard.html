@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESG VISA Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#07A765',
+                        'primary-light': '#E6F6F0',
+                        danger: '#EF4444',
+                        warning: '#F59E0B',
+                        info: '#3B82F6',
+                        border: '#E5E7EB',
+                        surface: '#F8FAFC'
+                    },
+                    fontFamily: {
+                        sans: ['"PingFang SC"', '"Microsoft YaHei"', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'sm-card': '0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.02)',
+                        'card': '0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        
+        .sparkline { stroke: #07A765; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+        .sparkline-warning { stroke: #F59E0B; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    </style>
+</head>
+<body class="bg-surface text-gray-800 h-screen w-screen overflow-hidden flex text-[13px]">
+
+    <!-- 左侧导航栏 -->
+    <nav class="w-[240px] bg-white border-r border-border flex flex-col h-full shrink-0">
+        <!-- Logo -->
+        <div class="p-5 flex items-center gap-2">
+            <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold text-lg">
+                <i class="fa-solid fa-leaf"></i>
+            </div>
+            <span class="font-bold text-lg tracking-wider">ESG VISA</span>
+        </div>
+
+        <!-- 站点选择 -->
+        <div class="px-4 mb-6">
+            <div class="border border-border rounded-lg p-3 flex items-center justify-between cursor-pointer hover:border-primary transition-colors">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-primary-light rounded flex items-center justify-center text-primary">
+                        <i class="fa-regular fa-building"></i>
+                    </div>
+                    <div>
+                        <div class="font-semibold text-sm">Godfrey Centre</div>
+                        <div class="text-xs text-primary flex items-center gap-1 mt-0.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-primary"></span> 已連接 · 12 IoT 節點
+                        </div>
+                    </div>
+                </div>
+                <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i>
+            </div>
+        </div>
+
+        <!-- 菜单 -->
+        <div class="px-3 flex-1 overflow-y-auto hide-scrollbar">
+            <div class="text-xs text-gray-400 font-semibold mb-2 px-3 tracking-wider">CORE MODULES</div>
+            
+            <a href="#" onclick="switchPage('page1')" id="nav-page1" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary-light text-primary font-semibold mb-1 transition-colors">
+                <i class="fa-solid fa-table-cells-large w-5 text-center"></i> 首頁工作台
+            </a>
+            <a href="#" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-500 hover:bg-gray-50 mb-1 transition-colors">
+                <i class="fa-regular fa-folder-open w-5 text-center"></i> 資產檔案
+            </a>
+            <!-- 修改了数据金库，添加 onclick 事件 -->
+            <a href="#" onclick="switchPage('page4')" id="nav-page4" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-500 hover:bg-gray-50 mb-1 transition-colors">
+                <i class="fa-solid fa-database w-5 text-center"></i> 數據金庫
+            </a>
+            <a href="#" onclick="switchPage('page2')" id="nav-page2" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-500 hover:bg-gray-50 mb-1 transition-colors">
+                <i class="fa-solid fa-chart-pie w-5 text-center"></i> 可持續報表
+            </a>
+            <a href="#" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-500 hover:bg-gray-50 mb-1 transition-colors">
+                <i class="fa-solid fa-screwdriver-wrench w-5 text-center"></i> 預測性維護
+            </a>
+            <a href="#" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-500 hover:bg-gray-50 mb-1 transition-colors">
+                <i class="fa-solid fa-arrow-trend-up w-5 text-center"></i> 綠色金融
+            </a>
+            <a href="#" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-500 hover:bg-gray-50 mb-1 transition-colors">
+                <i class="fa-regular fa-file-lines w-5 text-center"></i> 數字資產
+            </a>
+        </div>
+
+        <!-- 底部 -->
+        <div class="p-4 border-t border-border">
+            <a href="#" class="flex items-center justify-between text-gray-500 hover:text-gray-800 mb-4 px-2">
+                <div class="flex items-center gap-3"><i class="fa-regular fa-bell w-4"></i> 通知中心</div>
+                <span class="bg-danger text-white text-[10px] px-1.5 py-0.5 rounded-full leading-none">3</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 text-gray-500 hover:text-gray-800 mb-4 px-2">
+                <i class="fa-solid fa-gear w-4"></i> 系統設置
+            </a>
+            <div class="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 cursor-pointer border border-transparent hover:border-border">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-xs">K</div>
+                    <div>
+                        <div class="font-semibold text-xs text-gray-800">Kevin Lau</div>
+                        <div class="text-[10px] text-gray-400">Building Manager</div>
+                    </div>
+                </div>
+                <i class="fa-solid fa-arrow-right-from-bracket text-gray-400 text-xs"></i>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 中间主内容区 (占据全部剩余空间) -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden relative bg-gray-50/50">
+        
+        <!-- PAGE 1: 首頁工作台 -->
+        <div id="page1" class="page-content flex-1 overflow-y-auto p-6">
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-5">
+                <h1 class="text-xl font-bold text-gray-800">首頁工作台</h1>
+                <div class="flex items-center gap-3 text-xs">
+                    <div class="flex items-center gap-2 bg-white border border-border px-3 py-1.5 rounded-md text-gray-600">
+                        <i class="fa-regular fa-calendar"></i> 2025/05/20 - 2025/05/26
+                    </div>
+                    <div class="flex items-center gap-2 text-gray-500">
+                        <i class="fa-solid fa-rotate-right"></i> 自動更新 <span class="text-gray-400">每 30 秒</span>
+                    </div>
+                    <button class="bg-white border border-border px-3 py-1.5 rounded-md text-gray-600 hover:bg-gray-50 flex items-center gap-1.5">
+                        <i class="fa-solid fa-sliders"></i> 設定
+                    </button>
+                </div>
+            </div>
+
+            <!-- Top KPIs -->
+            <div class="grid grid-cols-5 gap-4 mb-5">
+                <div class="bg-white p-4 rounded-xl shadow-sm-card border border-border/50 relative overflow-hidden">
+                    <div class="text-gray-500 mb-1">綜合 ESG 評分</div>
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-2xl font-bold text-primary">82</span><span class="text-gray-400 text-xs">/100</span>
+                    </div>
+                    <div class="text-primary text-xs mt-1 flex items-center gap-1">
+                        <i class="fa-solid fa-arrow-trend-up"></i> +2.4% 較上月
+                    </div>
+                    <svg class="absolute bottom-0 right-0 w-24 h-12 opacity-50" viewBox="0 0 100 30"><path class="sparkline" d="M0,25 L20,20 L40,22 L60,10 L80,15 L100,5"></path></svg>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm-card border border-border/50 relative overflow-hidden">
+                    <div class="text-gray-500 mb-1">碳排強度</div>
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-2xl font-bold text-warning">45.2</span><span class="text-gray-400 text-xs">kg CO₂/m²</span>
+                    </div>
+                    <div class="text-warning text-xs mt-1 flex items-center gap-1">
+                        <i class="fa-solid fa-triangle-exclamation"></i> 局部區域略高
+                    </div>
+                    <svg class="absolute bottom-0 right-0 w-24 h-12 opacity-50" viewBox="0 0 100 30"><path class="sparkline-warning" d="M0,20 L20,15 L40,18 L60,5 L80,8 L100,2"></path></svg>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm-card border border-border/50 relative overflow-hidden">
+                    <div class="text-gray-500 mb-1">設備健康指數 (RUI)</div>
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-2xl font-bold text-primary">94</span><span class="text-gray-400 text-xs">%</span>
+                    </div>
+                    <div class="text-primary text-xs mt-1 flex items-center gap-1">
+                        <i class="fa-solid fa-circle-check"></i> 設備狀態良好
+                    </div>
+                    <svg class="absolute bottom-0 right-0 w-24 h-12 opacity-50" viewBox="0 0 100 30"><path class="sparkline" d="M0,25 L20,15 L40,20 L60,10 L80,12 L100,5"></path></svg>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm-card border border-border/50 relative overflow-hidden">
+                    <div class="text-gray-500 mb-1">本期耗電成本</div>
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-xl font-bold text-info">HKD 182,400</span>
+                    </div>
+                    <div class="text-info text-xs mt-1 flex items-center gap-1">
+                        <i class="fa-solid fa-arrow-trend-down"></i> -12.3% 較去年
+                    </div>
+                    <svg class="absolute bottom-0 right-0 w-24 h-12 opacity-50" viewBox="0 0 100 30"><path style="stroke:#3B82F6;stroke-width:2;fill:none;" d="M0,5 L20,10 L40,8 L60,20 L80,18 L100,25"></path></svg>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm-card border border-border/50 relative overflow-hidden">
+                    <div class="text-gray-500 mb-1">本期碳排量</div>
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-2xl font-bold text-primary">128</span><span class="text-gray-400 text-xs">tCO₂e</span>
+                    </div>
+                    <div class="text-gray-400 text-[11px] mt-1">Scope 1+2 合計</div>
+                    <svg class="absolute bottom-0 right-0 w-24 h-12 opacity-50" viewBox="0 0 100 30"><path class="sparkline" d="M0,10 L20,8 L40,15 L60,12 L80,20 L100,25"></path></svg>
+                </div>
+            </div>
+
+            <!-- Agent 推送 -->
+            <div class="bg-white rounded-xl shadow-sm-card border border-border/50 p-4 mb-5">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2 font-semibold">
+                        <i class="fa-solid fa-house-chimney text-gray-400"></i> Agent 智能推送 <span class="text-gray-400 font-normal">(5)</span>
+                    </div>
+                    <a href="#" class="text-info text-xs hover:underline">全部查看 <i class="fa-solid fa-chevron-right text-[10px]"></i></a>
+                </div>
+                <div class="grid grid-cols-4 gap-4">
+                    <!-- Card 1 -->
+                    <div class="border border-red-100 bg-red-50/30 rounded-lg p-3.5 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-danger text-xs flex items-center gap-1.5 font-medium"><i class="fa-solid fa-bolt"></i> Energy Agent</span>
+                                <span class="bg-red-100 text-danger text-[10px] px-1.5 py-0.5 rounded">高風險</span>
+                            </div>
+                            <div class="font-bold text-[14px] mb-1.5 text-gray-800">HVAC 系統異常</div>
+                            <div class="text-gray-500 text-[11px] leading-relaxed">3 樓冷氣異常，碳排預計超標 15% 影響：+15% 碳排</div>
+                        </div>
+                        <div class="flex gap-2 mt-4">
+                            <button class="flex-1 bg-white border border-border text-gray-600 rounded py-1.5 text-xs hover:bg-gray-50">查看分析</button>
+                            <button class="flex-1 bg-danger text-white rounded py-1.5 text-xs hover:bg-red-600">一鍵優化</button>
+                        </div>
+                    </div>
+                    <!-- Card 2 -->
+                    <div class="border border-orange-100 bg-orange-50/30 rounded-lg p-3.5 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-warning text-xs flex items-center gap-1.5 font-medium"><i class="fa-solid fa-scale-balanced"></i> Legislation Agent</span>
+                                <span class="bg-orange-100 text-warning text-[10px] px-1.5 py-0.5 rounded">合規提醒</span>
+                            </div>
+                            <div class="font-bold text-[14px] mb-1.5 text-gray-800">消防安檢證書即將過期</div>
+                            <div class="text-gray-500 text-[11px] leading-relaxed">Data Vault 識別顯示，消防安檢 證書剩餘 30 天後過期。</div>
+                        </div>
+                        <div class="flex gap-2 mt-4">
+                            <button class="flex-1 bg-white border border-border text-gray-600 rounded py-1.5 text-xs hover:bg-gray-50">查看詳情</button>
+                            <button class="flex-1 bg-warning text-white rounded py-1.5 text-xs hover:bg-orange-500">前往更新</button>
+                        </div>
+                    </div>
+                    <!-- Card 3 -->
+                    <div class="border border-blue-100 bg-blue-50/30 rounded-lg p-3.5 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-info text-xs flex items-center gap-1.5 font-medium"><i class="fa-solid fa-city"></i> Urbanism Agent</span>
+                                <span class="bg-blue-100 text-info text-[10px] px-1.5 py-0.5 rounded">機會識別</span>
+                            </div>
+                            <div class="font-bold text-[14px] mb-1.5 text-gray-800">屋頂綠化升級可提升 WELL</div>
+                            <div class="text-gray-500 text-[11px] leading-relaxed">對比市場基準，可提升 WELL 認證 3 分，並符合政府綠色補貼標準。</div>
+                        </div>
+                        <div class="flex gap-2 mt-4">
+                            <button class="flex-1 bg-white border border-border text-gray-600 rounded py-1.5 text-xs hover:bg-gray-50">查看分析</button>
+                            <button class="flex-1 bg-info text-white rounded py-1.5 text-xs hover:bg-blue-600">開始評估</button>
+                        </div>
+                    </div>
+                    <!-- Card 4 -->
+                    <div class="border border-green-100 bg-green-50/30 rounded-lg p-3.5 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-primary text-xs flex items-center gap-1.5 font-medium"><i class="fa-solid fa-book-open"></i> Knowledge Agent</span>
+                                <span class="bg-green-100 text-primary text-[10px] px-1.5 py-0.5 rounded">調研</span>
+                            </div>
+                            <div class="font-bold text-[14px] mb-1.5 text-gray-800">用水表現良好</div>
+                            <div class="text-gray-500 text-[11px] leading-relaxed">用水建造機構指數良好，較上月下降 3.1%，以滿足合規綠色標準。</div>
+                        </div>
+                        <div class="flex gap-2 mt-4">
+                            <button class="flex-1 bg-white border border-border text-gray-600 rounded py-1.5 text-xs hover:bg-gray-50">查看趨勢</button>
+                            <button class="flex-1 bg-primary text-white rounded py-1.5 text-xs hover:bg-green-600">分享報告</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="grid grid-cols-3 gap-5 mb-5">
+                <div class="col-span-2 bg-white rounded-xl shadow-sm-card border border-border/50 p-4">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="font-semibold">IoT 即時趨勢</div>
+                        <div class="text-xs text-gray-400">24 小時</div>
+                    </div>
+                    <div class="flex gap-4 text-[11px] mb-2">
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-blue-400"></span> 溫度 (°C)</span>
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-green-400"></span> 濕度 (%)</span>
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-purple-500"></span> CO₂ (ppm)</span>
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-gray-400"></span> PM2.5 (μg/m³)</span>
+                    </div>
+                    <div class="h-48 relative w-full">
+                        <canvas id="chartIoT"></canvas>
+                    </div>
+                </div>
+                <div class="col-span-1 bg-white rounded-xl shadow-sm-card border border-border/50 p-4">
+                    <div class="font-semibold mb-4">設備分佈狀態</div>
+                    <div class="flex items-center h-48">
+                        <div class="w-1/2 relative h-full flex items-center justify-center">
+                            <canvas id="chartDevice"></canvas>
+                            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                                <span class="text-2xl font-bold">256</span>
+                                <span class="text-[10px] text-gray-400">設備總數</span>
+                            </div>
+                        </div>
+                        <div class="w-1/2 pl-4 flex flex-col gap-2 text-xs">
+                            <div class="flex items-center justify-between"><span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-blue-500"></span> HVAC 系統</span> <span class="font-semibold">88 <span class="text-gray-400 font-normal">(34%)</span></span></div>
+                            <div class="flex items-center justify-between"><span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-purple-500"></span> 照明系統</span> <span class="font-semibold">66 <span class="text-gray-400 font-normal">(26%)</span></span></div>
+                            <div class="flex items-center justify-between"><span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-orange-500"></span> 電力系統</span> <span class="font-semibold">48 <span class="text-gray-400 font-normal">(19%)</span></span></div>
+                            <div class="flex items-center justify-between"><span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-green-500"></span> 水資源系統</span> <span class="font-semibold">32 <span class="text-gray-400 font-normal">(13%)</span></span></div>
+                            <div class="flex items-center justify-between"><span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-red-400"></span> 垃圾處理系統</span> <span class="font-semibold">12 <span class="text-gray-400 font-normal">(5%)</span></span></div>
+                            <div class="flex items-center justify-between"><span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-gray-400"></span> 其他設備</span> <span class="font-semibold">10 <span class="text-gray-400 font-normal">(3%)</span></span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="bg-white rounded-xl shadow-sm-card border border-border/50 p-4">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="font-semibold">實時數據列表</div>
+                    <div class="flex gap-2">
+                        <div class="relative">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                            <input type="text" placeholder="搜索設備編號..." class="pl-8 pr-3 py-1.5 text-xs border border-border rounded-md w-48 focus:outline-none focus:border-primary">
+                        </div>
+                        <button class="border border-border px-3 py-1.5 rounded-md text-xs text-gray-600 hover:bg-gray-50 flex items-center gap-1.5">
+                            <i class="fa-solid fa-filter"></i> 篩選
+                        </button>
+                    </div>
+                </div>
+                <table class="w-full text-left text-xs">
+                    <thead>
+                        <tr class="text-gray-400 border-b border-border/50">
+                            <th class="pb-3 font-medium">傳感器名稱</th>
+                            <th class="pb-3 font-medium">類別</th>
+                            <th class="pb-3 font-medium">位置</th>
+                            <th class="pb-3 font-medium">即時數值</th>
+                            <th class="pb-3 font-medium">狀態</th>
+                            <th class="pb-3 font-medium">趨勢 (24h)</th>
+                            <th class="pb-3 font-medium">最後更新</th>
+                            <th class="pb-3 font-medium text-right">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="border-b border-border/30 hover:bg-gray-50">
+                            <td class="py-3 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-primary"></span> T-01 溫度感應器</td>
+                            <td class="py-3"><span class="text-primary bg-primary-light px-2 py-0.5 rounded text-[10px]">環境監測</span></td>
+                            <td class="py-3 text-gray-500">3/F 辦公園區 A</td>
+                            <td class="py-3 font-semibold">24.6 °C</td>
+                            <td class="py-3 text-primary flex items-center gap-1"><i class="fa-solid fa-circle text-[8px]"></i> 正常</td>
+                            <td class="py-3"><svg class="w-12 h-4"><path class="sparkline" d="M0,10 L10,8 L20,12 L30,5 L40,6 L50,2"></path></svg></td>
+                            <td class="py-3 text-gray-400">2 分鐘前</td>
+                            <td class="py-3 text-right"><button class="text-gray-500 hover:text-primary">分析 <i class="fa-solid fa-ellipsis-vertical ml-2"></i></button></td>
+                        </tr>
+                        <tr class="border-b border-border/30 hover:bg-gray-50">
+                            <td class="py-3 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-primary"></span> H-01 濕度感應器</td>
+                            <td class="py-3"><span class="text-primary bg-primary-light px-2 py-0.5 rounded text-[10px]">環境監測</span></td>
+                            <td class="py-3 text-gray-500">3/F 辦公園區 A</td>
+                            <td class="py-3 font-semibold">58.3 %</td>
+                            <td class="py-3 text-primary flex items-center gap-1"><i class="fa-solid fa-circle text-[8px]"></i> 正常</td>
+                            <td class="py-3"><svg class="w-12 h-4"><path class="sparkline" d="M0,12 L10,10 L20,15 L30,8 L40,5 L50,2"></path></svg></td>
+                            <td class="py-3 text-gray-400">2 分鐘前</td>
+                            <td class="py-3 text-right"><button class="text-gray-500 hover:text-primary">分析 <i class="fa-solid fa-ellipsis-vertical ml-2"></i></button></td>
+                        </tr>
+                        <tr class="border-b border-border/30 hover:bg-gray-50">
+                            <td class="py-3 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-warning"></span> CO2-01 CO₂ 感應器</td>
+                            <td class="py-3"><span class="text-warning bg-orange-50 px-2 py-0.5 rounded text-[10px]">空氣質素</span></td>
+                            <td class="py-3 text-gray-500">3/F 會議室 B</td>
+                            <td class="py-3 font-semibold">687 ppm</td>
+                            <td class="py-3 text-warning flex items-center gap-1"><i class="fa-solid fa-circle text-[8px]"></i> 略微偏高</td>
+                            <td class="py-3"><svg class="w-12 h-4"><path class="sparkline-warning" d="M0,15 L10,12 L20,10 L30,5 L40,3 L50,0"></path></svg></td>
+                            <td class="py-3 text-gray-400">1 分鐘前</td>
+                            <td class="py-3 text-right"><button class="text-gray-500 hover:text-primary">分析 <i class="fa-solid fa-ellipsis-vertical ml-2"></i></button></td>
+                        </tr>
+                        <tr class="border-b border-border/30 hover:bg-gray-50">
+                            <td class="py-3 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-primary"></span> PM2.5-01 PM2.5 感應器</td>
+                            <td class="py-3"><span class="text-warning bg-orange-50 px-2 py-0.5 rounded text-[10px]">空氣質素</span></td>
+                            <td class="py-3 text-gray-500">2/F 接待大堂</td>
+                            <td class="py-3 font-semibold">12 μg/m³</td>
+                            <td class="py-3 text-primary flex items-center gap-1"><i class="fa-solid fa-circle text-[8px]"></i> 正常</td>
+                            <td class="py-3"><svg class="w-12 h-4"><path style="stroke:#8B5CF6;stroke-width:2;fill:none;" d="M0,10 L10,12 L20,8 L30,5 L40,8 L50,5"></path></svg></td>
+                            <td class="py-3 text-gray-400">1 分鐘前</td>
+                            <td class="py-3 text-right"><button class="text-gray-500 hover:text-primary">分析 <i class="fa-solid fa-ellipsis-vertical ml-2"></i></button></td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="py-3 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-primary"></span> E-01 電力監測器</td>
+                            <td class="py-3"><span class="text-info bg-blue-50 px-2 py-0.5 rounded text-[10px]">能源監測</span></td>
+                            <td class="py-3 text-gray-500">機電房/配電箱</td>
+                            <td class="py-3 font-semibold">45.2 kW</td>
+                            <td class="py-3 text-primary flex items-center gap-1"><i class="fa-solid fa-circle text-[8px]"></i> 正常</td>
+                            <td class="py-3"><svg class="w-12 h-4"><path class="sparkline" d="M0,5 L10,8 L20,5 L30,12 L40,10 L50,15"></path></svg></td>
+                            <td class="py-3 text-gray-400">30 秒前</td>
+                            <td class="py-3 text-right"><button class="text-gray-500 hover:text-primary">分析 <i class="fa-solid fa-ellipsis-vertical ml-2"></i></button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- PAGE 2: 可持續報表 -->
+        <div id="page2" class="page-content hidden flex-1 overflow-y-auto p-6">
+            <h1 class="text-xl font-bold text-gray-800 mb-5">可持續報表</h1>
+            
+            <!-- Two big banners -->
+            <div class="grid grid-cols-2 gap-5 mb-6">
+                <div class="bg-white rounded-xl shadow-sm-card border border-border/50 p-5 flex items-center justify-between relative overflow-hidden">
+                    <div class="relative z-10">
+                        <h2 class="text-lg font-bold mb-2">綠色建築評級</h2>
+                        <p class="text-gray-500 text-xs mb-4 max-w-xs">查看及追蹤建築在不同綠色認證體系下的評級表現，並獲得改善建議。</p>
+                        <button onclick="switchPage('page3')" class="bg-primary text-white px-4 py-2 rounded-lg text-xs font-semibold shadow hover:bg-green-600 transition-colors">
+                            進入綠色建築評級 <i class="fa-solid fa-arrow-right ml-1"></i>
+                        </button>
+                    </div>
+                    <div class="absolute right-0 bottom-0 opacity-20 transform translate-x-4 translate-y-4">
+                        <i class="fa-solid fa-building-wheat text-9xl text-primary"></i>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm-card border border-border/50 p-5 flex items-center justify-between relative overflow-hidden">
+                    <div class="relative z-10">
+                        <h2 class="text-lg font-bold mb-2">ESG 報告</h2>
+                        <p class="text-gray-500 text-xs mb-4 max-w-xs">生成及管理 ESG 報告，符合國際標準與法規披露要求。</p>
+                        <button class="bg-primary text-white px-4 py-2 rounded-lg text-xs font-semibold shadow hover:bg-green-600 transition-colors">
+                            進入 ESG 報告 <i class="fa-solid fa-arrow-right ml-1"></i>
+                        </button>
+                    </div>
+                    <div class="absolute right-0 bottom-0 opacity-20 transform translate-x-4 translate-y-4">
+                        <i class="fa-solid fa-file-invoice text-9xl text-primary"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KPIs -->
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="font-bold text-base">可持續表現總覽</h3>
+                <div class="flex gap-3">
+                    <div class="flex items-center gap-2 bg-white border border-border px-3 py-1.5 rounded-md text-xs text-gray-600">
+                        <i class="fa-regular fa-calendar"></i> 2025/05/20 - 2025/05/26
+                    </div>
+                    <button class="bg-white border border-border px-3 py-1.5 rounded-md text-xs text-gray-600 hover:bg-gray-50 flex items-center gap-1.5">
+                        <i class="fa-solid fa-download"></i> 導出報表
+                    </button>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-5 gap-4 mb-6">
+                <!-- 5 small cards (similar to page 1 but different data) -->
+                <div class="bg-white p-4 rounded-xl shadow-sm-card border border-border/50">
+                    <div class="text-gray-500 mb-1 text-xs">總體 ESG 評分</div>
+                    <div class="flex items-baseline gap-1"><span class="text-2xl font-bold text-primary">82</span><span class="text-gray-400 text-xs">/100</span></div>
+                    <div class="text-primary text-[11px] mt-1"><i class="fa-solid fa-arrow-trend-up"></i> +2.4% 較上月</div>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm-card border border-border/50">
+                    <div class="text-gray-500 mb-1 text-xs">碳排強度</div>
+                    <div class="flex items-baseline gap-1"><span class="text-2xl font-bold text-warning">45.2</span><span class="text-gray-400 text-[10px]">kg CO₂/m²</span></div>
+                    <div class="text-warning text-[11px] mt-1"><i class="fa-solid fa-triangle-exclamation"></i> 局部區域略高</div>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm-card border border-border/50">
+                    <div class="text-gray-500 mb-1 text-xs">耗能強度</div>
+                    <div class="flex items-baseline gap-1"><span class="text-2xl font-bold text-primary">128</span><span class="text-gray-400 text-[10px]">kWh/m²</span></div>
+                    <div class="text-primary text-[11px] mt-1"><i class="fa-solid fa-arrow-trend-down"></i> -5.6% 較上月</div>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm-card border border-border/50">
+                    <div class="text-gray-500 mb-1 text-xs">用水強度</div>
+                    <div class="flex items-baseline gap-1"><span class="text-2xl font-bold text-info">0.68</span><span class="text-gray-400 text-[10px]">m³/m²</span></div>
+                    <div class="text-primary text-[11px] mt-1"><i class="fa-solid fa-arrow-trend-down"></i> -3.1% 較上月</div>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm-card border border-border/50">
+                    <div class="text-gray-500 mb-1 text-xs">廢棄物回收率</div>
+                    <div class="flex items-baseline gap-1"><span class="text-2xl font-bold text-purple-600">76</span><span class="text-gray-400 text-xs">%</span></div>
+                    <div class="text-primary text-[11px] mt-1"><i class="fa-solid fa-arrow-trend-up"></i> +4.2% 較上月</div>
+                </div>
+            </div>
+
+            <!-- Charts Row 2 -->
+            <div class="grid grid-cols-3 gap-5 mb-6">
+                <div class="bg-white rounded-xl shadow-sm-card border border-border/50 p-4">
+                    <div class="font-semibold mb-4">ESG 表現趨勢</div>
+                    <div class="flex gap-3 text-[10px] mb-2 justify-center">
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded bg-green-500"></span> 環境 (E)</span>
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded bg-purple-500"></span> 社會 (S)</span>
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded bg-orange-500"></span> 治理 (G)</span>
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded border border-primary border-dashed"></span> ESG 總分</span>
+                    </div>
+                    <div class="h-40 w-full relative"><canvas id="chartESGTrend"></canvas></div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm-card border border-border/50 p-4">
+                    <div class="font-semibold mb-2">ESG 主要議題表現</div>
+                    <div class="h-48 w-full relative"><canvas id="chartESGRadar"></canvas></div>
+                    <div class="flex gap-4 text-[10px] justify-center mt-1">
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-green-500/50 border border-green-500"></span> 本期表現</span>
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full border border-gray-300 border-dashed"></span> 上期表現</span>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm-card border border-border/50 p-4 flex flex-col">
+                    <div class="font-semibold mb-4">最新報告</div>
+                    <div class="flex-1 flex flex-col gap-3">
+                        <div class="flex items-center justify-between p-3 border border-border/50 rounded-lg hover:bg-gray-50 cursor-pointer">
+                            <div>
+                                <div class="font-medium text-sm text-gray-800">ESG 季度報告 Q2 2025</div>
+                                <div class="text-xs text-gray-400 mt-1">2025/05/15</div>
+                            </div>
+                            <span class="text-[10px] bg-green-50 text-primary border border-green-100 px-2 py-0.5 rounded">已發布</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 border border-border/50 rounded-lg hover:bg-gray-50 cursor-pointer">
+                            <div>
+                                <div class="font-medium text-sm text-gray-800">碳排放報告 2024</div>
+                                <div class="text-xs text-gray-400 mt-1">2025/01/20</div>
+                            </div>
+                            <span class="text-[10px] bg-green-50 text-primary border border-green-100 px-2 py-0.5 rounded">已發布</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 border border-border/50 rounded-lg hover:bg-gray-50 cursor-pointer">
+                            <div>
+                                <div class="font-medium text-sm text-gray-800">TCFD 披露報告 2024</div>
+                                <div class="text-xs text-gray-400 mt-1">2025/01/10</div>
+                            </div>
+                            <span class="text-[10px] bg-green-50 text-primary border border-green-100 px-2 py-0.5 rounded">已發布</span>
+                        </div>
+                    </div>
+                    <a href="#" class="text-primary text-xs font-semibold text-center mt-3 hover:underline">查看全部報告 <i class="fa-solid fa-arrow-right ml-1"></i></a>
+                </div>
+            </div>
+
+            <!-- Bottom Insights -->
+            <h3 class="font-bold text-base mb-4">近期重點洞察</h3>
+            <div class="grid grid-cols-4 gap-4">
+                <div class="bg-green-50/50 border border-green-100 p-4 rounded-xl flex gap-3">
+                    <div class="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center text-primary shrink-0"><i class="fa-solid fa-bolt"></i></div>
+                    <div>
+                        <div class="font-bold text-sm mb-1">能源效率提升</div>
+                        <div class="text-xs text-gray-600 mb-2 leading-relaxed">本月能源強度較上月下降 5.6%，主要得益於 HVAC 系統優化。</div>
+                        <div class="text-[10px] text-gray-400">2 小時前</div>
+                    </div>
+                </div>
+                <div class="bg-orange-50/50 border border-orange-100 p-4 rounded-xl flex gap-3">
+                    <div class="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center text-warning shrink-0"><i class="fa-solid fa-fire-flame-simple"></i></div>
+                    <div>
+                        <div class="font-bold text-sm mb-1">碳排放關注</div>
+                        <div class="text-xs text-gray-600 mb-2 leading-relaxed">碳排強度仍高於目標值 10%，建議加快可再生能源使用。</div>
+                        <div class="text-[10px] text-gray-400">5 小時前</div>
+                    </div>
+                </div>
+                <div class="bg-blue-50/50 border border-blue-100 p-4 rounded-xl flex gap-3">
+                    <div class="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center text-info shrink-0"><i class="fa-solid fa-droplet"></i></div>
+                    <div>
+                        <div class="font-bold text-sm mb-1">用水表現良好</div>
+                        <div class="text-xs text-gray-600 mb-2 leading-relaxed">用水強度持續改善，較上月下降 3.1%，表現良好。</div>
+                        <div class="text-[10px] text-gray-400">1 天前</div>
+                    </div>
+                </div>
+                <div class="bg-purple-50/50 border border-purple-100 p-4 rounded-xl flex gap-3">
+                    <div class="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center text-purple-500 shrink-0"><i class="fa-solid fa-wind"></i></div>
+                    <div>
+                        <div class="font-bold text-sm mb-1">室內環境質素</div>
+                        <div class="text-xs text-gray-600 mb-2 leading-relaxed">IAQ 指數維持在良好水平，繼續保持通風系統效能。</div>
+                        <div class="text-[10px] text-gray-400">2 天前</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE 3: 綠色建築評級 (BEAM Plus) -->
+        <div id="page3" class="page-content hidden flex-1 overflow-y-auto p-6">
+            <div class="text-xs text-gray-400 mb-4 flex items-center gap-2">
+                <a href="#" onclick="switchPage('page2')" class="hover:text-primary">可持續報表</a> <i class="fa-solid fa-chevron-right text-[8px]"></i> <span class="text-gray-800 font-semibold">綠色建築評級</span>
+            </div>
+            
+            <!-- Banner -->
+            <div class="bg-white rounded-xl shadow-sm-card border border-border/50 p-6 mb-6 flex items-center justify-between">
+                <div>
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="text-sm font-semibold text-gray-500">推薦評級體系</span>
+                        <span class="bg-primary text-white text-[10px] px-2 py-0.5 rounded shadow-sm">最佳匹配</span>
+                    </div>
+                    <p class="text-xs text-gray-500 mb-4">根據建築類型、所在地區及數據表現，系統推薦最適合的綠色建築評級體系。</p>
+                    
+                    <div class="flex items-start gap-8">
+                        <div>
+                            <h2 class="text-2xl font-bold text-primary mb-1">BEAM Plus</h2>
+                            <div class="text-xs text-gray-500 mb-1">香港綠色建築協會</div>
+                            <span class="text-[10px] border border-primary text-primary px-1.5 py-0.5 rounded">最適合</span>
+                        </div>
+                        <ul class="text-xs text-gray-600 space-y-2 border-l border-border pl-6">
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-circle text-primary text-[6px]"></i> 匹配度高 建築類型與 BEAM Plus 要求高度匹配</li>
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-circle text-primary text-[6px]"></i> 數據覆蓋率高 已收集 92% 所需數據</li>
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-circle text-primary text-[6px]"></i> 認證成功率高 同類建築認證成功率達 87%</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="flex flex-col items-end gap-3">
+                    <img src="https://api.iconify.design/twemoji:cityscape.svg" class="h-20 opacity-80" alt="city">
+                    <div class="flex gap-2">
+                        <button class="bg-primary text-white px-4 py-2 rounded-lg text-xs font-semibold shadow hover:bg-green-600">開始 BEAM Plus 評估 <i class="fa-solid fa-arrow-right ml-1"></i></button>
+                        <button class="border border-border bg-white text-gray-600 px-4 py-2 rounded-lg text-xs hover:bg-gray-50">查看其他評級體系</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Assessment Area -->
+            <div class="flex gap-5 mb-5">
+                <!-- Left: Overall Score -->
+                <div class="w-1/4 bg-white rounded-xl shadow-sm-card border border-border/50 p-5 flex flex-col items-center justify-center relative">
+                    <div class="absolute top-4 left-4 font-semibold text-sm">整體預評分</div>
+                    <div class="mt-8 relative w-32 h-32 flex items-center justify-center">
+                        <!-- CSS Circle -->
+                        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                            <path class="text-gray-100" stroke-width="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                            <path class="text-primary" stroke-dasharray="78, 100" stroke-width="3" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                        </svg>
+                        <div class="absolute flex flex-col items-center">
+                            <span class="text-3xl font-bold text-gray-800">78<span class="text-sm text-gray-400 font-normal">/100</span></span>
+                            <span class="text-primary font-semibold text-xs mt-1">良好</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex text-warning text-sm gap-1">
+                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-regular fa-star text-gray-300"></i>
+                    </div>
+                    <div class="text-[10px] text-gray-400 mt-2">BEAM Plus 最終認證預估</div>
+                </div>
+
+                <!-- Right: Categories -->
+                <div class="w-3/4 bg-white rounded-xl shadow-sm-card border border-border/50 p-5">
+                    <div class="flex justify-between items-center mb-6">
+                        <div class="font-semibold text-sm">範疇表現概覽</div>
+                        <a href="#" class="text-primary text-xs hover:underline"><i class="fa-solid fa-chart-bar mr-1"></i> 查看評分詳情</a>
+                    </div>
+                    <div class="grid grid-cols-6 gap-2">
+                        <!-- Category A -->
+                        <div class="flex flex-col border-r border-border/50 pr-2">
+                            <div class="text-[11px] text-gray-500 mb-2 h-8">A. 場地可持續發展</div>
+                            <div class="flex items-center gap-2 mb-2">
+                                <i class="fa-solid fa-leaf text-primary"></i>
+                                <span class="text-xl font-bold">82<span class="text-[10px] text-gray-400 font-normal">/100</span></span>
+                            </div>
+                            <div class="w-full bg-gray-100 h-1.5 rounded-full mb-1"><div class="bg-primary h-1.5 rounded-full" style="width: 82%"></div></div>
+                            <div class="text-[10px] text-primary mt-1">良好</div>
+                        </div>
+                        <!-- Category B -->
+                        <div class="flex flex-col border-r border-border/50 px-2">
+                            <div class="text-[11px] text-gray-500 mb-2 h-8">B. 能源使用</div>
+                            <div class="flex items-center gap-2 mb-2">
+                                <i class="fa-solid fa-bolt text-blue-500"></i>
+                                <span class="text-xl font-bold">76<span class="text-[10px] text-gray-400 font-normal">/100</span></span>
+                            </div>
+                            <div class="w-full bg-gray-100 h-1.5 rounded-full mb-1"><div class="bg-blue-500 h-1.5 rounded-full" style="width: 76%"></div></div>
+                            <div class="text-[10px] text-blue-500 mt-1">良好</div>
+                        </div>
+                        <!-- Category C -->
+                        <div class="flex flex-col border-r border-border/50 px-2">
+                            <div class="text-[11px] text-gray-500 mb-2 h-8">C. 用水效益</div>
+                            <div class="flex items-center gap-2 mb-2">
+                                <i class="fa-solid fa-droplet text-teal-500"></i>
+                                <span class="text-xl font-bold">71<span class="text-[10px] text-gray-400 font-normal">/100</span></span>
+                            </div>
+                            <div class="w-full bg-gray-100 h-1.5 rounded-full mb-1"><div class="bg-teal-500 h-1.5 rounded-full" style="width: 71%"></div></div>
+                            <div class="text-[10px] text-teal-500 mt-1">良好</div>
+                        </div>
+                        <!-- Category D -->
+                        <div class="flex flex-col border-r border-border/50 px-2">
+                            <div class="text-[11px] text-gray-500 mb-2 h-8">D. 物料與資源</div>
+                            <div class="flex items-center gap-2 mb-2">
+                                <i class="fa-solid fa-recycle text-orange-500"></i>
+                                <span class="text-xl font-bold">69<span class="text-[10px] text-gray-400 font-normal">/100</span></span>
+                            </div>
+                            <div class="w-full bg-gray-100 h-1.5 rounded-full mb-1"><div class="bg-orange-500 h-1.5 rounded-full" style="width: 69%"></div></div>
+                            <div class="text-[10px] text-orange-500 mt-1">良好</div>
+                        </div>
+                        <!-- Category E -->
+                        <div class="flex flex-col border-r border-border/50 px-2">
+                            <div class="text-[11px] text-gray-500 mb-2 h-8">E. 室內環境質素</div>
+                            <div class="flex items-center gap-2 mb-2">
+                                <i class="fa-solid fa-wind text-purple-500"></i>
+                                <span class="text-xl font-bold">88<span class="text-[10px] text-gray-400 font-normal">/100</span></span>
+                            </div>
+                            <div class="w-full bg-gray-100 h-1.5 rounded-full mb-1"><div class="bg-purple-500 h-1.5 rounded-full" style="width: 88%"></div></div>
+                            <div class="text-[10px] text-purple-500 mt-1">優秀</div>
+                        </div>
+                        <!-- Category F -->
+                        <div class="flex flex-col pl-2">
+                            <div class="text-[11px] text-gray-500 mb-2 h-8">F. 創新與額外加分</div>
+                            <div class="flex items-center gap-2 mb-2">
+                                <i class="fa-regular fa-star text-warning"></i>
+                                <span class="text-xl font-bold">60<span class="text-[10px] text-gray-400 font-normal">/100</span></span>
+                            </div>
+                            <div class="w-full bg-gray-100 h-1.5 rounded-full mb-1"><div class="bg-warning h-1.5 rounded-full" style="width: 60%"></div></div>
+                            <div class="text-[10px] text-warning mt-1">普通</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom 3 columns -->
+            <div class="grid grid-cols-3 gap-5 mb-5">
+                <!-- Progress -->
+                <div class="bg-white rounded-xl shadow-sm-card border border-border/50 p-5">
+                    <div class="font-semibold text-sm mb-4">認證進度</div>
+                    <div class="text-[11px] text-gray-500 mb-1">目前進度</div>
+                    <div class="text-3xl font-bold mb-2">63%</div>
+                    <div class="w-full bg-gray-100 h-2 rounded-full mb-2"><div class="bg-primary h-2 rounded-full" style="width: 63%"></div></div>
+                    <div class="flex justify-between text-[10px] text-gray-400 mb-6">
+                        <span>已獲評分 47 / 總分 75</span>
+                        <span>還差到 50 分以上</span>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-primary"></i> 必備條件</span>
+                            <span class="font-semibold text-primary bg-primary-light px-2 py-0.5 rounded">12/12</span>
+                        </div>
+                        <div class="w-full h-[1px] bg-border/50"></div>
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="flex items-center gap-2"><i class="fa-regular fa-circle-dot text-blue-500"></i> 基本要求</span>
+                            <span class="font-semibold text-blue-500 bg-blue-50 px-2 py-0.5 rounded">28/36</span>
+                        </div>
+                        <div class="w-full h-[1px] bg-border/50"></div>
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="flex items-center gap-2"><i class="fa-regular fa-star text-warning"></i> 額外加分</span>
+                            <span class="font-semibold text-warning bg-orange-50 px-2 py-0.5 rounded">7/27</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Donut Chart -->
+                <div class="bg-white rounded-xl shadow-sm-card border border-border/50 p-5">
+                    <div class="font-semibold text-sm mb-2">要求條件狀態</div>
+                    <div class="flex items-center h-40">
+                        <div class="w-1/2 relative h-full flex items-center justify-center">
+                            <canvas id="chartBeamReq"></canvas>
+                            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                                <span class="text-2xl font-bold">75</span>
+                                <span class="text-[10px] text-gray-400">總要求</span>
+                            </div>
+                        </div>
+                        <div class="w-1/2 pl-4 flex flex-col gap-3 text-xs">
+                            <div>
+                                <div class="flex items-center gap-1.5 mb-0.5"><span class="w-2 h-2 rounded-full bg-primary"></span> 已達成</div>
+                                <div class="font-semibold pl-3.5">47 <span class="text-gray-400 font-normal text-[10px]">(63%)</span></div>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-1.5 mb-0.5"><span class="w-2 h-2 rounded-full bg-blue-500"></span> 進行中</div>
+                                <div class="font-semibold pl-3.5">18 <span class="text-gray-400 font-normal text-[10px]">(24%)</span></div>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-1.5 mb-0.5"><span class="w-2 h-2 rounded-full bg-warning"></span> 未達成</div>
+                                <div class="font-semibold pl-3.5">10 <span class="text-gray-400 font-normal text-[10px]">(13%)</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center mt-2">
+                        <a href="#" class="text-primary text-xs hover:underline">查看全部要求 <i class="fa-solid fa-chevron-right text-[10px] ml-1"></i></a>
+                    </div>
+                </div>
+
+                <!-- Suggestions -->
+                <div class="bg-white rounded-xl shadow-sm-card border border-border/50 p-5 flex flex-col">
+                    <div class="font-semibold text-sm mb-4">提升建議</div>
+                    <div class="flex-1 flex flex-col gap-3">
+                        <div class="flex items-center justify-between p-3 border border-orange-100 bg-orange-50/30 rounded-lg">
+                            <div class="flex gap-3 items-start">
+                                <i class="fa-solid fa-bolt text-warning mt-0.5"></i>
+                                <div>
+                                    <div class="font-medium text-xs text-gray-800 mb-0.5">能源表現提升空間</div>
+                                    <div class="text-[11px] text-gray-500">優化 HVAC 系統效率，可提升 6-8 分</div>
+                                </div>
+                            </div>
+                            <button class="text-xs text-gray-500 border border-border bg-white px-2 py-1 rounded hover:bg-gray-50 shrink-0">查看建議</button>
+                        </div>
+                        <div class="flex items-center justify-between p-3 border border-blue-100 bg-blue-50/30 rounded-lg">
+                            <div class="flex gap-3 items-start">
+                                <i class="fa-solid fa-droplet text-info mt-0.5"></i>
+                                <div>
+                                    <div class="font-medium text-xs text-gray-800 mb-0.5">用水效益改善建議</div>
+                                    <div class="text-[11px] text-gray-500">安裝節水裝置，可提升 4-6 分</div>
+                                </div>
+                            </div>
+                            <button class="text-xs text-gray-500 border border-border bg-white px-2 py-1 rounded hover:bg-gray-50 shrink-0">查看建議</button>
+                        </div>
+                        <div class="flex items-center justify-between p-3 border border-purple-100 bg-purple-50/30 rounded-lg">
+                            <div class="flex gap-3 items-start">
+                                <i class="fa-solid fa-wind text-purple-500 mt-0.5"></i>
+                                <div>
+                                    <div class="font-medium text-xs text-gray-800 mb-0.5">室內環境質素優化</div>
+                                    <div class="text-[11px] text-gray-500">增加新風量監測，可提升 3-5 分</div>
+                                </div>
+                            </div>
+                            <button class="text-xs text-gray-500 border border-border bg-white px-2 py-1 rounded hover:bg-gray-50 shrink-0">查看建議</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer banner -->
+            <div class="bg-gray-50 border border-border rounded-lg p-4 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded bg-primary text-white flex items-center justify-center font-bold text-xs"><i class="fa-solid fa-leaf"></i></div>
+                    <div>
+                        <div class="font-semibold text-xs text-gray-800 mb-0.5">關於 BEAM Plus</div>
+                        <div class="text-[11px] text-gray-500 max-w-2xl">BEAM Plus 是香港綠色建築議會推出的綠色建築評估工具，從多個範疇評估建築物的環境表現，推動可持續發展。</div>
+                    </div>
+                </div>
+                <div class="flex gap-4 text-xs">
+                    <a href="#" class="text-gray-500 hover:text-primary flex items-center gap-1"><i class="fa-solid fa-book"></i> 認證流程指南</a>
+                    <a href="#" class="text-gray-500 hover:text-primary flex items-center gap-1"><i class="fa-solid fa-download"></i> 下載 BEAM Plus 手冊</a>
+                    <a href="#" class="text-gray-500 hover:text-primary flex items-center gap-1"><i class="fa-solid fa-phone"></i> 聯絡認證顧問</a>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- PAGE 4: 數據金庫 / IoT 即時數據 -->
+        <div id="page4" class="page-content hidden flex-1 overflow-y-auto p-6">
+            <div class="text-xs text-gray-400 mb-4 flex items-center gap-2">
+                <span class="hover:text-primary cursor-pointer">數據金庫</span> <i class="fa-solid fa-chevron-right text-[8px]"></i> <span class="text-gray-800 font-semibold">IoT 即時數據</span>
+            </div>
+
+            <!-- Header Controls -->
+            <div class="flex items-center justify-end gap-3 text-xs mb-5">
+                <div class="flex items-center gap-2 bg-white border border-border px-3 py-1.5 rounded-md text-gray-600">
+                    <i class="fa-regular fa-calendar"></i> 2025/05/20 - 2025/05/26
+                </div>
+                <div class="flex items-center gap-2 bg-white border border-border px-3 py-1.5 rounded-md text-gray-500">
+                    <i class="fa-solid fa-rotate-right"></i> 自動更新 <span class="text-gray-400">每 30 秒</span>
+                </div>
+            </div>
+
+            <!-- 4 Top Cards -->
+            <div class="grid grid-cols-4 gap-4 mb-5">
+                <!-- Card 1 -->
+                <div class="bg-white p-4 rounded-xl shadow-sm-card border border-border/50">
+                    <div class="flex items-center gap-2 text-info mb-2 text-xs font-semibold">
+                        <div class="w-6 h-6 rounded bg-blue-50 flex items-center justify-center"><i class="fa-solid fa-microchip"></i></div>
+                        感應器數量
+                    </div>
+                    <div class="flex items-baseline gap-1 mt-3">
+                        <span class="text-3xl font-bold text-info">128</span><span class="text-gray-400 text-xs">個</span>
+                    </div>
+                    <div class="text-gray-400 text-[10px] mt-1">12 個設備 · 8 類別</div>
+                </div>
+                <!-- Card 2 -->
+                <div class="bg-white p-4 rounded-xl shadow-sm-card border border-border/50">
+                    <div class="flex items-center gap-2 text-primary mb-2 text-xs font-semibold">
+                        <div class="w-6 h-6 rounded bg-green-50 flex items-center justify-center"><i class="fa-solid fa-wifi"></i></div>
+                        在線感應器
+                    </div>
+                    <div class="flex items-baseline gap-1 mt-3">
+                        <span class="text-3xl font-bold text-primary">118</span><span class="text-gray-400 text-xs">個</span>
+                    </div>
+                    <div class="text-gray-400 text-[10px] mt-1">在線率 92.2%</div>
+                </div>
+                <!-- Card 3 -->
+                <div class="bg-white p-4 rounded-xl shadow-sm-card border border-border/50">
+                    <div class="flex items-center gap-2 text-warning mb-2 text-xs font-semibold">
+                        <div class="w-6 h-6 rounded bg-orange-50 flex items-center justify-center"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                        異常感應器
+                    </div>
+                    <div class="flex items-baseline gap-1 mt-3">
+                        <span class="text-3xl font-bold text-warning">3</span><span class="text-gray-400 text-xs">個</span>
+                    </div>
+                    <div class="text-warning text-[10px] mt-1">異常率 2.3%</div>
+                </div>
+                <!-- Card 4 -->
+                <div class="bg-white p-4 rounded-xl shadow-sm-card border border-border/50">
+                    <div class="flex items-center gap-2 text-purple-600 mb-2 text-xs font-semibold">
+                        <div class="w-6 h-6 rounded bg-purple-50 flex items-center justify-center"><i class="fa-solid fa-database"></i></div>
+                        今日數據點
+                    </div>
+                    <div class="flex items-baseline gap-1 mt-3">
+                        <span class="text-3xl font-bold text-purple-600">24,860</span><span class="text-gray-400 text-xs">筆</span>
+                    </div>
+                    <div class="text-primary text-[10px] mt-1"><i class="fa-solid fa-arrow-trend-up"></i> 較昨日 +8.7%</div>
+                </div>
+            </div>
+
+            <!-- Charts Area -->
+            <div class="flex gap-5 mb-5">
+                <!-- Large Line Chart -->
+                <div class="w-3/4 bg-white rounded-xl shadow-sm-card border border-border/50 p-4">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="font-semibold">關鍵指標趨勢</div>
+                        <div class="border border-border rounded px-2 py-1 text-xs text-gray-600 flex items-center gap-1 cursor-pointer">
+                            24 小時 <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                        </div>
+                    </div>
+                    <div class="flex gap-4 text-[11px] mb-2">
+                        <span class="flex items-center gap-1 text-gray-500"><span class="w-3 h-0.5 bg-red-400"></span> 溫度 (°C)</span>
+                        <span class="flex items-center gap-1 text-gray-500"><span class="w-3 h-0.5 bg-blue-400"></span> 濕度 (%)</span>
+                        <span class="flex items-center gap-1 text-gray-500"><span class="w-3 h-0.5 bg-orange-400"></span> CO₂ (ppm)</span>
+                        <span class="flex items-center gap-1 text-gray-500"><span class="w-3 h-0.5 border-t border-dashed border-purple-400"></span> PM2.5 (μg/m³)</span>
+                    </div>
+                    <div class="h-64 w-full relative">
+                        <canvas id="chartDataVaultLine"></canvas>
+                    </div>
+                </div>
+
+                <!-- Donut Chart -->
+                <div class="w-1/4 bg-white rounded-xl shadow-sm-card border border-border/50 p-4">
+                    <div class="font-semibold mb-6">設備分佈狀態</div>
+                    <div class="relative h-40 w-full flex items-center justify-center mb-6">
+                        <canvas id="chartDataVaultDonut"></canvas>
+                        <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                            <span class="text-2xl font-bold text-gray-800">12</span>
+                            <span class="text-[10px] text-gray-400">設備</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-2 text-xs">
+                        <div class="flex items-center justify-between"><span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-blue-500"></span> HVAC 系統</span> <span class="font-semibold">32 <span class="text-gray-400 font-normal text-[10px]">(25%)</span></span></div>
+                        <div class="flex items-center justify-between"><span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-warning"></span> 照明系統</span> <span class="font-semibold">28 <span class="text-gray-400 font-normal text-[10px]">(22%)</span></span></div>
+                        <div class="flex items-center justify-between"><span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-primary"></span> 空氣質素</span> <span class="font-semibold">24 <span class="text-gray-400 font-normal text-[10px]">(19%)</span></span></div>
+                        <div class="flex items-center justify-between"><span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-purple-500"></span> 能源管理</span> <span class="font-semibold">20 <span class="text-gray-400 font-normal text-[10px]">(16%)</span></span></div>
+                        <div class="flex items-center justify-between"><span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-blue-400"></span> 用水監測</span> <span class="font-semibold">12 <span class="text-gray-400 font-normal text-[10px]">(9%)</span></span></div>
+                        <div class="flex items-center justify-between"><span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-gray-400"></span> 其他設備</span> <span class="font-semibold">12 <span class="text-gray-400 font-normal text-[10px]">(9%)</span></span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table (Reused from Page 1 but adapted to wide layout) -->
+            <div class="bg-white rounded-xl shadow-sm-card border border-border/50 p-4">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="font-semibold">實時數據列表</div>
+                    <div class="flex gap-2">
+                        <div class="relative">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                            <input type="text" placeholder="搜索感應器..." class="pl-8 pr-3 py-1.5 text-xs border border-border rounded-md w-48 focus:outline-none focus:border-primary">
+                        </div>
+                        <button class="border border-border px-3 py-1.5 rounded-md text-xs text-gray-600 hover:bg-gray-50 flex items-center gap-1.5">
+                            <i class="fa-solid fa-filter"></i> 篩選
+                        </button>
+                    </div>
+                </div>
+                <table class="w-full text-left text-xs">
+                    <thead>
+                        <tr class="text-gray-400 border-b border-border/50">
+                            <th class="pb-3 font-medium">感應器名稱</th>
+                            <th class="pb-3 font-medium">類別</th>
+                            <th class="pb-3 font-medium">位置</th>
+                            <th class="pb-3 font-medium">即時數值</th>
+                            <th class="pb-3 font-medium">狀態</th>
+                            <th class="pb-3 font-medium">趨勢 (24h)</th>
+                            <th class="pb-3 font-medium text-right">最後更新</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="border-b border-border/30 hover:bg-gray-50">
+                            <td class="py-3 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-primary"></span> T-01 溫度感應器</td>
+                            <td class="py-3"><span class="text-primary bg-primary-light px-2 py-0.5 rounded text-[10px]">環境監測</span></td>
+                            <td class="py-3 text-gray-500">3/F 辦公園區 A</td>
+                            <td class="py-3 font-semibold">24.6 °C</td>
+                            <td class="py-3 text-primary flex items-center gap-1"><i class="fa-solid fa-circle text-[8px]"></i> 正常</td>
+                            <td class="py-3"><svg class="w-12 h-4"><path class="sparkline" d="M0,10 L10,8 L20,12 L30,5 L40,6 L50,2"></path></svg></td>
+                            <td class="py-3 text-gray-400 text-right">2 分鐘前</td>
+                        </tr>
+                        <tr class="border-b border-border/30 hover:bg-gray-50">
+                            <td class="py-3 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-primary"></span> H-01 濕度感應器</td>
+                            <td class="py-3"><span class="text-primary bg-primary-light px-2 py-0.5 rounded text-[10px]">環境監測</span></td>
+                            <td class="py-3 text-gray-500">3/F 辦公園區 A</td>
+                            <td class="py-3 font-semibold">58.3 %</td>
+                            <td class="py-3 text-primary flex items-center gap-1"><i class="fa-solid fa-circle text-[8px]"></i> 正常</td>
+                            <td class="py-3"><svg class="w-12 h-4"><path class="sparkline" d="M0,12 L10,10 L20,15 L30,8 L40,5 L50,2"></path></svg></td>
+                            <td class="py-3 text-gray-400 text-right">2 分鐘前</td>
+                        </tr>
+                        <tr class="border-b border-border/30 hover:bg-gray-50">
+                            <td class="py-3 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-warning"></span> CO2-01 CO₂ 感應器</td>
+                            <td class="py-3"><span class="text-warning bg-orange-50 px-2 py-0.5 rounded text-[10px]">空氣質素</span></td>
+                            <td class="py-3 text-gray-500">3/F 會議室 B</td>
+                            <td class="py-3 font-semibold">687 ppm</td>
+                            <td class="py-3 text-warning flex items-center gap-1"><i class="fa-solid fa-circle text-[8px]"></i> 略微偏高</td>
+                            <td class="py-3"><svg class="w-12 h-4"><path class="sparkline-warning" d="M0,15 L10,12 L20,10 L30,5 L40,3 L50,0"></path></svg></td>
+                            <td class="py-3 text-gray-400 text-right">1 分鐘前</td>
+                        </tr>
+                        <tr class="border-b border-border/30 hover:bg-gray-50">
+                            <td class="py-3 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-primary"></span> PM2.5-01 PM2.5 感應器</td>
+                            <td class="py-3"><span class="text-warning bg-orange-50 px-2 py-0.5 rounded text-[10px]">空氣質素</span></td>
+                            <td class="py-3 text-gray-500">2/F 接待大堂</td>
+                            <td class="py-3 font-semibold">12 μg/m³</td>
+                            <td class="py-3 text-primary flex items-center gap-1"><i class="fa-solid fa-circle text-[8px]"></i> 正常</td>
+                            <td class="py-3"><svg class="w-12 h-4"><path style="stroke:#8B5CF6;stroke-width:2;fill:none;" d="M0,10 L10,12 L20,8 L30,5 L40,8 L50,5"></path></svg></td>
+                            <td class="py-3 text-gray-400 text-right">1 分鐘前</td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="py-3 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-primary"></span> E-01 電力監測器</td>
+                            <td class="py-3"><span class="text-info bg-blue-50 px-2 py-0.5 rounded text-[10px]">能源監測</span></td>
+                            <td class="py-3 text-gray-500">機電房/配電箱</td>
+                            <td class="py-3 font-semibold">45.2 kW</td>
+                            <td class="py-3 text-primary flex items-center gap-1"><i class="fa-solid fa-circle text-[8px]"></i> 正常</td>
+                            <td class="py-3"><svg class="w-12 h-4"><path class="sparkline" d="M0,5 L10,8 L20,5 L30,12 L40,10 L50,15"></path></svg></td>
+                            <td class="py-3 text-gray-400 text-right">30 秒前</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // Page switching logic
+        function switchPage(pageId) {
+            document.querySelectorAll('.page-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(pageId).classList.remove('hidden');
+            
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.classList.remove('bg-primary-light', 'text-primary', 'font-semibold');
+                el.classList.add('text-gray-500');
+            });
+            
+            if(pageId === 'page1') {
+                document.getElementById('nav-page1').classList.add('bg-primary-light', 'text-primary', 'font-semibold');
+                document.getElementById('nav-page1').classList.remove('text-gray-500');
+            } else if(pageId === 'page2' || pageId === 'page3') {
+                document.getElementById('nav-page2').classList.add('bg-primary-light', 'text-primary', 'font-semibold');
+                document.getElementById('nav-page2').classList.remove('text-gray-500');
+            } else if(pageId === 'page4') {
+                document.getElementById('nav-page4').classList.add('bg-primary-light', 'text-primary', 'font-semibold');
+                document.getElementById('nav-page4').classList.remove('text-gray-500');
+            }
+        }
+
+        // Initialize Charts
+        window.onload = function() {
+            // Page 1: IoT Line Chart
+            new Chart(document.getElementById('chartIoT'), {
+                type: 'line',
+                data: {
+                    labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '24:00'],
+                    datasets: [{
+                        label: '溫度',
+                        data: [20, 22, 25, 28, 27, 24, 21],
+                        borderColor: '#A855F7', // Purple
+                        backgroundColor: 'rgba(168, 85, 247, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, max: 1250, ticks: { stepSize: 350, font: { size: 10 } }, border: { display: false }, grid: { color: '#f1f5f9' } },
+                        x: { border: { display: false }, grid: { display: false }, ticks: { font: { size: 10 } } }
+                    }
+                }
+            });
+
+            // Page 1: Device Donut Chart
+            new Chart(document.getElementById('chartDevice'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['HVAC', '照明', '電力', '水資源', '垃圾', '其他'],
+                    datasets: [{
+                        data: [88, 66, 48, 32, 12, 10],
+                        backgroundColor: ['#3B82F6', '#A855F7', '#F97316', '#22C55E', '#F87171', '#94A3B8'],
+                        borderWidth: 0,
+                        cutout: '75%'
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } } }
+            });
+
+            // Page 2: ESG Trend Line Chart
+            new Chart(document.getElementById('chartESGTrend'), {
+                type: 'line',
+                data: {
+                    labels: ['12月', '1月', '2月', '3月', '4月', '5月'],
+                    datasets: [
+                        { data: [65, 68, 70, 68, 75, 78], borderColor: '#22C55E', tension: 0.4, pointRadius: 0, borderWidth: 2 },
+                        { data: [75, 72, 70, 75, 80, 82], borderColor: '#A855F7', tension: 0.4, pointRadius: 0, borderWidth: 2 },
+                        { data: [40, 45, 50, 45, 55, 60], borderColor: '#F97316', tension: 0.4, pointRadius: 0, borderWidth: 2 },
+                        { data: [30, 35, 38, 36, 42, 40], borderColor: '#07A765', borderDash: [5, 5], tension: 0.4, pointRadius: 0, borderWidth: 2 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { min: 0, max: 100, ticks: { stepSize: 25, font: { size: 9 } }, border: { display: false }, grid: { color: '#f1f5f9' } },
+                        x: { border: { display: false }, grid: { display: false }, ticks: { font: { size: 9 } } }
+                    }
+                }
+            });
+
+            // Page 2: Radar Chart
+            new Chart(document.getElementById('chartESGRadar'), {
+                type: 'radar',
+                data: {
+                    labels: ['能源管理', '碳排放', '水資源管理', '廢棄物管理', '室內環境質量', '供應鏈管理', '社區參與', '公司治理'],
+                    datasets: [{
+                        data: [80, 70, 85, 60, 90, 75, 65, 85],
+                        backgroundColor: 'rgba(34, 197, 94, 0.2)',
+                        borderColor: '#22C55E',
+                        pointBackgroundColor: '#22C55E',
+                        pointBorderColor: '#fff',
+                    }, {
+                        data: [60, 50, 70, 50, 80, 65, 55, 75],
+                        backgroundColor: 'transparent',
+                        borderColor: '#CBD5E1',
+                        borderDash: [5, 5],
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { r: { ticks: { display: false }, grid: { color: '#e2e8f0' }, pointLabels: { font: { size: 9 } } } }
+                }
+            });
+
+            // Page 3: Beam Plus Req Donut
+            new Chart(document.getElementById('chartBeamReq'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['已達成', '進行中', '未達成'],
+                    datasets: [{
+                        data: [47, 18, 10],
+                        backgroundColor: ['#07A765', '#3B82F6', '#F59E0B'],
+                        borderWidth: 0,
+                        cutout: '75%'
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } } }
+            });
+
+            // Page 4: Data Vault Line Chart (Wide)
+            new Chart(document.getElementById('chartDataVaultLine'), {
+                type: 'line',
+                data: {
+                    labels: ['00:00', '02:00', '04:00', '06:00', '08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '22:00', '00:00'],
+                    datasets: [{
+                        data: [22, 21, 21, 22, 24, 26, 28, 29, 28, 26, 25, 23, 22],
+                        borderColor: '#A855F7', // Purple
+                        backgroundColor: 'rgba(168, 85, 247, 0.05)',
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 0,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, max: 1250, ticks: { stepSize: 350, font: { size: 10 } }, border: { display: false }, grid: { color: '#f1f5f9' } },
+                        x: { border: { display: false }, grid: { display: false }, ticks: { font: { size: 10 } } }
+                    }
+                }
+            });
+
+            // Page 4: Data Vault Donut Chart
+            new Chart(document.getElementById('chartDataVaultDonut'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['HVAC', '照明', '空氣質素', '能源管理', '用水監測', '其他'],
+                    datasets: [{
+                        data: [32, 28, 24, 20, 12, 12],
+                        backgroundColor: ['#3B82F6', '#F59E0B', '#07A765', '#A855F7', '#60A5FA', '#94A3B8'],
+                        borderWidth: 0,
+                        cutout: '75%'
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } } }
+            });
+        };
+    </script>
+</body>
+</html>

@@ -349,6 +349,15 @@
                                     };
                                     
                                     localStorage.setItem('userInfo', JSON.stringify(userInfo));
+                                    // Save esg_fullName for user-info-handler.js
+                                    const fullName = result.data.FullName || result.data.fullName || email;
+                                    if (!fullName.includes('@')) {
+                                        localStorage.setItem('esg_fullName', fullName);
+                                    } else if (!localStorage.getItem('esg_fullName')) {
+                                        // Only save email as esg_fullName if no existing value
+                                        localStorage.setItem('esg_fullName', fullName);
+                                    }
+
                                     localStorage.setItem('isLoggedIn', 'true');
                                     console.log('用户信息已保存到localStorage:', userInfo);
                                     
@@ -364,19 +373,9 @@
                                     }
                                     
                                     // 使用和register1.html相同的跳转方式
-                                    try {
-                                        history.replaceState(null, '', redirectUrl);
-                                    } catch (_) {}
-                                    
-                                    try {
-                                        window.location.replace(redirectUrl);
-                                    } catch (_) {}
-                                    
                                     setTimeout(() => {
-                                        if (!redirectUrl.includes(window.location.pathname)) {
-                                            window.location.href = redirectUrl;
-                                        }
-                                    }, 120);
+                                        window.location.href = redirectUrl;
+                                    }, 500);
                                     
                                 } else {
                                     console.error('获取用户信息失败:', result);

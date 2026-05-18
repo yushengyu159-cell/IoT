@@ -185,7 +185,7 @@ func (c *SMSController) VerifyCode(r *ghttp.Request) {
 	if req.Email == "esgvisa@gmail.com" {
 		redirectUrl = "/static/control1.html"
 	} else {
-		redirectUrl = "/static/dashboard.html"
+		redirectUrl = "/static/esg-dashboard.html"
 	}
 
 	r.Response.WriteJson(ghttp.DefaultHandlerResponse{

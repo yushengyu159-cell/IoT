@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"context"
+	"time"
 	"fabric-sdk/internal/controller"
+	"fabric-sdk/internal/model"
 	"fabric-sdk/internal/service"
 
 	// "fabric-sdk/pkg/fabric" // 已移除
@@ -24,6 +26,9 @@ var (
 		Brief: "Fabric SDK with GoFrame Framework",
 		Func: func(ctx context.Context, parser *gcmd.Parser) (err error) {
 			s := g.Server()
+			s.SetClientMaxBodySize(100 * 1024 * 1024)  // 100MB for file uploads
+			s.SetReadTimeout(300 * time.Second)
+			s.SetWriteTimeout(300 * time.Second)
 
 			// 静态资源与首页跳转
 			s.AddStaticPath("/static", "static")
@@ -37,10 +42,21 @@ var (
 				return err
 			}
 
+		// Auto-migrate IoT data table
+			if service.DB != nil {
+				service.DB.AutoMigrate(&model.IoTData{})
+				controller.IoTDB = service.DB
+				g.Log().Info(ctx, "IoT data table migrated")
+			}
 			// 自动初始化链码服务
 			if err := service.Chaincode.InitChaincodeService(ctx); err != nil {
 				g.Log().Fatal(ctx, "链码服务初始化失败: ", err)
 				return err
+			}
+
+			// 自动初始化多通道服务
+			if err := service.MultiChannel.Init(ctx); err != nil {
+				g.Log().Warning(ctx, "多通道服务初始化失败(非致命): ", err)
 			}
 
 			// 只注册链码、ESG等API路由
@@ -75,8 +91,18 @@ var (
 			s.Group("/api/ipfs", func(group *ghttp.RouterGroup) {
 				group.POST("/upload", controller.Ipfs.Upload)
 				group.GET("/download", controller.Ipfs.Download)
+				group.GET("/view", controller.Ipfs.View)
 				group.POST("/upload-encrypted", controller.Ipfs.UploadEncrypted)
 				group.POST("/download-decrypted", controller.Ipfs.DownloadDecrypted)
+			})
+
+			// 多通道路由 (Multi-Channel Sharding)
+			mc := &controller.MultiChannelController{}
+				s.Group("/api/multichannel", func(group *ghttp.RouterGroup) {
+				group.ALL("/init", mc.Init)
+				group.ALL("/channels", mc.ListChannels)
+				group.ALL("/invoke", mc.Invoke)
+				group.ALL("/query", mc.Query)
 			})
 
 			s.Group("/api/did", func(group *ghttp.RouterGroup) {
@@ -98,6 +124,7 @@ var (
 			// Smart Building Profile Routes
 			s.Group("/api/profile", func(group *ghttp.RouterGroup) {
 				group.GET("/building", controller.Profile.GetBuildingProfile)
+				group.POST("/building", controller.Profile.CreateBuildingProfile)
 				group.GET("/blockchain-record", controller.Profile.GetBlockchainRecord)
 				group.GET("/certificate", controller.Profile.GetCertificate)
 			})
@@ -121,10 +148,13 @@ var (
 				group.GET("/reports", controller.ESG.GetReportHistory)
 				group.GET("/report/:id", controller.ESG.GetReportDetail)
 				group.GET("/report/:id/export", controller.ESG.ExportReport)
+			// IoT Data Receiver
+			s.Group("/api/esg-data", func(group *ghttp.RouterGroup) {
+				group.POST("/", controller.IoT.ReceiveUplink)
+				group.GET("/list", controller.IoT.ListData)
 			})
 
 			// 管理端审核路由
-			s.Group("/api/admin", func(group *ghttp.RouterGroup) {
 				group.POST("/review-approve", controller.Admin.ReviewApprove)
 				group.POST("/review-reject", controller.Admin.ReviewReject)
 			})

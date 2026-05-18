@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fabric-sdk/internal/model"
+	"fabric-sdk/internal/middleware"
 	"fabric-sdk/internal/service"
 	"fmt"
 	"time"
@@ -167,15 +168,17 @@ func (c *RegisterController) Step2(r *ghttp.Request) {
 				"txID":      fmt.Sprintf("tx_%d", time.Now().Unix()),  // 模拟交易ID
 			}
 
+			token := middleware.GenerateToken(req.Email)
 			r.Response.WriteJson(ghttp.DefaultHandlerResponse{
 				Code:    200,
 				Message: "注册成功",
 				Data: map[string]interface{}{
 					"success":       true,
-					"redirect_url":  "/static/dashboard.html",
+					"redirect_url":  "/static/esg-dashboard.html",
 					"message":       "注册成功",
 					"RegisterTime":  response.RegisterTime,
 					"chaincodeData": chaincodeData,
+					"token":         token,
 				},
 			})
 		} else {
@@ -186,7 +189,7 @@ func (c *RegisterController) Step2(r *ghttp.Request) {
 					Message: "账号已存在，视为已注册",
 					Data: map[string]interface{}{
 						"success":      true,
-						"redirect_url": "/static/dashboard.html",
+						"redirect_url": "/static/esg-dashboard.html",
 						"message":      "账号已存在，已为您跳转",
 					},
 				})
@@ -238,7 +241,6 @@ func (c *RegisterController) Step3(r *ghttp.Request) {
 	// 记录解析后的请求数据
 	glog.Info(nil, "✅ Step3 参数解析成功:")
 	glog.Info(nil, "   - Email:", req.Email)
-	glog.Info(nil, "   - Password:", req.Password)
 	glog.Info(nil, "   - FullName:", req.FullName)
 	glog.Info(nil, "   - Role:", req.Role)
 	glog.Info(nil, "   - Phone:", req.Phone)
@@ -359,7 +361,7 @@ func (c *RegisterController) Step3(r *ghttp.Request) {
 			Message: "注册成功",
 			Data: map[string]interface{}{
 				"success":       true,
-				"redirect_url":  "/static/dashboard.html",
+				"redirect_url":  "/static/esg-dashboard.html",
 				"message":       "注册成功",
 				"RegisterTime":  response.RegisterTime,
 				"chaincodeData": chaincodeData,
@@ -402,7 +404,7 @@ func (c *RegisterController) Complete(r *ghttp.Request) {
 		Code:    200,
 		Message: "注册完成",
 		Data: map[string]interface{}{
-			"redirect_url": "/static/dashboard.html",
+			"redirect_url": "/static/esg-dashboard.html",
 		},
 	})
 }
@@ -543,7 +545,8 @@ func (c *RegisterController) Verify(r *ghttp.Request) {
 		return
 	}
 
-	// 登录成功，返回用户信息
+	// 登录成功，返回用户信息和token
+	token := middleware.GenerateToken(user.Email)
 	r.Response.WriteJson(ghttp.DefaultHandlerResponse{
 		Code:    200,
 		Message: "登录成功",
@@ -556,6 +559,7 @@ func (c *RegisterController) Verify(r *ghttp.Request) {
 			"age":          user.Age,
 			"did":          user.DID,
 			"registerTime": user.CreatedAt,
+			"token":        token,
 		},
 	})
 }

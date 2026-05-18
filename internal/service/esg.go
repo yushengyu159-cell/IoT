@@ -21,6 +21,7 @@ type ESGFileMeta struct {
 	Desc     string `json:"desc,omitempty"`
 	Uploader string `json:"uploader,omitempty"`
 	UploadAt string `json:"uploadAt"`
+	FileSize int64  `json:"fileSize,omitempty"`
 }
 
 type EncryptedESGFileMeta struct {
@@ -35,7 +36,7 @@ type EncryptedESGFileMeta struct {
 }
 
 // 上传ESG文件，IPFS+MySQL存储（移除链码依赖）
-func UploadESGFile(ctx context.Context, file io.Reader, filename, desc, uploader string) (cid string, txid string, err error) {
+func UploadESGFile(ctx context.Context, file io.Reader, filename, desc, uploader string, fileSize int64) (cid string, txid string, err error) {
 	// 1. 上传到IPFS
 	cid, err = IpfsUpload(file, filename)
 	if err != nil {
@@ -51,16 +52,22 @@ func UploadESGFile(ctx context.Context, file io.Reader, filename, desc, uploader
 	}
 	// 3. 直接写入MySQL（移除链码依赖）
 	txid = "mysql_storage_" + time.Now().Format("20060102150405")
-	if DB != nil {
+ if DB != nil {
 		dbFile := model.ESGFile{
-			CID:      cid,
-			Filename: filename,
-			Desc:     desc,
-			Uploader: uploader,
-			UploadAt: meta.UploadAt,
-			Txid:     txid,
+			CID: cid,
 		}
-		_ = DB.Create(&dbFile)
+		result := DB.Where("c_id = ?", cid).FirstOrCreate(&dbFile)
+		if result.Error == nil {
+			dbFile.Filename = filename
+			dbFile.Desc = desc
+			dbFile.Uploader = uploader
+			dbFile.UploadAt = meta.UploadAt
+			dbFile.Txid = txid
+			dbFile.FileSize = fileSize
+			DB.Save(&dbFile)
+		} else {
+			fmt.Printf("[ESG] DB save warning: %v\n", result.Error)
+		}
 	}
 	return cid, txid, nil
 }
@@ -305,11 +312,12 @@ func ListESGFilesFromDB(ctx context.Context) ([]ESGFileMeta, error) {
 	var metas []ESGFileMeta
 	for _, file := range files {
 		meta := ESGFileMeta{
-			CID:      file.CID,      // 这里会自动映射到数据库的 c_id 字段
-			Filename: file.Filename, // 这里会自动映射到数据库的 filename 字段
-			Desc:     file.Desc,     // 这里会自动映射到数据库的 desc 字段
-			Uploader: file.Uploader, // 这里会自动映射到数据库的 uploader 字段
-			UploadAt: file.UploadAt, // 这里会自动映射到数据库的 upload_at 字段
+			CID:      file.CID,
+			Filename: file.Filename,
+			Desc:     file.Desc,
+			Uploader: file.Uploader,
+			UploadAt: file.UploadAt,
+			FileSize: file.FileSize,
 		}
 		metas = append(metas, meta)
 	}

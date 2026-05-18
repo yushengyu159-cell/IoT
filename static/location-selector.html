@@ -230,6 +230,54 @@
             return key;
         }
         
+
+        // WGS-84 to GCJ-02 coordinate conversion (fix offset on Gaode tiles)
+        const PI = Math.PI;
+        const A = 6378245.0;
+        const EE = 0.00669342162296594323;
+
+        function outOfChina(lat, lng) {
+            return !(lng > 73.66 && lng < 135.05 && lat > 3.86 && lat < 53.55);
+        }
+        function transformLat(x, y) {
+            var ret = -100.0 + 2.0*x + 3.0*y + 0.2*y*y + 0.1*x*y + 0.2*Math.sqrt(Math.abs(x));
+            ret += (20.0*Math.sin(6.0*x*PI) + 20.0*Math.sin(2.0*x*PI)) * 2.0 / 3.0;
+            ret += (20.0*Math.sin(y*PI) + 40.0*Math.sin(y/3.0*PI)) * 2.0 / 3.0;
+            ret += (160.0*Math.sin(y/12.0*PI) + 320*Math.sin(y*PI/30.0)) * 2.0 / 3.0;
+            return ret;
+        }
+        function transformLng(x, y) {
+            var ret = 300.0 + x + 2.0*y + 0.1*x*x + 0.1*x*y + 0.1*Math.sqrt(Math.abs(x));
+            ret += (20.0*Math.sin(6.0*x*PI) + 20.0*Math.sin(2.0*x*PI)) * 2.0 / 3.0;
+            ret += (20.0*Math.sin(x*PI) + 40.0*Math.sin(x/3.0*PI)) * 2.0 / 3.0;
+            ret += (150.0*Math.sin(x/12.0*PI) + 300.0*Math.sin(x/30.0*PI)) * 2.0 / 3.0;
+            return ret;
+        }
+        function wgs84ToGcj02(lat, lng) {
+            if (outOfChina(lat, lng)) return {lat: lat, lng: lng};
+            var dLat = transformLat(lng - 105.0, lat - 35.0);
+            var dLng = transformLng(lng - 105.0, lat - 35.0);
+            var radLat = lat / 180.0 * PI;
+            var magic = Math.sin(radLat);
+            magic = 1 - EE * magic * magic;
+            var sqrtMagic = Math.sqrt(magic);
+            dLat = (dLat * 180.0) / ((A * (1 - EE)) / (magic * sqrtMagic) * PI);
+            dLng = (dLng * 180.0) / (A / sqrtMagic * Math.cos(radLat) * PI);
+            return {lat: lat + dLat, lng: lng + dLng};
+        }
+        function gcj02ToWgs84(lat, lng) {
+            if (outOfChina(lat, lng)) return {lat: lat, lng: lng};
+            var dLat = transformLat(lng - 105.0, lat - 35.0);
+            var dLng = transformLng(lng - 105.0, lat - 35.0);
+            var radLat = lat / 180.0 * PI;
+            var magic = Math.sin(radLat);
+            magic = 1 - EE * magic * magic;
+            var sqrtMagic = Math.sqrt(magic);
+            dLat = (dLat * 180.0) / ((A * (1 - EE)) / (magic * sqrtMagic) * PI);
+            dLng = (dLng * 180.0) / (A / sqrtMagic * Math.cos(radLat) * PI);
+            return {lat: lat - dLat, lng: lng - dLng};
+        }
+
         // 位置选择器JavaScript功能
         let selectedLocation = null;
         let currentPosition = null;
@@ -317,8 +365,10 @@
                     map.on('click', function(e) {
                         const lat = e.latlng.lat;
                         const lng = e.latlng.lng;
-                        console.log('地图点击位置:', lat, lng);
-                        reverseGeocode(lat, lng);
+                        // Map uses GCJ-02, convert to WGS-84 for reverse geocode
+                        const wgs = gcj02ToWgs84(lat, lng);
+                        console.log('Map click (GCJ-02):', lat, lng, 'WGS-84:', wgs.lat, wgs.lng);
+                        reverseGeocode(wgs.lat, wgs.lng);
                     });
                     
                     console.log('地图初始化成功');
@@ -439,18 +489,25 @@
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     function(position) {
+                        var lat = position.coords.latitude;
+                        var lng = position.coords.longitude;
+                        // Convert WGS-84 to GCJ-02 for Gaode map display
+                        var gcj = wgs84ToGcj02(lat, lng);
                         currentPosition = {
-                            latitude: position.coords.latitude,
-                            longitude: position.coords.longitude
+                            latitude: gcj.lat,
+                            longitude: gcj.lng,
+                            wgsLat: lat,
+                            wgsLng: lng
                         };
-                        console.log('获取到当前位置:', currentPosition);
-                        // 可以在这里显示地图或进行逆地理编码
-                        reverseGeocode(currentPosition.latitude, currentPosition.longitude);
+                        console.log('GPS raw (WGS-84):', lat, lng, 'Converted (GCJ-02):', gcj.lat, gcj.lng);
+                        if (map) map.setView([gcj.lat, gcj.lng], 16);
+                        reverseGeocode(lat, lng);
                     },
                     function(error) {
                         console.log('获取位置失败:', error);
                         showMessage(tr('location.current.failed'), 'warning');
-                    }
+                    },
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
                 );
             } else {
                 showMessage(tr('location.geolocation.unsupported'), 'error');

@@ -1,5 +1,5 @@
 NodeOUs:
-  Enable: true
+  Enable: false
   ClientOUIdentifier:
     Certificate: cacerts/ca.org2.example.com-cert.pem
     OrganizationalUnitIdentifier: client

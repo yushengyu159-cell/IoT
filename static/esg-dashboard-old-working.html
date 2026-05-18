@@ -1,0 +1,1410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESG VISA - Frontend Prototype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="bg-gray-50 m-0 p-0 overflow-hidden">
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useState, createContext, useContext } = React;
+
+        const translations = {
+            en: {
+                // Sidebar
+                dashboard: "Dashboard",
+                assetProfile: "Asset Profile",
+                dataInfo: "Data & Info",
+                deviceMgt: "Device Mgt",
+                dataVault: "Data Vault",
+                sustainability: "Sustainability",
+                maintenance: "Maintenance",
+                finance: "Finance",
+                digitalAssets: "Digital Assets",
+                settings: "Settings",
+                coreModules: "CORE MODULES",
+                
+                // Header
+                godfreyCentre: "Godfrey Centre",
+                normalMode: "Normal Mode (Demo)",
+                
+                // Dashboard
+                esgScoreTitle: "Overall ESG Score",
+                carbonIntensityTitle: "Carbon Intensity",
+                rulTitle: "Device Health (RUL)",
+                upLastMonth: "↗ +2.4% vs Last Month",
+                spikingAnomaly: "↗ Spiking due to anomaly",
+                pendingWorkOrders: "⚠ Pending work orders",
+                agentPush: "Agent Smart Push",
+                urgentAlert: "Emergency",
+                hvacAnomalyTitle: "Zone 3 HVAC Anomaly, Carbon Expected to Exceed",
+                hvacAnomalyDesc: "HVAC system showing severe energy anomaly. Predicted to cause Scope 2 emissions to exceed budget by 15%. RUL decreasing.",
+                dispatchWorkOrder: "Dispatch Work Order",
+                complianceAlert: "Compliance",
+                fireCertExpiring: "Fire Safety Certificate Expiring Soon",
+                fireCertDesc: "Data Vault scan shows fire safety cert expiring in 30 days. Risk synced to Green Finance module, may affect Sustainability Linked Loan rates.",
+                goToDataVault: "Go to Data Vault",
+                optimizationIdea: "Optimization",
+                roofGreeningTitle: "Roof Greening can increase WELL score",
+                roofGreeningDesc: "Compared to City Benchmark, lacking biodiversity design. Suggest adding greening to increase WELL certification by 3 points and meet Government Green Incentives.",
+                checkROI: "Check ROI Report",
+
+                // Data Info
+                mongkok: "Mongkok",
+                coreAssetSpec: "CORE ASSET & PHYSICAL SPECIFICATIONS",
+                gfa: "Gross Floor Area (GFA)",
+                nfa: "Net Floor Area (NFA)",
+                propertyType: "Property Type",
+                commercialOffice: "Commercial Office",
+                yearBuilt: "Year Built / Last Renovation",
+                hvacSystemType: "HVAC System Type",
+                fireSafetySystem: "Fire Safety System",
+                developer: "Developer",
+                propertyMgt: "Property Management",
+                digitalIdentity: "DIGITAL IDENTITY & CERTIFICATIONS",
+                digitalAssetId: "Digital Asset ID",
+                carbonAssetId: "Carbon Asset ID",
+                qrCodeAccess: "QR Code Access",
+                downloadQr: "Download QR",
+                occupancyMix: "OCCUPANCY & TENANT MIX",
+                occupancyRate: "Occupancy Rate",
+                avgLeaseDuration: "Avg. Lease Duration",
+                years: "Years",
+                majorTenants: "Major Tenants",
+
+                // Device Mgt
+                iotDeviceMgt: "IoT Device Management & Live Monitoring",
+                iotDesc: "Manage IoT devices, view live sensors & lighting control.",
+                indoorTemp: "Indoor Temp (Avg)",
+                zone3Failure: "Zone 3 HVAC Failure",
+                energyConsumption: "Energy Consumption",
+                airQualityIndex: "Air Quality Index",
+                good: "Good",
+                lightingControl: "Lighting Control",
+                autoSchedule: "Auto",
+                activeZones: "Active Zones",
+                deviceRegistry: "Sensor & Gateway Registry",
+                addNewDevice: "Add Device",
+                deviceName: "Device Name",
+                type: "Type",
+                protocol: "Protocol",
+                deviceId: "Device ID / MAC",
+                status: "Status",
+                mainGateway: "Main Edge Gateway (Bldg B)",
+                zone3Sensor: "Zone 3 IAQ Sensor (Office)",
+                hvacMeter: "HVAC Power Meter B (Chiller)",
+                smartLighting: "Smart Lighting Controller (Lobby)",
+                online: "Online",
+                offline: "Offline",
+                lastPingJustNow: "Last ping: Just now",
+                lastPing2Mins: "Last ping: 2 mins ago",
+                lastPing2Hours: "Last ping: 2 hours ago",
+                lastPing1Min: "Last ping: 1 min ago",
+
+                // Data Vault
+                dataVaultTitle: "Trusted data storage layer — immutable records for ESG verification",
+                uploadDoc: "Upload Document",
+                assetDocs: "Asset Documents",
+                esgDocs: "ESG Documentation",
+                opDataRecords: "Operational Data Records",
+                sensorDataRep: "Sensor Data Repository",
+                docName: "Document Name",
+                category: "Category",
+                action: "Action",
+                carbonPlan: "2025 Carbon Inventory Plan.pdf",
+                titleDeed: "Title Deed.pdf",
+                fireCert: "Fire Safety Cert.pdf",
+                verified: "Verified",
+                expiring30d: "Expiring in 30d",
+                docDetails: "Details",
+
+                // Sustainability
+                susPerformance: "Sustainability Performance",
+                susDesc: "Core ESG measurement engine",
+                benchmarkVs: "Benchmark vs:",
+                cityAverage: "City Average",
+                environmental: "Environmental",
+                social: "Social",
+                governance: "Governance",
+                carbonMgt: "Carbon Management",
+                intensity: "(Intensity)",
+                carbonSpiking: "Carbon Intensity spiking due to HVAC anomaly.",
+                carbonOffsetProj: "Carbon Offset Projects",
+                creditsGenerated: "Credits Generated",
+                energyPerformance: "Energy Performance",
+                solarProd: "Solar Production (Renewable)",
+                ofTotal: "of total",
+                waterPerformance: "Water Performance",
+                rainwaterHarvest: "Rainwater Harvesting",
+                activeOffset: "Active (15% Offset)",
+                wasteMgt: "Waste Management",
+                diversionRate: "Diversion Rate",
+                wasteGen: "Waste Generated / Recycling",
+                upYtd: "Up 2% YTD",
+
+                // Maintenance
+                predMaintenance: "Predictive Maintenance",
+                predDesc: "AI-driven facility management, RUL tracking & Work Orders",
+                activeWorkOrders: "ACTIVE WORK ORDERS",
+                elevatorMaint: "Elevator Maintenance",
+                fireSystemCheck: "Fire System Check",
+                completed: "Completed",
+                scheduled: "Scheduled",
+                assetHealthMon: "ASSET HEALTH MONITORING",
+                rul3Months: "RUL: 3 Months",
+                failurePredDesc: "Failure Prediction triggered by vibration anomalies.",
+                contractorMgt: "Contractor Management",
+                approvedVendors: "3 Approved Maintenance Vendors",
+                avgPerfRating: "Avg Performance Rating: 4.8/5.0",
+
+                // Finance
+                greenFinance: "Green Finance & Insurance",
+                financeDesc: "Financial services, active insurance policies & risk analytics linked to ESG performance",
+                active: "Active",
+                fireInsure: "Fire Insurance",
+                propInsure: "Property Insurance",
+                thirdPartyLiab: "Third Party Liability",
+                climateRiskInsure: "Climate Risk Insurance",
+                esgPremiumDisc: "ESG Premium Discount",
+                policyRenewal: "Policy Renewal Date",
+                fireCertTag: "(Fire Safety Cert)",
+                leedPlatTag: "(LEED Platinum)",
+                floodMitigTag: "(Flood Mitigated)",
+                greenFinancingLoans: "Green Financing & Loans",
+                riskRateIncPending: "Risk: Rate Increase Pending",
+                susLinkedLoanRate: "Sustainability Linked Loan Rate",
+                greenDisc: "(Green Discount)",
+                greenBondsIssued: "Green Bonds Issued",
+                esgRatingInv: "ESG Rating for Investors",
+                impactEligible: "(Impact Eligible)",
+                compContractStatus: "Compliance Contracts Status",
+                riskAnalytics: "Risk Analytics",
+                linkedToInsure: "Linked to Insurance Pricing",
+                climateRiskExp: "Climate Risk Exposure",
+                low: "Low",
+                floodRisk: "Flood Risk",
+                mitigatedZoneC: "Mitigated (Zone C)",
+                energyPriceRisk: "Energy Price Risk",
+                moderate: "Moderate",
+                incentivesSubsidies: "INCENTIVES & SUBSIDIES",
+                govGreenInc: "Government Green Incentives & Tax Rebates",
+                govGreenDesc: "Your planned Roof Greening project qualifies for the Urban Biodiversity Tax Rebate & Carbon Reduction Subsidies. Estimated value: $100,000.",
+                applySmartContract: "Apply via Smart Contract",
+
+                // Digital Assets
+                assetTokenization: "Asset Tokenization (Future RWA)",
+                assetTokDesc: "Convert your audited ESG achievements into blockchain smart contract tokens for the Carbon Offset Marketplace.",
+                mintToken: "Mint Carbon Credit Token",
+                digitalWallet: "DIGITAL OWNERSHIP WALLET",
+                propToken: "Property Token",
+                esgPropToken: "ESG Property Token",
+                unitsToken: "Units / Token Issuance",
+                energyDataAsset: "Energy Data Asset",
+                solarEnergyData: "Solar Energy Data",
+                dataMarketplace: "DATA MARKETPLACE & SMART CONTRACTS",
+                carbonCreditCont: "Carbon Credit Contracts",
+                activeLedger: "Active Ledger",
+                shareEsgApi: "Share ESG Data API",
+                subscribersData: "3 Subscribers (Real Data Assets)",
+                sellBldgData: "Sell Building Data",
+                manageMarketplace: "Manage Marketplace →"
+            },
+            'zh-CN': {
+                dashboard: "首页工作台",
+                assetProfile: "资产档案",
+                dataInfo: "数据资料",
+                deviceMgt: "设备管理",
+                dataVault: "数据金库",
+                sustainability: "可持续表现",
+                maintenance: "预测性维护",
+                finance: "绿色金融",
+                digitalAssets: "数字资产",
+                settings: "系统设置",
+                coreModules: "核心模块",
+                godfreyCentre: "Godfrey Centre",
+                normalMode: "正常模式 (演示闭环)",
+                esgScoreTitle: "整体 ESG 评分 (ESG Score)",
+                carbonIntensityTitle: "碳排强度 (Carbon Intensity)",
+                rulTitle: "设备健康指数 (RUL)",
+                upLastMonth: "↗ +2.4% 较上月",
+                spikingAnomaly: "↗ 受设备异常影响飙升",
+                pendingWorkOrders: "⚠ 需处理待办工单",
+                agentPush: "Agent 智能推送",
+                urgentAlert: "紧急预警",
+                hvacAnomalyTitle: "3楼冷气异常，碳排预计超标",
+                hvacAnomalyDesc: "检测到 HVAC 系统出现严重能耗异常，预测将导致本月整体碳排放量 (Scope 2) 超出预算 15%。设备 RUL (剩余寿命) 下降。",
+                dispatchWorkOrder: "一键派发工单",
+                complianceAlert: "合规提醒",
+                fireCertExpiring: "消防安检证书即将过期",
+                fireCertDesc: "Data Vault 扫描显示，消防安全证书将于 30 天后过期。此合规风险已同步至 Green Finance 模组，可能影响下季度绿色贷款 (Sustainability Linked Loans) 利率。",
+                goToDataVault: "前往 Data Vault 更新",
+                optimizationIdea: "优化建议",
+                roofGreeningTitle: "屋顶绿化升级可提升 WELL 认证分数",
+                roofGreeningDesc: "对比城市基准 (City Benchmark)，目前缺乏生物多样性设计。建议增加绿化，预计可提升 WELL 认证 3 分，并符合 Government Green Incentives 补贴标准。",
+                checkROI: "查询 ROI 报告",
+                mongkok: "旺角",
+                coreAssetSpec: "核心资产与物理规格",
+                gfa: "总建筑面积 (GFA)",
+                nfa: "净建筑面积 (NFA)",
+                propertyType: "物业类型",
+                commercialOffice: "商业办公",
+                yearBuilt: "建造/翻新时间",
+                hvacSystemType: "HVAC 系统类型",
+                fireSafetySystem: "消防安全系统",
+                developer: "开发商",
+                propertyMgt: "物业管理",
+                digitalIdentity: "数字身份与认证",
+                digitalAssetId: "数字资产 ID",
+                carbonAssetId: "碳资产 ID",
+                qrCodeAccess: "二维码访问",
+                downloadQr: "下载二维码",
+                occupancyMix: "入驻率与租户组合",
+                occupancyRate: "入驻率",
+                avgLeaseDuration: "平均租期",
+                years: "年",
+                majorTenants: "主要租户",
+                iotDeviceMgt: "IoT 设备管理与实时监控",
+                iotDesc: "管理物联网设备，查看实时传感器与照明控制。",
+                indoorTemp: "室内平均温度",
+                zone3Failure: "区域 3 HVAC 故障",
+                energyConsumption: "能源消耗",
+                airQualityIndex: "空气质量指数",
+                good: "优",
+                lightingControl: "照明控制",
+                autoSchedule: "自动排程",
+                activeZones: "激活区域",
+                deviceRegistry: "设备清单 (传感器与网关)",
+                addNewDevice: "接入新设备",
+                deviceName: "设备名称",
+                type: "类型",
+                protocol: "协议",
+                deviceId: "设备 ID / MAC",
+                status: "状态",
+                mainGateway: "主边缘网关 (B楼机房)",
+                zone3Sensor: "区域 3 空气传感器 (办公区)",
+                hvacMeter: "HVAC 电表 B (冷水机组)",
+                smartLighting: "智能照明控制器 (大堂)",
+                online: "在线",
+                offline: "离线",
+                lastPingJustNow: "最后通讯: 刚刚",
+                lastPing2Mins: "最后通讯: 2分钟前",
+                lastPing2Hours: "最后通讯: 2小时前",
+                lastPing1Min: "最后通讯: 1分钟前",
+                dataVaultTitle: "可信数据存储层 — 用于 ESG 验证的不可篡改记录",
+                uploadDoc: "上传新文档",
+                assetDocs: "资产文档",
+                esgDocs: "ESG 文档",
+                opDataRecords: "运行数据记录",
+                sensorDataRep: "传感器数据库",
+                docName: "文档名称",
+                category: "类别",
+                action: "操作",
+                carbonPlan: "2025年度碳盘查计划.pdf",
+                titleDeed: "产权契据 (Title Deed).pdf",
+                fireCert: "消防安全证书 (Fire Safety Cert).pdf",
+                verified: "已验证",
+                expiring30d: "30天后过期",
+                docDetails: "文件详情",
+                susPerformance: "可持续表现",
+                susDesc: "核心 ESG 测量引擎",
+                benchmarkVs: "基准对比:",
+                cityAverage: "城市平均",
+                environmental: "环境 (E)",
+                social: "社会 (S)",
+                governance: "治理 (G)",
+                carbonMgt: "碳管理",
+                intensity: "(强度)",
+                carbonSpiking: "由于 HVAC 异常，碳强度飙升。",
+                carbonOffsetProj: "碳抵消项目",
+                creditsGenerated: "产生的信用额",
+                energyPerformance: "能源表现",
+                solarProd: "太阳能产出 (可再生)",
+                ofTotal: "占比",
+                waterPerformance: "水资源表现",
+                rainwaterHarvest: "雨水收集",
+                activeOffset: "活跃 (抵消 15%)",
+                wasteMgt: "废弃物管理",
+                diversionRate: "转化率",
+                wasteGen: "废弃物产生 / 回收",
+                upYtd: "年初至今上升 2%",
+                predMaintenance: "预测性维护",
+                predDesc: "AI 驱动的设施管理、RUL 跟踪与工单",
+                activeWorkOrders: "活跃工单",
+                elevatorMaint: "电梯常规保养",
+                fireSystemCheck: "消防系统巡检",
+                completed: "已完成",
+                scheduled: "已排期",
+                assetHealthMon: "资产健康监控",
+                rul3Months: "剩余寿命: 3 个月",
+                failurePredDesc: "由振动异常触发的故障预测。",
+                contractorMgt: "承包商管理",
+                approvedVendors: "3 家已批准的维护供应商",
+                avgPerfRating: "平均绩效评级: 4.8/5.0",
+                greenFinance: "绿色金融与保险",
+                financeDesc: "与 ESG 表现挂钩的金融服务、有效保单与风险分析",
+                active: "生效中",
+                fireInsure: "火灾保险",
+                propInsure: "财产保险",
+                thirdPartyLiab: "第三方责任险",
+                climateRiskInsure: "气候风险保险",
+                esgPremiumDisc: "ESG 溢价折扣",
+                policyRenewal: "保单续期日",
+                fireCertTag: "(消防安全证书)",
+                leedPlatTag: "(LEED 铂金级)",
+                floodMitigTag: "(已缓解洪水风险)",
+                greenFinancingLoans: "绿色融资与贷款",
+                riskRateIncPending: "风险: 待定利率上调",
+                susLinkedLoanRate: "可持续发展挂钩贷款利率",
+                greenDisc: "(绿色折扣)",
+                greenBondsIssued: "已发行绿色债券",
+                esgRatingInv: "投资者 ESG 评级",
+                impactEligible: "(符合影响力标准)",
+                compContractStatus: "合规合同状态",
+                riskAnalytics: "风险分析",
+                linkedToInsure: "与保险定价挂钩",
+                climateRiskExp: "气候风险敞口",
+                low: "低",
+                floodRisk: "洪水风险",
+                mitigatedZoneC: "已缓解 (C区)",
+                energyPriceRisk: "能源价格风险",
+                moderate: "中等",
+                incentivesSubsidies: "激励与补贴",
+                govGreenInc: "政府绿色激励与税收返还",
+                govGreenDesc: "您计划的屋顶绿化项目符合城市生物多样性税收返还和碳减排补贴条件。估计价值：100,000 美元。",
+                applySmartContract: "通过智能合约申请",
+                assetTokenization: "资产代币化 (未来 RWA)",
+                assetTokDesc: "将您经过审计的 ESG 成果转化为碳抵消市场的区块链智能合约代币。",
+                mintToken: "铸造碳信用代币",
+                digitalWallet: "数字所有权钱包",
+                propToken: "财产代币",
+                esgPropToken: "ESG 财产代币",
+                unitsToken: "单位 / 代币发行",
+                energyDataAsset: "能源数据资产",
+                solarEnergyData: "太阳能数据",
+                dataMarketplace: "数据市场与智能合约",
+                carbonCreditCont: "碳信用合同",
+                activeLedger: "活跃账本",
+                shareEsgApi: "共享 ESG 数据 API",
+                subscribersData: "3 个订阅者 (真实数据资产)",
+                sellBldgData: "出售建筑数据",
+                manageMarketplace: "管理市场 →"
+            },
+            'zh-TW': {
+                dashboard: "首頁工作台",
+                assetProfile: "資產檔案",
+                dataInfo: "數據資料",
+                deviceMgt: "設備管理",
+                dataVault: "數據金庫",
+                sustainability: "可持續表現",
+                maintenance: "預測性維護",
+                finance: "綠色金融",
+                digitalAssets: "數字資產",
+                settings: "系統設置",
+                coreModules: "核心模塊",
+                godfreyCentre: "Godfrey Centre",
+                normalMode: "正常模式 (演示閉環)",
+                esgScoreTitle: "整體 ESG 評分 (ESG Score)",
+                carbonIntensityTitle: "碳排強度 (Carbon Intensity)",
+                rulTitle: "設備健康指數 (RUL)",
+                upLastMonth: "↗ +2.4% 較上月",
+                spikingAnomaly: "↗ 受設備異常影響飆升",
+                pendingWorkOrders: "⚠ 需處理待辦工單",
+                agentPush: "Agent 智能推送",
+                urgentAlert: "緊急預警",
+                hvacAnomalyTitle: "3樓冷氣異常，碳排預計超標",
+                hvacAnomalyDesc: "檢測到 HVAC 系統出現嚴重能耗異常，預測將導致本月整體碳排放量 (Scope 2) 超出預算 15%。設備 RUL (剩餘壽命) 下降。",
+                dispatchWorkOrder: "一鍵派發工單",
+                complianceAlert: "合規提醒",
+                fireCertExpiring: "消防安檢證書即將過期",
+                fireCertDesc: "Data Vault 掃描顯示，消防安全證書將於 30 天後過期。此合規風險已同步至 Green Finance 模組，可能影響下季度綠色貸款 (Sustainability Linked Loans) 利率。",
+                goToDataVault: "前往 Data Vault 更新",
+                optimizationIdea: "優化建議",
+                roofGreeningTitle: "屋頂綠化升級可提升 WELL 認證分數",
+                roofGreeningDesc: "對比城市基準 (City Benchmark)，目前缺乏生物多樣性設計。建議增加綠化，預計可提升 WELL 認證 3 分，並符合 Government Green Incentives 補貼標準。",
+                checkROI: "查詢 ROI 報告",
+                mongkok: "旺角",
+                coreAssetSpec: "核心資產與物理規格",
+                gfa: "總建築面積 (GFA)",
+                nfa: "淨建築面積 (NFA)",
+                propertyType: "物業類型",
+                commercialOffice: "商業辦公",
+                yearBuilt: "建造/翻新時間",
+                hvacSystemType: "HVAC 系統類型",
+                fireSafetySystem: "消防安全系統",
+                developer: "開發商",
+                propertyMgt: "物業管理",
+                digitalIdentity: "數字身份與認證",
+                digitalAssetId: "數字資產 ID",
+                carbonAssetId: "碳資產 ID",
+                qrCodeAccess: "二維碼訪問",
+                downloadQr: "下載二維碼",
+                occupancyMix: "入駐率與租戶組合",
+                occupancyRate: "入駐率",
+                avgLeaseDuration: "平均租期",
+                years: "年",
+                majorTenants: "主要租戶",
+                iotDeviceMgt: "IoT 設備管理與實時監控",
+                iotDesc: "管理物聯網設備，查看實時傳感器與照明控制。",
+                indoorTemp: "室內平均溫度",
+                zone3Failure: "區域 3 HVAC 故障",
+                energyConsumption: "能源消耗",
+                airQualityIndex: "空氣質量指數",
+                good: "優",
+                lightingControl: "照明控制",
+                autoSchedule: "自動排程",
+                activeZones: "激活區域",
+                deviceRegistry: "設備清單 (傳感器與網關)",
+                addNewDevice: "接入新設備",
+                deviceName: "設備名稱",
+                type: "類型",
+                protocol: "協議",
+                deviceId: "設備 ID / MAC",
+                status: "狀態",
+                mainGateway: "主邊緣網關 (B樓機房)",
+                zone3Sensor: "區域 3 空氣傳感器 (辦公區)",
+                hvacMeter: "HVAC 電表 B (冷水機組)",
+                smartLighting: "智能照明控制器 (大堂)",
+                online: "在線",
+                offline: "離線",
+                lastPingJustNow: "最後通訊: 剛剛",
+                lastPing2Mins: "最後通訊: 2分鐘前",
+                lastPing2Hours: "最後通訊: 2小時前",
+                lastPing1Min: "最後通訊: 1分鐘前",
+                dataVaultTitle: "可信數據存儲層 — 用於 ESG 驗證的不可篡改記錄",
+                uploadDoc: "上傳新文檔",
+                assetDocs: "資產文檔",
+                esgDocs: "ESG 文檔",
+                opDataRecords: "運行數據記錄",
+                sensorDataRep: "傳感器數據庫",
+                docName: "文檔名稱",
+                category: "類別",
+                action: "操作",
+                carbonPlan: "2025年度碳盤查計劃.pdf",
+                titleDeed: "產權契據 (Title Deed).pdf",
+                fireCert: "消防安全證書 (Fire Safety Cert).pdf",
+                verified: "已驗證",
+                expiring30d: "30天後過期",
+                docDetails: "文件詳情",
+                susPerformance: "可持續表現",
+                susDesc: "核心 ESG 測量引擎",
+                benchmarkVs: "基準對比:",
+                cityAverage: "城市平均",
+                environmental: "環境 (E)",
+                social: "社會 (S)",
+                governance: "治理 (G)",
+                carbonMgt: "碳管理",
+                intensity: "(強度)",
+                carbonSpiking: "由於 HVAC 異常，碳強度飆升。",
+                carbonOffsetProj: "碳抵消項目",
+                creditsGenerated: "產生的信用額",
+                energyPerformance: "能源表現",
+                solarProd: "太陽能產出 (可再生)",
+                ofTotal: "占比",
+                waterPerformance: "水資源表現",
+                rainwaterHarvest: "雨水收集",
+                activeOffset: "活躍 (抵消 15%)",
+                wasteMgt: "廢棄物管理",
+                diversionRate: "轉化率",
+                wasteGen: "廢棄物產生 / 回收",
+                upYtd: "年初至今上升 2%",
+                predMaintenance: "預測性維護",
+                predDesc: "AI 驅動的設施管理、RUL 跟踪與工單",
+                activeWorkOrders: "活躍工單",
+                elevatorMaint: "電梯常規保養",
+                fireSystemCheck: "消防系統巡檢",
+                completed: "已完成",
+                scheduled: "已排期",
+                assetHealthMon: "資產健康監控",
+                rul3Months: "剩餘壽命: 3 個月",
+                failurePredDesc: "由振動異常觸發的故障預測。",
+                contractorMgt: "承包商管理",
+                approvedVendors: "3 家已批准的維護供應商",
+                avgPerfRating: "平均績效評級: 4.8/5.0",
+                greenFinance: "綠色金融與保險",
+                financeDesc: "與 ESG 表現掛鉤的金融服務、有效保單與風險分析",
+                active: "生效中",
+                fireInsure: "火災保險",
+                propInsure: "財產保險",
+                thirdPartyLiab: "第三方責任險",
+                climateRiskInsure: "氣候風險保險",
+                esgPremiumDisc: "ESG 溢價折扣",
+                policyRenewal: "保單續期日",
+                fireCertTag: "(消防安全證書)",
+                leedPlatTag: "(LEED 鉑金級)",
+                floodMitigTag: "(已緩解洪水風險)",
+                greenFinancingLoans: "綠色融資與貸款",
+                riskRateIncPending: "風險: 待定利率上調",
+                susLinkedLoanRate: "可持續發展掛鉤貸款利率",
+                greenDisc: "(綠色折扣)",
+                greenBondsIssued: "已發行綠色債券",
+                esgRatingInv: "投資者 ESG 評級",
+                impactEligible: "(符合影響力標準)",
+                compContractStatus: "合規合同狀態",
+                riskAnalytics: "風險分析",
+                linkedToInsure: "與保險定價掛鉤",
+                climateRiskExp: "氣候風險敞口",
+                low: "低",
+                floodRisk: "洪水風險",
+                mitigatedZoneC: "已緩解 (C區)",
+                energyPriceRisk: "能源價格風險",
+                moderate: "中等",
+                incentivesSubsidies: "激勵與補貼",
+                govGreenInc: "政府綠色激勵與稅收返還",
+                govGreenDesc: "您計劃的屋頂綠化項目符合城市生物多樣性稅收返還和碳減排補貼條件。估計價值：100,000 美元。",
+                applySmartContract: "通過智能合約申請",
+                assetTokenization: "資產代幣化 (未來 RWA)",
+                assetTokDesc: "將您經過審計的 ESG 成果轉化為碳抵消市場的區塊鏈智能合約代幣。",
+                mintToken: "鑄造碳信用代幣",
+                digitalWallet: "數字所有權錢包",
+                propToken: "財產代幣",
+                esgPropToken: "ESG 財產代幣",
+                unitsToken: "單位 / 代幣發行",
+                energyDataAsset: "能源數據資產",
+                solarEnergyData: "太陽能數據",
+                dataMarketplace: "數據市場與智能合約",
+                carbonCreditCont: "碳信用合同",
+                activeLedger: "活躍賬本",
+                shareEsgApi: "共享 ESG 數據 API",
+                subscribersData: "3 個訂閱者 (真實數據資產)",
+                sellBldgData: "出售建築數據",
+                manageMarketplace: "管理市場 →"
+            }
+        };
+
+        const I18nContext = createContext();
+
+        const I18nProvider = ({ children }) => {
+            const [lang, setLang] = useState('en');
+            const t = (key) => translations[lang][key] || key;
+            return (
+                <I18nContext.Provider value={{ lang, setLang, t }}>
+                    {children}
+                </I18nContext.Provider>
+            );
+        };
+
+        const useI18n = () => useContext(I18nContext);
+
+        // --- View Components ---
+
+        const Dashboard = () => {
+            const { t } = useI18n();
+            return (
+            <div className="space-y-6 max-w-full mx-auto">
+                <div className="grid grid-cols-3 gap-6">
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <div className="text-gray-500 text-sm mb-2">{t('esgScoreTitle')}</div>
+                        <div className="text-4xl font-bold text-gray-800">82<span className="text-xl text-gray-400 font-normal">/100</span></div>
+                        <div className="text-emerald-500 text-sm mt-3 font-medium flex items-center">{t('upLastMonth')}</div>
+                    </div>
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <div className="text-gray-500 text-sm mb-2">{t('carbonIntensityTitle')}</div>
+                        <div className="text-4xl font-bold text-gray-800">45.2 <span className="text-xl text-gray-400 font-normal">kg CO₂/m²</span></div>
+                        <div className="text-red-500 text-sm mt-3 font-medium flex items-center">{t('spikingAnomaly')}</div>
+                    </div>
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <div className="text-gray-500 text-sm mb-2">{t('rulTitle')}</div>
+                        <div className="text-4xl font-bold text-gray-800">94%</div>
+                        <div className="text-amber-500 text-sm mt-3 font-medium flex items-center">{t('pendingWorkOrders')}</div>
+                    </div>
+                </div>
+
+                <div className="mt-8">
+                    <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <span className="text-indigo-500">🤖</span> {t('agentPush')} ({t('godfreyCentre')})
+                    </h3>
+                    <div className="space-y-4">
+                        <div className="bg-red-50/50 border border-red-100 p-5 rounded-xl flex items-start gap-4">
+                            <div className="mt-1 bg-red-100 p-2 rounded-lg text-red-500 text-xl">⚠</div>
+                            <div className="flex-1">
+                                <div className="flex items-center gap-3 mb-1">
+                                    <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded font-bold tracking-wide">{t('urgentAlert')}</span>
+                                    <span className="text-gray-500 text-xs font-medium">Agent 1 (BMS) & Agent 2 (Energy)</span>
+                                </div>
+                                <h4 className="font-bold text-gray-900 mb-1.5 text-lg">{t('hvacAnomalyTitle')}</h4>
+                                <p className="text-gray-600 text-sm mb-4 leading-relaxed">{t('hvacAnomalyDesc')}</p>
+                                <button className="bg-red-600 text-white px-5 py-2 rounded hover:bg-red-700 text-sm font-medium shadow-sm transition-colors">{t('dispatchWorkOrder')}</button>
+                            </div>
+                        </div>
+
+                        <div className="bg-blue-50/50 border border-blue-100 p-5 rounded-xl flex items-start gap-4">
+                            <div className="mt-1 bg-blue-100 p-2 rounded-lg text-blue-500 text-xl">📄</div>
+                            <div className="flex-1">
+                                <div className="flex items-center gap-3 mb-1">
+                                    <span className="bg-blue-500 text-white text-xs px-2 py-0.5 rounded font-bold tracking-wide">{t('complianceAlert')}</span>
+                                    <span className="text-gray-500 text-xs font-medium">Agent 3 (Legislation)</span>
+                                </div>
+                                <h4 className="font-bold text-gray-900 mb-1.5 text-lg">{t('fireCertExpiring')}</h4>
+                                <p className="text-gray-600 text-sm mb-4 leading-relaxed">{t('fireCertDesc')}</p>
+                                <button className="bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700 text-sm font-medium shadow-sm transition-colors">{t('goToDataVault')}</button>
+                            </div>
+                        </div>
+
+                        <div className="bg-emerald-50/50 border border-emerald-100 p-5 rounded-xl flex items-start gap-4">
+                            <div className="mt-1 bg-emerald-100 p-2 rounded-lg text-emerald-500 text-xl">💡</div>
+                            <div className="flex-1">
+                                <div className="flex items-center gap-3 mb-1">
+                                    <span className="bg-emerald-500 text-white text-xs px-2 py-0.5 rounded font-bold tracking-wide">{t('optimizationIdea')}</span>
+                                    <span className="text-gray-500 text-xs font-medium">Agent 4 (Urbanism)</span>
+                                </div>
+                                <h4 className="font-bold text-gray-900 mb-1.5 text-lg">{t('roofGreeningTitle')}</h4>
+                                <p className="text-gray-600 text-sm mb-4 leading-relaxed">{t('roofGreeningDesc')}</p>
+                                <button className="bg-emerald-600 text-white px-5 py-2 rounded hover:bg-emerald-700 text-sm font-medium shadow-sm transition-colors">{t('checkROI')}</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            );
+        };
+
+        const DataInfo = () => {
+            const { t } = useI18n();
+            return (
+            <div className="space-y-6 max-w-full mx-auto">
+                <div className="flex justify-between items-start mb-2">
+                    <div>
+                        <h2 className="text-2xl font-bold text-gray-900">{t('godfreyCentre')}</h2>
+                        <p className="text-gray-500 flex items-center gap-2 mt-1.5 text-sm">🏢 {t('mongkok')} | ID: AST-B1-X</p>
+                    </div>
+                    <div className="flex gap-3 mt-1">
+                        <span className="px-3 py-1 border border-emerald-200 text-emerald-700 bg-emerald-50/50 rounded-full text-sm font-bold shadow-sm">LEED Platinum</span>
+                        <span className="px-3 py-1 border border-blue-200 text-blue-700 bg-blue-50/50 rounded-full text-sm font-bold shadow-sm">WELL Gold</span>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-6">
+                    <div className="col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-7">
+                        <h3 className="text-xs font-bold text-gray-400 mb-6 tracking-widest uppercase">{t('coreAssetSpec')}</h3>
+                        <div className="grid grid-cols-2 gap-y-8 gap-x-8">
+                            <div><div className="text-gray-400 text-xs mb-1.5 font-medium">{t('gfa')}</div><div className="font-semibold text-gray-800">5000 m²</div></div>
+                            <div><div className="text-gray-400 text-xs mb-1.5 font-medium">{t('nfa')}</div><div className="font-semibold text-gray-800">38,500 m²</div></div>
+                            <div><div className="text-gray-400 text-xs mb-1.5 font-medium">{t('propertyType')}</div><div className="font-semibold text-gray-800">{t('commercialOffice')}</div></div>
+                            <div><div className="text-gray-400 text-xs mb-1.5 font-medium">{t('yearBuilt')}</div><div className="font-semibold text-gray-800">2018 / 2024</div></div>
+                            <div><div className="text-gray-400 text-xs mb-1.5 font-medium">{t('hvacSystemType')}</div><div className="font-semibold text-gray-800">Central Chiller VAV</div></div>
+                            <div><div className="text-gray-400 text-xs mb-1.5 font-medium">{t('fireSafetySystem')}</div><div className="font-semibold text-gray-800">Addressable Sprinkler</div></div>
+                            <div><div className="text-gray-400 text-xs mb-1.5 font-medium">{t('developer')}</div><div className="font-semibold text-gray-800">GreenBuild Corp</div></div>
+                            <div><div className="text-gray-400 text-xs mb-1.5 font-medium">{t('propertyMgt')}</div><div className="font-semibold text-gray-800">Global Properties Inc.</div></div>
+                        </div>
+                    </div>
+
+                    <div className="space-y-6">
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                            <h3 className="text-xs font-bold text-gray-400 mb-5 tracking-widest uppercase">{t('digitalIdentity')}</h3>
+                            <div className="space-y-5">
+                                <div className="flex justify-between items-center"><span className="text-gray-500 text-sm">{t('digitalAssetId')}</span><span className="font-mono text-sm text-gray-800">0xDA...B1</span></div>
+                                <div className="flex justify-between items-center"><span className="text-gray-500 text-sm">{t('carbonAssetId')}</span><span className="font-mono text-sm text-gray-800">0xCA...B442</span></div>
+                                <div className="flex justify-between items-center"><span className="text-gray-500 text-sm">{t('qrCodeAccess')}</span><a href="#" className="text-blue-600 text-sm font-medium hover:underline">{t('downloadQr')}</a></div>
+                            </div>
+                        </div>
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                            <h3 className="text-xs font-bold text-gray-400 mb-5 tracking-widest uppercase">{t('occupancyMix')}</h3>
+                            <div className="flex gap-10 mb-6">
+                                <div><div className="text-gray-400 text-xs mb-1.5 font-medium">{t('occupancyRate')}</div><div className="font-bold text-emerald-500 text-2xl">92%</div></div>
+                                <div><div className="text-gray-400 text-xs mb-1.5 font-medium">{t('avgLeaseDuration')}</div><div className="font-bold text-gray-800 text-2xl">3.5 {t('years')}</div></div>
+                            </div>
+                            <div>
+                                <div className="text-gray-400 text-xs mb-2.5 font-medium">{t('majorTenants')}</div>
+                                <div className="flex gap-2">
+                                    <span className="px-3 py-1.5 border border-gray-200 rounded text-sm text-gray-600 bg-gray-50 font-medium shadow-sm">TechCorp Inc.</span>
+                                    <span className="px-3 py-1.5 border border-gray-200 rounded text-sm text-gray-600 bg-gray-50 font-medium shadow-sm">EcoBank</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            );
+        };
+
+        const DeviceMgt = () => {
+            const { t } = useI18n();
+            return (
+            <div className="space-y-6 max-w-full mx-auto">
+                <div className="mb-6">
+                    <h2 className="text-2xl font-bold text-gray-900">{t('iotDeviceMgt')}</h2>
+                    <p className="text-gray-500 text-sm mt-1.5">{t('iotDesc')}</p>
+                </div>
+                
+                <div className="grid grid-cols-4 gap-5">
+                    <div className="bg-white p-5 rounded-xl shadow-sm border border-red-200 relative">
+                        <span className="absolute top-4 right-4 text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100 font-bold">Live</span>
+                        <div className="text-gray-500 text-sm mb-3 font-medium flex items-center gap-1.5"><span className="text-lg">🌡</span> {t('indoorTemp')}</div>
+                        <div className="text-4xl font-bold text-red-500">28.1°C</div>
+                        <div className="text-red-500 text-xs mt-3 font-medium bg-red-50 inline-block px-2 py-1 rounded">⚠ {t('zone3Failure')}</div>
+                    </div>
+                    <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-200 relative">
+                        <span className="absolute top-4 right-4 text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100 font-bold">Live</span>
+                        <div className="text-gray-500 text-sm mb-3 font-medium flex items-center gap-1.5"><span className="text-lg">⚡</span> {t('energyConsumption')}</div>
+                        <div className="text-4xl font-bold text-amber-500">620 <span className="text-2xl font-semibold">kW</span></div>
+                    </div>
+                    <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-200 relative">
+                        <span className="absolute top-4 right-4 text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100 font-bold">Live</span>
+                        <div className="text-gray-500 text-sm mb-3 font-medium flex items-center gap-1.5"><span className="text-lg">💨</span> {t('airQualityIndex')}</div>
+                        <div className="text-4xl font-bold text-emerald-500">42 <span className="text-lg font-medium">AQI ({t('good')})</span></div>
+                    </div>
+                    <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-200 relative">
+                        <span className="absolute top-4 right-4 text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-200 font-bold">{t('autoSchedule')}</span>
+                        <div className="text-gray-500 text-sm mb-3 font-medium flex items-center gap-1.5"><span className="text-lg">💡</span> {t('lightingControl')}</div>
+                        <div className="text-4xl font-bold text-gray-800">85% <span className="text-sm font-medium text-gray-500 block mt-1">{t('activeZones')}</span></div>
+                    </div>
+                </div>
+
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mt-8">
+                    <div className="flex justify-between items-center p-5 border-b border-gray-100 bg-gray-50/50">
+                        <h3 className="font-bold text-gray-800 flex items-center gap-2">🔌 {t('deviceRegistry')}</h3>
+                        <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded shadow-sm text-sm font-bold flex items-center gap-2 transition-colors">
+                            <span className="text-lg leading-none">+</span> {t('addNewDevice')}
+                        </button>
+                    </div>
+                    <table className="w-full text-left text-sm">
+                        <thead className="bg-white text-gray-500 border-b border-gray-200">
+                            <tr>
+                                <th className="p-4 pl-6 font-semibold w-1/3">{t('deviceName')}</th>
+                                <th className="p-4 font-semibold">{t('type')}</th>
+                                <th className="p-4 font-semibold">{t('protocol')}</th>
+                                <th className="p-4 font-semibold">{t('deviceId')}</th>
+                                <th className="p-4 font-semibold">{t('status')}</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                            <tr className="hover:bg-gray-50/50 transition-colors">
+                                <td className="p-4 pl-6 text-gray-800 font-medium flex items-center gap-2"><span className="text-indigo-400">⚙</span> {t('mainGateway')}</td>
+                                <td className="p-4 text-gray-500">Gateway</td>
+                                <td className="p-4 text-gray-500">MQTT / TLS</td>
+                                <td className="p-4 font-mono text-gray-500 text-xs">GW-8821</td>
+                                <td className="p-4">
+                                    <div className="flex items-center gap-2 text-emerald-600 font-bold"><span className="w-2 h-2 rounded-full bg-emerald-500"></span> {t('online')}</div>
+                                    <div className="text-xs text-gray-400 mt-1">{t('lastPingJustNow')}</div>
+                                </td>
+                            </tr>
+                            <tr className="hover:bg-gray-50/50 transition-colors">
+                                <td className="p-4 pl-6 text-gray-800 font-medium flex items-center gap-2"><span className="text-indigo-400">⚙</span> {t('zone3Sensor')}</td>
+                                <td className="p-4 text-gray-500">Air Quality</td>
+                                <td className="p-4 text-gray-500">LoRaWAN</td>
+                                <td className="p-4 font-mono text-gray-500 text-xs">SNS-T01</td>
+                                <td className="p-4">
+                                    <div className="flex items-center gap-2 text-emerald-600 font-bold"><span className="w-2 h-2 rounded-full bg-emerald-500"></span> {t('online')}</div>
+                                    <div className="text-xs text-gray-400 mt-1">{t('lastPing2Mins')}</div>
+                                </td>
+                            </tr>
+                            <tr className="hover:bg-gray-50/50 transition-colors">
+                                <td className="p-4 pl-6 text-gray-800 font-medium flex items-center gap-2"><span className="text-indigo-400">⚙</span> {t('hvacMeter')}</td>
+                                <td className="p-4 text-gray-500">Smart Meter</td>
+                                <td className="p-4 text-gray-500">BACnet/IP</td>
+                                <td className="p-4 font-mono text-gray-500 text-xs">MTR-E04</td>
+                                <td className="p-4">
+                                    <div className="flex items-center gap-2 text-red-600 font-bold"><span className="w-2 h-2 rounded-full bg-red-500"></span> {t('offline')}</div>
+                                    <div className="text-xs text-gray-400 mt-1">{t('lastPing2Hours')}</div>
+                                </td>
+                            </tr>
+                            <tr className="hover:bg-gray-50/50 transition-colors">
+                                <td className="p-4 pl-6 text-gray-800 font-medium flex items-center gap-2"><span className="text-indigo-400">⚙</span> {t('smartLighting')}</td>
+                                <td className="p-4 text-gray-500">Lighting Control</td>
+                                <td className="p-4 text-gray-500">DALI</td>
+                                <td className="p-4 font-mono text-gray-500 text-xs">LGT-D01</td>
+                                <td className="p-4">
+                                    <div className="flex items-center gap-2 text-emerald-600 font-bold"><span className="w-2 h-2 rounded-full bg-emerald-500"></span> {t('online')}</div>
+                                    <div className="text-xs text-gray-400 mt-1">{t('lastPing1Min')}</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            );
+        };
+
+        const DataVault = () => {
+            const { t } = useI18n();
+            return (
+            <div className="space-y-6 max-w-full mx-auto">
+                <div className="flex justify-between items-end border-b border-gray-200 pb-5">
+                    <div>
+                        <h2 className="text-2xl font-bold text-gray-900">{t('godfreyCentre')} - {t('dataVault')}</h2>
+                        <p className="text-gray-500 text-sm mt-1.5">{t('dataVaultTitle')}</p>
+                    </div>
+                    <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg shadow-sm text-sm font-bold flex items-center gap-2 transition-colors">
+                        ☁ {t('uploadDoc')}
+                    </button>
+                </div>
+
+                <div className="flex gap-2 border-b border-gray-200 mb-6">
+                    <button className="px-6 py-3 bg-indigo-50/50 text-indigo-700 font-bold rounded-t-lg border-b-2 border-indigo-600 text-sm">{t('assetDocs')}</button>
+                    <button className="px-6 py-3 text-gray-500 font-medium hover:bg-gray-100 hover:text-gray-700 rounded-t-lg transition-colors text-sm">{t('esgDocs')}</button>
+                    <button className="px-6 py-3 text-gray-500 font-medium hover:bg-gray-100 hover:text-gray-700 rounded-t-lg transition-colors text-sm">{t('opDataRecords')}</button>
+                    <button className="px-6 py-3 text-gray-500 font-medium hover:bg-gray-100 hover:text-gray-700 rounded-t-lg transition-colors text-sm">{t('sensorDataRep')}</button>
+                </div>
+
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <table className="w-full text-left text-sm">
+                        <thead className="bg-gray-50 text-gray-500 border-b border-gray-200">
+                            <tr>
+                                <th className="p-4 pl-6 font-semibold">{t('docName')}</th>
+                                <th className="p-4 font-semibold text-center">{t('category')}</th>
+                                <th className="p-4 font-semibold text-center">{t('status')}</th>
+                                <th className="p-4 font-semibold text-center w-32">{t('action')}</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                            <tr className="hover:bg-gray-50/50 transition-colors">
+                                <td className="p-4 pl-6 flex items-center gap-3 text-gray-800 font-medium"><span className="text-indigo-400 text-lg">📄</span> {t('carbonPlan')}</td>
+                                <td className="p-4 text-center text-gray-500">ESG Documentation</td>
+                                <td className="p-4 text-center"><span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">✓ {t('verified')}</span></td>
+                                <td className="p-4 text-center"><button className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-1.5 rounded text-xs font-bold transition-colors">{t('docDetails')}</button></td>
+                            </tr>
+                            <tr className="hover:bg-gray-50/50 transition-colors">
+                                <td className="p-4 pl-6 flex items-center gap-3 text-gray-800 font-medium"><span className="text-indigo-400 text-lg">📄</span> {t('titleDeed')}</td>
+                                <td className="p-4 text-center text-gray-500">Asset Documents</td>
+                                <td className="p-4 text-center"><span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">✓ {t('verified')}</span></td>
+                                <td className="p-4 text-center"><button className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-1.5 rounded text-xs font-bold transition-colors">{t('docDetails')}</button></td>
+                            </tr>
+                            <tr className="hover:bg-gray-50/50 transition-colors bg-red-50/20">
+                                <td className="p-4 pl-6 flex items-center gap-3 text-gray-800 font-medium"><span className="text-indigo-400 text-lg">📄</span> {t('fireCert')}</td>
+                                <td className="p-4 text-center text-gray-500">Asset Documents</td>
+                                <td className="p-4 text-center"><span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-600 border border-amber-200">⚠ {t('expiring30d')}</span></td>
+                                <td className="p-4 text-center"><button className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-1.5 rounded text-xs font-bold transition-colors">{t('docDetails')}</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            );
+        };
+
+        const Sustainability = () => {
+            const { t } = useI18n();
+            return (
+            <div className="space-y-6 max-w-full mx-auto">
+                <div className="flex justify-between items-end mb-6">
+                    <div>
+                        <h2 className="text-2xl font-bold text-gray-900">{t('godfreyCentre')} - {t('susPerformance')}</h2>
+                        <p className="text-gray-500 text-sm mt-1.5">{t('susDesc')}</p>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm bg-white px-4 py-2 rounded-lg border border-gray-200 shadow-sm">
+                        <span className="text-gray-400">📊 {t('benchmarkVs')}</span>
+                        <span className="font-bold text-gray-800">{t('cityAverage')}</span>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-6">
+                    <div className="col-span-1 bg-gradient-to-b from-[#2a2c5a] to-[#1e1f40] rounded-2xl shadow-xl p-8 text-white relative overflow-hidden border border-[#3b3d75]">
+                        <div className="absolute -top-4 -right-4 p-4 opacity-10 text-9xl pointer-events-none">🍃</div>
+                        <div className="text-indigo-200 text-sm font-medium mb-3">{t('esgScoreTitle')}</div>
+                        <div className="text-7xl font-bold mb-10 text-white">82</div>
+                        
+                        <div className="space-y-5">
+                            <div>
+                                <div className="flex justify-between text-sm mb-2"><span className="text-indigo-100">{t('environmental')}</span><span className="font-bold text-white">78/100</span></div>
+                                <div className="w-full bg-black/30 rounded-full h-2"><div className="bg-emerald-400 h-2 rounded-full" style={{width: '78%'}}></div></div>
+                            </div>
+                            <div>
+                                <div className="flex justify-between text-sm mb-2"><span className="text-indigo-100">{t('social')}</span><span className="font-bold text-white">85/100</span></div>
+                                <div className="w-full bg-black/30 rounded-full h-2"><div className="bg-blue-400 h-2 rounded-full" style={{width: '85%'}}></div></div>
+                            </div>
+                            <div>
+                                <div className="flex justify-between text-sm mb-2"><span className="text-indigo-100">{t('governance')}</span><span className="font-bold text-white">88/100</span></div>
+                                <div className="w-full bg-black/30 rounded-full h-2"><div className="bg-purple-400 h-2 rounded-full" style={{width: '88%'}}></div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="col-span-2 grid grid-cols-2 gap-6">
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col">
+                            <div className="flex justify-between items-start mb-6">
+                                <h3 className="text-gray-500 font-bold flex items-center gap-2"><span className="text-xl">💨</span> {t('carbonMgt')}</h3>
+                                <span className="text-xs bg-red-50 text-red-600 px-2 py-1 rounded border border-red-100 font-bold">Scope 1+2</span>
+                            </div>
+                            <div className="text-4xl font-bold text-gray-800">45.2 <span className="text-sm font-medium text-gray-500 block mt-1">kg CO₂/m² {t('intensity')}</span></div>
+                            <div className="text-red-500 text-xs mt-4 font-medium flex items-center gap-1"><span className="bg-red-50 px-2 py-1 rounded">⚠ {t('carbonSpiking')}</span></div>
+                            <div className="mt-auto pt-5 border-t border-gray-100 flex justify-between items-center text-sm">
+                                <span className="text-gray-500">{t('carbonOffsetProj')}</span>
+                                <span className="text-indigo-600 font-bold">1,200 {t('creditsGenerated')}</span>
+                            </div>
+                        </div>
+
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col">
+                            <div className="flex justify-between items-start mb-6">
+                                <h3 className="text-gray-500 font-bold flex items-center gap-2"><span className="text-xl">⚡</span> {t('energyPerformance')}</h3>
+                                <span className="text-xs bg-amber-50 text-amber-600 px-2 py-1 rounded border border-amber-100 font-bold">EUI</span>
+                            </div>
+                            <div className="text-4xl font-bold text-gray-800">115 <span className="text-sm font-medium text-gray-500 block mt-1">kWh/m²/yr</span></div>
+                            <div className="mt-auto pt-5 border-t border-gray-100 flex justify-between items-center text-sm">
+                                <span className="text-gray-500">{t('solarProd')}</span>
+                                <span className="text-emerald-600 font-bold">12% {t('ofTotal')}</span>
+                            </div>
+                        </div>
+
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col">
+                            <div className="flex justify-between items-start mb-6">
+                                <h3 className="text-gray-500 font-bold flex items-center gap-2"><span className="text-xl">💧</span> {t('waterPerformance')}</h3>
+                            </div>
+                            <div className="text-4xl font-bold text-gray-800">0.85 <span className="text-sm font-medium text-gray-500 block mt-1">m³/m²/yr</span></div>
+                            <div className="mt-auto pt-5 border-t border-gray-100 flex justify-between items-center text-sm">
+                                <span className="text-gray-500">{t('rainwaterHarvest')}</span>
+                                <span className="text-emerald-600 font-bold">{t('activeOffset')}</span>
+                            </div>
+                        </div>
+
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col">
+                            <div className="flex justify-between items-start mb-6">
+                                <h3 className="text-gray-500 font-bold flex items-center gap-2"><span className="text-xl">♻</span> {t('wasteMgt')}</h3>
+                            </div>
+                            <div className="text-4xl font-bold text-gray-800">45% <span className="text-sm font-medium text-gray-500 block mt-1">{t('diversionRate')}</span></div>
+                            <div className="mt-auto pt-5 border-t border-gray-100 flex justify-between items-center text-sm">
+                                <span className="text-gray-500">{t('wasteGen')}</span>
+                                <span className="text-gray-800 font-bold">{t('upYtd')}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            );
+        };
+
+        const Maintenance = () => {
+            const { t } = useI18n();
+            return (
+            <div className="space-y-6 max-w-full mx-auto">
+                <div className="mb-6">
+                    <h2 className="text-2xl font-bold text-gray-900">{t('godfreyCentre')} - {t('predMaintenance')}</h2>
+                    <p className="text-gray-500 text-sm mt-1.5">{t('predDesc')}</p>
+                </div>
+
+                <div className="grid grid-cols-3 gap-6">
+                    <div className="col-span-2 space-y-4">
+                        <h3 className="text-xs font-bold text-gray-400 mb-2 tracking-widest uppercase">{t('activeWorkOrders')}</h3>
+                        
+                        <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <div className="w-10 h-10 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center text-lg">🔧</div>
+                                <div>
+                                    <h4 className="font-bold text-gray-800 text-lg">{t('elevatorMaint')}</h4>
+                                    <div className="text-sm text-gray-500 flex items-center gap-3 mt-1">
+                                        <span>ID: WO-2026-0102</span>
+                                        <span>📁 Elevator</span>
+                                        <span>$ 1,200</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="text-right">
+                                <span className="bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full text-xs font-bold border border-emerald-100">{t('completed')}</span>
+                                <div className="text-sm text-gray-400 mt-2 font-medium">2026-02-15</div>
+                            </div>
+                        </div>
+
+                        <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center text-lg">🔧</div>
+                                <div>
+                                    <h4 className="font-bold text-gray-800 text-lg">{t('fireSystemCheck')}</h4>
+                                    <div className="text-sm text-gray-500 flex items-center gap-3 mt-1">
+                                        <span>ID: WO-2026-0210</span>
+                                        <span>📁 Fire System</span>
+                                        <span>$ 800</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="text-right">
+                                <span className="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-xs font-bold border border-blue-100">{t('scheduled')}</span>
+                                <div className="text-sm text-gray-400 mt-2 font-medium">2026-03-20</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="col-span-1 space-y-4">
+                        <h3 className="text-xs font-bold text-gray-400 mb-2 tracking-widest uppercase">{t('assetHealthMon')}</h3>
+                        
+                        <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                            <div className="flex justify-between items-center mb-3">
+                                <h4 className="font-bold text-gray-800">Central HVAC Unit B</h4>
+                                <span className="bg-red-50 text-red-600 px-2 py-0.5 rounded text-xs font-bold border border-red-100">{t('rul3Months')}</span>
+                            </div>
+                            <div className="w-full bg-gray-100 rounded-full h-1.5 mb-3">
+                                <div className="bg-red-500 h-1.5 rounded-full" style={{width: '15%'}}></div>
+                            </div>
+                            <p className="text-xs text-gray-500">{t('failurePredDesc')}</p>
+                        </div>
+
+                        <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm mt-4">
+                            <div className="text-indigo-400 text-2xl mb-2">👥</div>
+                            <h4 className="font-bold text-gray-800 mb-1">{t('contractorMgt')}</h4>
+                            <p className="text-sm text-gray-500">{t('approvedVendors')}</p>
+                            <p className="text-sm text-gray-500">{t('avgPerfRating')}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            );
+        };
+
+        const Finance = () => {
+            const { t } = useI18n();
+            return (
+            <div className="space-y-6 max-w-full mx-auto">
+                <div className="mb-6">
+                    <h2 className="text-2xl font-bold text-gray-900">{t('godfreyCentre')} - {t('greenFinance')}</h2>
+                    <p className="text-gray-500 text-sm mt-1.5">{t('financeDesc')}</p>
+                </div>
+
+                <div className="grid grid-cols-4 gap-4">
+                    <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm relative">
+                        <span className="absolute top-4 right-4 bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded text-xs font-bold border border-emerald-100">{t('active')}</span>
+                        <div className="w-10 h-10 rounded-full bg-red-50 text-red-400 flex items-center justify-center text-xl mb-4">🔥</div>
+                        <h4 className="font-bold text-gray-900 text-lg">{t('fireInsure')}</h4>
+                        <p className="text-xs text-gray-500 mb-6">SafeGuard Insure</p>
+                        <div className="text-xs text-gray-400 mb-1">{t('esgPremiumDisc')}</div>
+                        <div className="font-bold text-emerald-600">5% {t('fireCertTag')}</div>
+                    </div>
+                    
+                    <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm relative">
+                        <span className="absolute top-4 right-4 bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded text-xs font-bold border border-emerald-100">{t('active')}</span>
+                        <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-400 flex items-center justify-center text-xl mb-4">🏢</div>
+                        <h4 className="font-bold text-gray-900 text-lg">{t('propInsure')}</h4>
+                        <p className="text-xs text-gray-500 mb-6">Global Asset Cover</p>
+                        <div className="text-xs text-gray-400 mb-1">{t('esgPremiumDisc')}</div>
+                        <div className="font-bold text-emerald-600">3% {t('leedPlatTag')}</div>
+                    </div>
+
+                    <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm relative">
+                        <span className="absolute top-4 right-4 bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded text-xs font-bold border border-emerald-100">{t('active')}</span>
+                        <div className="w-10 h-10 rounded-full bg-purple-50 text-purple-400 flex items-center justify-center text-xl mb-4">👥</div>
+                        <h4 className="font-bold text-gray-900 text-lg">{t('thirdPartyLiab')}</h4>
+                        <p className="text-xs text-gray-500 mb-6">City Trust Insure</p>
+                        <div className="text-xs text-gray-400 mb-1">{t('policyRenewal')}</div>
+                        <div className="font-medium text-gray-800">2026-08-10</div>
+                    </div>
+
+                    <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm relative">
+                        <span className="absolute top-4 right-4 bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded text-xs font-bold border border-emerald-100">{t('active')}</span>
+                        <div className="w-10 h-10 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center text-xl mb-4">🌧</div>
+                        <h4 className="font-bold text-gray-900 text-lg leading-tight mb-1">{t('climateRiskInsure')}</h4>
+                        <p className="text-xs text-gray-500 mb-5">EcoProtect Global</p>
+                        <div className="text-xs text-gray-400 mb-1">{t('esgPremiumDisc')}</div>
+                        <div className="font-bold text-emerald-600">10% {t('floodMitigTag')}</div>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-6 mt-6">
+                    <div className="bg-[#fffdf7] border border-amber-200 rounded-xl p-6 shadow-sm">
+                        <div className="flex justify-between items-start mb-6">
+                            <h3 className="text-xl font-bold text-emerald-700 flex items-center gap-2"><span>$</span> {t('greenFinancingLoans')}</h3>
+                            <span className="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-bold border border-amber-200">{t('riskRateIncPending')}</span>
+                        </div>
+                        
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center border-b border-amber-100 pb-3">
+                                <span className="text-gray-600 text-sm">{t('susLinkedLoanRate')}</span>
+                                <span className="font-bold text-gray-900">4.25% <span className="text-emerald-600 text-sm">{t('greenDisc')}</span></span>
+                            </div>
+                            <div className="flex justify-between items-center border-b border-amber-100 pb-3">
+                                <span className="text-gray-600 text-sm">{t('greenBondsIssued')}</span>
+                                <span className="font-bold text-gray-900">EcoBank Global ($5M)</span>
+                            </div>
+                            <div className="flex justify-between items-center border-b border-amber-100 pb-3">
+                                <span className="text-gray-600 text-sm">{t('esgRatingInv')}</span>
+                                <span className="font-bold text-emerald-600">AA {t('impactEligible')}</span>
+                            </div>
+                            <div className="flex justify-between items-center pt-1">
+                                <span className="text-gray-600 text-sm">{t('compContractStatus')}</span>
+                                <span className="font-bold text-amber-600 flex items-center gap-1">⚠ {t('fireCertExpiring')}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+                        <div className="flex justify-between items-start mb-8">
+                            <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2"><span>📈</span> {t('riskAnalytics')}</h3>
+                            <span className="text-xs text-gray-400">{t('linkedToInsure')}</span>
+                        </div>
+                        
+                        <div className="space-y-6">
+                            <div>
+                                <div className="flex justify-between text-sm mb-2"><span className="text-gray-600">{t('climateRiskExp')}</span><span className="font-bold text-emerald-500">{t('low')}</span></div>
+                                <div className="w-full bg-gray-100 rounded-full h-1.5"><div className="bg-emerald-400 h-1.5 rounded-full" style={{width: '20%'}}></div></div>
+                            </div>
+                            <div>
+                                <div className="flex justify-between text-sm mb-2"><span className="text-gray-600">{t('floodRisk')}</span><span className="font-bold text-emerald-500">{t('mitigatedZoneC')}</span></div>
+                                <div className="w-full bg-gray-100 rounded-full h-1.5"><div className="bg-emerald-400 h-1.5 rounded-full" style={{width: '10%'}}></div></div>
+                            </div>
+                            <div>
+                                <div className="flex justify-between text-sm mb-2"><span className="text-gray-600">{t('energyPriceRisk')}</span><span className="font-bold text-amber-500">{t('moderate')}</span></div>
+                                <div className="w-full bg-gray-100 rounded-full h-1.5"><div className="bg-amber-400 h-1.5 rounded-full" style={{width: '60%'}}></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="bg-[#134e4a] rounded-xl p-6 shadow-md flex justify-between items-center text-white mt-6">
+                    <div>
+                        <div className="text-emerald-200 text-xs font-bold tracking-widest uppercase mb-1">{t('incentivesSubsidies')}</div>
+                        <h3 className="text-2xl font-bold mb-2">{t('govGreenInc')}</h3>
+                        <p className="text-emerald-100/80 text-sm max-w-2xl">{t('govGreenDesc')}</p>
+                    </div>
+                    <button className="bg-white text-emerald-900 px-6 py-3 rounded-lg font-bold shadow-sm hover:bg-gray-50 transition-colors">
+                        {t('applySmartContract')}
+                    </button>
+                </div>
+            </div>
+            );
+        };
+
+        const DigitalAssets = () => {
+            const { t } = useI18n();
+            return (
+            <div className="space-y-6 max-w-full mx-auto">
+                <div className="bg-gradient-to-r from-[#2e3192] to-[#1bffff] rounded-2xl p-8 text-white shadow-lg relative overflow-hidden">
+                    <div className="absolute -right-10 -top-20 opacity-10">
+                        <svg width="300" height="300" viewBox="0 0 100 100"><polygon points="50,5 95,25 95,75 50,95 5,75 5,25" fill="white"/></svg>
+                    </div>
+                    <h2 className="text-3xl font-bold mb-3 relative z-10">{t('assetTokenization')}</h2>
+                    <p className="text-indigo-100 mb-8 max-w-xl relative z-10">{t('assetTokDesc')}</p>
+                    <button className="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-lg font-bold shadow-md flex items-center gap-2 transition-colors relative z-10">
+                        <span className="text-xl">⬡</span> {t('mintToken')}
+                    </button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-8 mt-8">
+                    <div>
+                        <h3 className="text-xs font-bold text-gray-400 mb-4 tracking-widest uppercase">{t('digitalWallet')}</h3>
+                        <div className="space-y-4">
+                            <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-10 h-10 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center text-xl">⬡</div>
+                                    <div>
+                                        <div className="text-xs text-gray-500 mb-0.5">{t('propToken')}</div>
+                                        <h4 className="font-bold text-gray-800 text-lg">{t('esgPropToken')}</h4>
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <div className="font-bold text-xl text-gray-900">100,000</div>
+                                    <div className="text-xs text-gray-400 mt-0.5">{t('unitsToken')}</div>
+                                </div>
+                            </div>
+
+                            <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-10 h-10 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center text-xl">⬡</div>
+                                    <div>
+                                        <div className="text-xs text-gray-500 mb-0.5">{t('energyDataAsset')}</div>
+                                        <h4 className="font-bold text-gray-800 text-lg">{t('solarEnergyData')}</h4>
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <div className="font-bold text-xl text-gray-900">4,500</div>
+                                    <div className="text-xs text-gray-400 mt-0.5">{t('unitsToken')}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 className="text-xs font-bold text-gray-400 mb-4 tracking-widest uppercase">{t('dataMarketplace')}</h3>
+                        <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                            <div className="p-5 border-b border-gray-100 flex justify-between items-center hover:bg-gray-50 cursor-pointer transition-colors">
+                                <div className="flex items-center gap-3">
+                                    <span className="text-indigo-400">📄</span>
+                                    <span className="font-medium text-gray-800">{t('carbonCreditCont')}</span>
+                                </div>
+                                <span className="text-emerald-500 font-bold text-sm">{t('activeLedger')}</span>
+                            </div>
+                            <div className="p-5 border-b border-gray-100 flex justify-between items-center hover:bg-gray-50 cursor-pointer transition-colors">
+                                <div className="flex items-center gap-3">
+                                    <span className="text-blue-400">🔗</span>
+                                    <span className="font-medium text-gray-800">{t('shareEsgApi')}</span>
+                                </div>
+                                <span className="text-gray-500 text-sm">{t('subscribersData')}</span>
+                            </div>
+                            <div className="p-5 flex justify-between items-center hover:bg-gray-50 cursor-pointer transition-colors">
+                                <div className="flex items-center gap-3">
+                                    <span className="text-purple-400">💱</span>
+                                    <span className="font-medium text-gray-800">{t('sellBldgData')}</span>
+                                </div>
+                                <span className="text-indigo-600 font-medium text-sm">{t('manageMarketplace')}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            );
+        };
+
+        // --- Layout Components ---
+
+        const Sidebar = ({ activeTab, setActiveTab }) => {
+            const { t } = useI18n();
+            const [assetExpanded, setAssetExpanded] = useState(true);
+
+            const NavItem = ({ id, label, icon, isSubItem = false }) => {
+                const isActive = activeTab === id;
+                return (
+                    <div 
+                        onClick={() => setActiveTab(id)}
+                        className={`cursor-pointer flex items-center px-4 py-3 rounded-lg mb-1.5 text-sm transition-all duration-200 ${
+                            isActive 
+                                ? 'bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30 shadow-inner' 
+                                : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200 font-medium border border-transparent'
+                        } ${isSubItem ? 'ml-9 py-2.5' : ''}`}
+                    >
+                        {!isSubItem && <span className="mr-3 text-lg opacity-80">{icon}</span>}
+                        <span>{label}</span>
+                    </div>
+                );
+            };
+
+            return (
+                <div className="w-[280px] bg-[#0f172a] text-white flex flex-col h-full shrink-0 shadow-2xl z-20">
+                    <div className="p-6 flex items-center gap-3 border-b border-slate-800/80 mb-4">
+                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white font-bold italic shadow-lg shadow-emerald-500/30 text-lg">V</div>
+                        <span className="text-xl font-black tracking-widest text-slate-100">ESG VISA</span>
+                    </div>
+                    
+                    <div className="flex-1 overflow-y-auto py-2 px-4">
+                        <div className="text-[11px] text-slate-500 font-bold tracking-[0.2em] mb-4 px-2 mt-2">{t('coreModules')}</div>
+                        
+                        <NavItem id="dashboard" label={t('dashboard')} icon="📈" />
+                        
+                        <div className="mb-1.5">
+                            <div 
+                                onClick={() => setAssetExpanded(!assetExpanded)}
+                                className={`cursor-pointer flex items-center justify-between px-4 py-3 rounded-lg text-sm transition-all duration-200 font-medium border ${
+                                    (activeTab === 'dataInfo' || activeTab === 'deviceMgt') && !assetExpanded
+                                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
+                                        : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200 border-transparent'
+                                }`}
+                            >
+                                <div className="flex items-center"><span className="mr-3 text-lg opacity-80">🏢</span><span>{t('assetProfile')}</span></div>
+                                <span className="text-[10px] opacity-60">{assetExpanded ? '▼' : '▶'}</span>
+                            </div>
+                            {assetExpanded && (
+                                <div className="mt-1.5 border-l-2 border-slate-800 ml-6 pl-1 py-1">
+                                    <NavItem id="dataInfo" label={t('dataInfo')} isSubItem={true} />
+                                    <NavItem id="deviceMgt" label={t('deviceMgt')} isSubItem={true} />
+                                </div>
+                            )}
+                        </div>
+                        
+                        <NavItem id="dataVault" label={t('dataVault')} icon="🗄" />
+                        <NavItem id="sustainability" label={t('sustainability')} icon="🍃" />
+                        <NavItem id="maintenance" label={t('maintenance')} icon="🔧" />
+                        <NavItem id="finance" label={t('finance')} icon="💰" />
+                        <NavItem id="digitalAssets" label={t('digitalAssets')} icon="⬡" />
+                    </div>
+
+                    <div className="p-4 border-t border-slate-800/80 bg-slate-900/50">
+                        <div className="cursor-pointer flex items-center px-4 py-3 rounded-lg text-sm text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors font-medium">
+                            <span className="mr-3 text-lg opacity-80">⚙</span><span>{t('settings')}</span>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const Header = ({ activeTab }) => {
+            const { lang, setLang, t } = useI18n();
+
+            const getTitle = () => {
+                switch(activeTab) {
+                    case 'dashboard': return t('dashboard');
+                    case 'dataInfo': return t('assetProfile') + ' / ' + t('dataInfo');
+                    case 'deviceMgt': return t('assetProfile') + ' / ' + t('deviceMgt');
+                    case 'dataVault': return t('dataVault');
+                    case 'sustainability': return t('sustainability');
+                    case 'maintenance': return t('maintenance');
+                    case 'finance': return t('finance');
+                    case 'digitalAssets': return t('digitalAssets');
+                    default: return 'ESG VISA';
+                }
+            };
+
+            return (
+                <div className="h-[72px] bg-white border-b border-gray-200 flex items-center justify-between px-8 shrink-0 shadow-sm z-10 relative">
+                    <div className="flex items-center gap-8">
+                        <h1 className="text-xl font-bold text-gray-800 tracking-tight">{getTitle()}</h1>
+                        <div className="flex items-center bg-indigo-50 text-indigo-700 px-4 py-2 rounded-lg text-sm font-bold border border-indigo-100 cursor-pointer shadow-sm hover:bg-indigo-100 transition-colors">
+                            🏢 {t('godfreyCentre')} <span className="ml-3 text-[10px] opacity-60">▼</span>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-6">
+                        <div className="flex items-center gap-2 bg-pink-50 text-pink-600 px-4 py-2 rounded-lg text-sm font-bold border border-pink-100 shadow-sm cursor-pointer hover:bg-pink-100 transition-colors">
+                            <span>ⓘ {t('normalMode')}</span>
+                            <span className="ml-2 text-[10px] opacity-60">▼</span>
+                        </div>
+                        
+                        {/* Language Toggle */}
+                        <div className="flex bg-gray-100 rounded-lg p-1 shadow-inner">
+                            <button 
+                                onClick={() => setLang('en')}
+                                className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${lang === 'en' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                            >
+                                EN
+                            </button>
+                            <button 
+                                onClick={() => setLang('zh-CN')}
+                                className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${lang === 'zh-CN' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                            >
+                                简
+                            </button>
+                            <button 
+                                onClick={() => setLang('zh-TW')}
+                                className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${lang === 'zh-TW' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                            >
+                                繁
+                            </button>
+                        </div>
+
+                        <div className="w-10 h-10 rounded-full bg-slate-800 text-white flex items-center justify-center text-sm font-bold shadow-md cursor-pointer hover:ring-2 ring-slate-400 ring-offset-2 transition-all">
+                            EM
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const AppContent = () => {
+            const [activeTab, setActiveTab] = useState('dashboard');
+
+            return (
+                <div className="flex h-screen bg-[#f8fafc] font-sans text-slate-800">
+                    <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+                    <div className="flex-1 flex flex-col overflow-hidden">
+                        <Header activeTab={activeTab} />
+                        <main className="flex-1 overflow-y-auto p-8">
+                            {activeTab === 'dashboard' && <Dashboard />}
+                            {activeTab === 'dataInfo' && <DataInfo />}
+                            {activeTab === 'deviceMgt' && <DeviceMgt />}
+                            {activeTab === 'dataVault' && <DataVault />}
+                            {activeTab === 'sustainability' && <Sustainability />}
+                            {activeTab === 'maintenance' && <Maintenance />}
+                            {activeTab === 'finance' && <Finance />}
+                            {activeTab === 'digitalAssets' && <DigitalAssets />}
+                        </main>
+                    </div>
+                </div>
+            );
+        };
+
+        const App = () => (
+            <I18nProvider>
+                <AppContent />
+            </I18nProvider>
+        );
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+<script src="user-info-handler.js?v=1774879464"></script>
+</body>
+</html>

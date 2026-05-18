@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gogf/gf/v2/frame/g"
@@ -392,6 +393,7 @@ type NominatimGeocodeResponse []struct {
 // NominatimReverseGeocodeResponse Nominatim 逆地理编码响应
 type NominatimReverseGeocodeResponse struct {
 	DisplayName string `json:"display_name"`
+	Name        string `json:"name"`
 	Lat         string `json:"lat"`
 	Lon         string `json:"lon"`
 	Address     struct {
@@ -405,6 +407,8 @@ type NominatimReverseGeocodeResponse struct {
 		Road        string `json:"road"`
 		Suburb      string `json:"suburb"`
 		Postcode    string `json:"postcode"`
+		HouseNumber string `json:"house_number"`
+		Building    string `json:"building"`
 	} `json:"address"`
 }
 
@@ -474,6 +478,8 @@ func (s *MapAPIService) nominatimReverseGeocode(ctx context.Context, latitude, l
 	params.Add("format", "json")
 	params.Add("lat", fmt.Sprintf("%.6f", latitude))
 	params.Add("lon", fmt.Sprintf("%.6f", longitude))
+	params.Add("zoom", "18")                        // zoom=18 = building level precision
+	params.Add("addressdetails", "1")
 	params.Add("accept-language", "zh-CN,zh-TW,en") // 支持简体中文、繁体中文、英文
 
 	fullURL := baseURL + "?" + params.Encode()
@@ -519,9 +525,29 @@ func (s *MapAPIService) nominatimReverseGeocode(ctx context.Context, latitude, l
 
 	district := result.Address.Suburb
 
+	// Build concise address: building/road + house_number + district + city
+	address := result.DisplayName // fallback to full display name
+	if result.Name != "" && result.Name != result.Address.Road {
+		// Nominatim returned a POI/building name
+		parts := []string{result.Name}
+		if result.Address.HouseNumber != "" {
+			parts = append(parts, result.Address.HouseNumber)
+		}
+		if result.Address.Road != "" {
+			parts = append(parts, result.Address.Road)
+		}
+		if district != "" {
+			parts = append(parts, district)
+		}
+		if city != "" {
+			parts = append(parts, city)
+		}
+		address = strings.Join(parts, ", ")
+	}
+
 	return &ReverseGeocodeResult{
-		Address:   result.DisplayName,
-		Formatted: result.DisplayName,
+		Address:   address,
+		Formatted: address,
 		Province:  province,
 		City:      city,
 		District:  district,

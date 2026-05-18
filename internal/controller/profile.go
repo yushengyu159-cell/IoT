@@ -1,9 +1,10 @@
 package controller
 
 import (
-	"math/rand"
-	"time"
+	"fabric-sdk/internal/model"
+	"fabric-sdk/internal/service"
 
+	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
 )
 
@@ -11,117 +12,117 @@ type ProfileController struct{}
 
 var Profile = new(ProfileController)
 
-// GetBuildingProfile returns the profile data for a smart building
-// GET /api/profile/building
-func (c *ProfileController) GetBuildingProfile(r *ghttp.Request) {
-	// In a real application, this would query the database or blockchain
-	// For now, we return mock data as requested
-
-	// Mock data structure
-	type BuildingProfile struct {
-		BuildingName string `json:"buildingName"`
-		Address      string `json:"address"`
-		Type         string `json:"type"`
-		YearBuilt    int    `json:"yearBuilt"`
-		GFA          string `json:"gfa"` // Gross Floor Area
-		Grade        string `json:"grade"`
-		AccreditedBy string `json:"accreditedBy"`
-		Verified     bool   `json:"verified"`
-		DigitalID    string `json:"digitalID"`
-		CarbonID     string `json:"carbonID"`
-		Coordinates  struct {
-			Lat float64 `json:"lat"`
-			Lng float64 `json:"lng"`
-		} `json:"coordinates"`
+// extractEmail gets user email from query params, headers, or cookies
+func extractEmail(r *ghttp.Request) string {
+	email := r.Get("email").String()
+	if email == "" {
+		email = r.GetHeader("X-User-Email")
 	}
-
-	profile := BuildingProfile{
-		BuildingName: "International Commerce Centre",
-		Address:      "1 Austin Road West, West Kowloon, Hong Kong",
-		Type:         "Commercial Complex",
-		YearBuilt:    2010,
-		GFA:          "312,917 m²",
-		Grade:        "A",
-		AccreditedBy: "BEAM Plus",
-		Verified:     true,
-		DigitalID:    "12325",
-		CarbonID:     generateRandomHash(), // Simulate dynamic hash
-		Coordinates: struct {
-			Lat float64 `json:"lat"`
-			Lng float64 `json:"lng"`
-		}{
-			Lat: 22.3034,
-			Lng: 114.1602,
-		},
+	if email == "" {
+		if cookieEmail := r.Cookie.Get("user_email"); cookieEmail != nil {
+			email = cookieEmail.String()
+		}
 	}
-
-	r.Response.WriteJson(ghttp.DefaultHandlerResponse{
-		Code:    200,
-		Message: "Success",
-		Data:    profile,
-	})
+	return email
 }
 
-// GetBlockchainRecord returns the blockchain record details for a given hash
-// GET /api/profile/blockchain-record
-func (c *ProfileController) GetBlockchainRecord(r *ghttp.Request) {
-	hashID := r.Get("hashId").String()
-	if hashID == "" {
-		r.Response.WriteJson(ghttp.DefaultHandlerResponse{Code: 400, Message: "hashId is required"})
+// CreateBuildingProfile POST /api/profile/building
+func (c *ProfileController) CreateBuildingProfile(r *ghttp.Request) {
+	var req model.BuildingProfileRequest
+	if err := r.Parse(&req); err != nil {
+		r.Response.WriteJson(ghttp.DefaultHandlerResponse{Code: 400, Message: "Invalid parameters"})
 		return
 	}
 
-	// Mock blockchain record
-	record := map[string]interface{}{
-		"txId":      "0x" + generateRandomHex(64),
-		"blockNum":  rand.Intn(10000000),
-		"timestamp": time.Now().Format(time.RFC3339),
-		"signer":    "CN=Admin,OU=Fabric,O=Hyperledger,C=US",
-		"status":    "VALID",
-		"dataHash":  hashID,
+	email := req.Email
+	if email == "" {
+		email = extractEmail(r)
+	}
+	if email == "" {
+		r.Response.WriteJson(ghttp.DefaultHandlerResponse{Code: 400, Message: "email is required"})
+		return
+	}
+	req.Email = email
+
+	result, err := service.UpsertBuildingProfile(r.Context(), &req)
+	if err != nil {
+		g.Log().Error(r.Context(), "Save building profile failed:", err)
+		r.Response.WriteJson(ghttp.DefaultHandlerResponse{Code: 500, Message: "Failed to save: " + err.Error()})
+		return
 	}
 
 	r.Response.WriteJson(ghttp.DefaultHandlerResponse{
-		Code:    200,
-		Message: "Success",
-		Data:    record,
+		Code: 200, Message: "Success", Data: result,
 	})
 }
 
-// Helper functions
-func generateRandomHash() string {
-	return "0x8A2" + generateRandomHex(3) + "..." + generateRandomHex(3) + "fo1"
-}
-
-func generateRandomHex(n int) string {
-	const letters = "0123456789abcdef"
-	b := make([]byte, n)
-	for i := range b {
-		b[i] = letters[rand.Intn(len(letters))]
+// GetBuildingProfile GET /api/profile/building?email=X
+func (c *ProfileController) GetBuildingProfile(r *ghttp.Request) {
+	email := extractEmail(r)
+	if email == "" {
+		r.Response.WriteJson(ghttp.DefaultHandlerResponse{Code: 400, Message: "email is required"})
+		return
 	}
-	return string(b)
-}
 
-// GetCertificate returns the BEAM Plus certification details
-// GET /api/profile/certificate
-func (c *ProfileController) GetCertificate(r *ghttp.Request) {
-	// Mock certificate data
-	certificate := map[string]interface{}{
-		"buildingName":     "International Commerce Centre",
-		"address":          "1 Austin Road West, West Kowloon, Hong Kong",
-		"certificationType": "NB", // NB = New Building, EB = Existing Building
-		"grade":            "A",
-		"validityPeriod":   "2020-01-01 to 2025-12-31",
-		"txId":             "0x" + generateRandomHex(64),
-		"certificateImage": "", // Can be a URL to certificate image
-		"issuedDate":       "2020-01-01",
-		"expiryDate":       "2025-12-31",
-		"issuer":           "BEAM Plus",
+	result, err := service.AutoInitFromRegistration(r.Context(), email)
+	if err != nil {
+		r.Response.WriteJson(ghttp.DefaultHandlerResponse{Code: 404, Message: "Building profile not found: " + err.Error()})
+		return
 	}
 
 	r.Response.WriteJson(ghttp.DefaultHandlerResponse{
-		Code:    200,
-		Message: "Success",
-		Data:    certificate,
+		Code: 200, Message: "Success", Data: result,
+	})
+}
+
+// GetBlockchainRecord GET /api/profile/blockchain-record?email=X
+func (c *ProfileController) GetBlockchainRecord(r *ghttp.Request) {
+	email := extractEmail(r)
+	if email == "" {
+		r.Response.WriteJson(ghttp.DefaultHandlerResponse{Code: 400, Message: "email is required"})
+		return
+	}
+
+	chainData, err := service.GetBlockchainRecord(r.Context(), email)
+	if err != nil {
+		r.Response.WriteJson(ghttp.DefaultHandlerResponse{Code: 500, Message: "Blockchain read failed: " + err.Error()})
+		return
+	}
+
+	verified, _ := service.VerifyDataIntegrity(r.Context(), email)
+	chainData["verified"] = verified
+
+	r.Response.WriteJson(ghttp.DefaultHandlerResponse{
+		Code: 200, Message: "Success", Data: chainData,
+	})
+}
+
+// GetCertificate GET /api/profile/certificate?email=X
+func (c *ProfileController) GetCertificate(r *ghttp.Request) {
+	email := extractEmail(r)
+	if email == "" {
+		r.Response.WriteJson(ghttp.DefaultHandlerResponse{Code: 400, Message: "email is required"})
+		return
+	}
+
+	asset, err := service.GetBuildingProfile(email)
+	if err != nil {
+		r.Response.WriteJson(ghttp.DefaultHandlerResponse{Code: 404, Message: "No building profile found"})
+		return
+	}
+
+	r.Response.WriteJson(ghttp.DefaultHandlerResponse{
+		Code: 200, Message: "Success",
+		Data: map[string]interface{}{
+			"buildingName":   asset.BuildingName,
+			"address":        asset.BuildingAddr,
+			"certifications": asset.Certifications,
+			"grade":          asset.Grade,
+			"accreditedBy":   asset.AccreditedBy,
+			"chainTxId":      asset.ChainTxID,
+			"verified":       asset.Verified,
+			"createdAt":      asset.CreatedAt,
+			"updatedAt":      asset.UpdatedAt,
+		},
 	})
 }

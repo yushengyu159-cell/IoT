@@ -105,7 +105,7 @@ func PingDatabase() error {
 }
 
 func safeDropAndMigrate(db *gorm.DB) error {
-	err := db.AutoMigrate(&model.ESGFile{}, &model.DID{}, &model.FailedRegistration{})
+	err := db.AutoMigrate(&model.ESGFile{}, &model.DID{}, &model.FailedRegistration{}, &model.BuildingAsset{})
 	if err == nil {
 		return nil
 	}
@@ -116,8 +116,9 @@ func safeDropAndMigrate(db *gorm.DB) error {
 		db.Exec("DROP TABLE IF EXISTS esg_files")
 		db.Exec("DROP TABLE IF EXISTS dids")
 		db.Exec("DROP TABLE IF EXISTS failed_registrations")
+		db.Exec("DROP TABLE IF EXISTS building_assets")
 
-		err = db.AutoMigrate(&model.ESGFile{}, &model.DID{}, &model.FailedRegistration{})
+		err = db.AutoMigrate(&model.ESGFile{}, &model.DID{}, &model.FailedRegistration{}, &model.BuildingAsset{})
 		if err != nil {
 			return fmt.Errorf("重新迁移失败: %v", err)
 		}

@@ -20,9 +20,10 @@ import (
 
 // ChaincodeService 链码服务
 type ChaincodeService struct {
-	gateway  *client.Gateway
-	network  *client.Network
-	contract *client.Contract
+	gateway   *client.Gateway
+	network   *client.Network
+	contract  *client.Contract
+	org2Conn  *grpc.ClientConn
 }
 
 var Chaincode = new(ChaincodeService)
@@ -36,13 +37,23 @@ func (s *ChaincodeService) InitChaincodeService(ctx context.Context) error {
 	defer cancel()
 
 	// Org1 Peer TLS CA
-	creds := credentials.NewTLS(&tls.Config{InsecureSkipVerify: true})
+	// Load peer TLS CA certificate for proper TLS
+	tlsCAPath := "/app/configs/fabric/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"
+	var creds credentials.TransportCredentials
+	if tlsCABytes, tlsErr := os.ReadFile(tlsCAPath); tlsErr == nil {
+		cp := x509.NewCertPool()
+		cp.AppendCertsFromPEM(tlsCABytes)
+		creds = credentials.NewTLS(&tls.Config{RootCAs: cp, ServerName: "peer0.org1.example.com", InsecureSkipVerify: true})
+	} else {
+		g.Log().Warning(ctx, "TLS CA not found, using insecure:", tlsErr)
+		creds = credentials.NewTLS(&tls.Config{InsecureSkipVerify: true})
+	}
 	// 在Docker容器中使用主机网络访问Fabric
 	peerURL := os.Getenv("FABRIC_PEER_URL")
 	if peerURL == "" {
-		peerURL = "host.docker.internal:7051"  // Docker Desktop
+		peerURL = "peer0.org1.example.com:7051"  // Docker Desktop
 		if _, err := net.Dial("tcp", "host.docker.internal:7051"); err != nil {
-			peerURL = "172.17.0.1:7051"  // Linux Docker
+			peerURL = "peer0.org1.example.com:7051"  // Linux Docker
 		}
 	}
 	g.Log().Info(ctx, "🔗 连接Fabric Peer:", peerURL)
@@ -52,9 +63,13 @@ func (s *ChaincodeService) InitChaincodeService(ctx context.Context) error {
 		return fmt.Errorf("创建gRPC连接失败: %v", err)
 	}
 
+
+
+
+
 	// 2. 加载 Org1 Admin 证书与私钥
-	certPath := "/root/home/go/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/signcerts/Admin@org1.example.com-cert.pem"
-	keyPath := "/root/home/go/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/keystore/priv_sk"
+	certPath := "/app/configs/fabric/organizations/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/signcerts/Admin@org1.example.com-cert.pem"
+	keyPath := "/app/configs/fabric/organizations/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/keystore/priv_sk"
 	certBytes, err := os.ReadFile(certPath)
 	if err != nil {
 		return fmt.Errorf("读取证书文件失败: %v", err)
@@ -88,8 +103,35 @@ func (s *ChaincodeService) InitChaincodeService(ctx context.Context) error {
 		return fmt.Errorf("创建身份失败: %v", err)
 	}
 
-	// 3. 创建Gateway连接
-	gw, err := client.Connect(id, client.WithClientConnection(conn), client.WithSign(sign))
+	// 2b. 连接Org2 Peer（用于双组织背书）
+	org2PeerURL := os.Getenv("FABRIC_ORG2_PEER_URL")
+	if org2PeerURL == "" {
+		org2PeerURL = "peer0.org2.example.com:9051"
+	}
+	g.Log().Info(ctx, "🔗 连接Org2 Peer:", org2PeerURL)
+	org2TLSCAPath := "/app/configs/fabric/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt"
+	if org2TLSBytes, org2Err := os.ReadFile(org2TLSCAPath); org2Err == nil {
+		org2CP := x509.NewCertPool()
+		org2CP.AppendCertsFromPEM(org2TLSBytes)
+		org2Creds := credentials.NewTLS(&tls.Config{RootCAs: org2CP, ServerName: "peer0.org2.example.com"})
+		s.org2Conn, err = grpc.DialContext(grpcCtx, org2PeerURL, grpc.WithTransportCredentials(org2Creds))
+		if err != nil {
+			g.Log().Warning(ctx, "连接Org2 Peer失败:", err)
+			s.org2Conn = nil
+		} else {
+			g.Log().Info(ctx, "✅ Org2 Peer gRPC连接成功")
+		}
+	} else {
+		g.Log().Warning(ctx, "Org2 TLS CA未找到:", org2Err)
+	}
+
+	// 3. 创建Gateway连接（传入Org1 + Org2 peer连接）
+	gwOpts := []client.ConnectOption{client.WithClientConnection(conn), client.WithSign(sign)}
+	if s.org2Conn != nil {
+		gwOpts = append(gwOpts, client.WithClientConnection(s.org2Conn))
+		g.Log().Info(ctx, "✅ Gateway已包含Org2 Peer连接")
+	}
+	gw, err := client.Connect(id, gwOpts...)
 	if err != nil {
 		return fmt.Errorf("创建Gateway连接失败: %v", err)
 	}
@@ -168,7 +210,7 @@ func (s *ChaincodeService) VerifyDIDOnChain(ctx context.Context, email, password
 	return out, nil
 }
 
-// WriteRecord 写入记录
+// WriteRecord 写入记录（显式双组织背书，满足 AND 策略）
 func (s *ChaincodeService) WriteRecord(ctx context.Context, key, value string) (map[string]interface{}, error) {
 	g.Log().Info(ctx, "📝 开始写入记录:", key, value)
 
@@ -176,14 +218,29 @@ func (s *ChaincodeService) WriteRecord(ctx context.Context, key, value string) (
 		return nil, fmt.Errorf("链码合约未初始化")
 	}
 
-	// 调用链码
-	result, err := s.contract.SubmitTransaction("WriteRecord", key, value)
+	// 显式指定 Org1 + Org2 双组织背书，满足背书策略
+	proposal, err := s.contract.NewProposal(
+		"WriteRecord",
+		client.WithArguments(key, value),
+		client.WithEndorsingOrganizations("Org1MSP", "Org2MSP"),
+	)
 	if err != nil {
-		g.Log().Error(ctx, "写入记录失败:", err)
-		return nil, fmt.Errorf("写入记录失败: %v", err)
+		return nil, fmt.Errorf("WriteRecord 构建提案失败: %v", err)
 	}
 
-	g.Log().Info(ctx, "✅ 写入记录成功:", key)
+	endorsed, err := proposal.Endorse()
+	if err != nil {
+		return nil, fmt.Errorf("WriteRecord 背书失败: %v", err)
+	}
+
+	result := endorsed.Result()
+	commit, err := endorsed.Submit()
+	if err != nil {
+		return nil, fmt.Errorf("WriteRecord 提交失败: %v", err)
+	}
+
+	txid := commit.TransactionID()
+	g.Log().Info(ctx, "✅ 写入记录成功:", key, "txid:", txid)
 
 	return map[string]interface{}{
 		"status":    "success",
@@ -195,7 +252,7 @@ func (s *ChaincodeService) WriteRecord(ctx context.Context, key, value string) (
 	}, nil
 }
 
-// ReadRecord 读取记录
+// ReadRecord 读取记录（显式指定 Org1 背书）
 func (s *ChaincodeService) ReadRecord(ctx context.Context, key string) (map[string]interface{}, error) {
 	g.Log().Info(ctx, "📖 开始读取记录:", key)
 
@@ -203,10 +260,18 @@ func (s *ChaincodeService) ReadRecord(ctx context.Context, key string) (map[stri
 		return nil, fmt.Errorf("链码合约未初始化")
 	}
 
-	// 调用链码
-	result, err := s.contract.EvaluateTransaction("ReadRecord", key)
+	// 读取操作也需要显式背书，满足背书策略后 evaluate
+	proposal, err := s.contract.NewProposal(
+		"ReadRecord",
+		client.WithArguments(key),
+		client.WithEndorsingOrganizations("Org1MSP"),
+	)
 	if err != nil {
-		g.Log().Error(ctx, "读取记录失败:", err)
+		return nil, fmt.Errorf("ReadRecord 构建提案失败: %v", err)
+	}
+
+	result, err := proposal.Evaluate()
+	if err != nil {
 		return nil, fmt.Errorf("读取记录失败: %v", err)
 	}
 
@@ -323,22 +388,39 @@ func (s *ChaincodeService) CreateAssetWithMetadata(ctx context.Context, assetID,
         return nil, fmt.Errorf("链码合约未初始化")
     }
 
-    result, err := s.contract.SubmitTransaction(
+    // 手动双组织背书，满足 AND(Org1MSP, Org2MSP) 策略
+    proposal, err := s.contract.NewProposal(
         "CreateAssetWithMetadata",
-        assetID,
-        color,
-        fmt.Sprintf("%d", size),
-        owner,
-        fmt.Sprintf("%d", appraisedValue),
+        client.WithArguments(assetID, color, fmt.Sprintf("%d", size), owner, fmt.Sprintf("%d", appraisedValue)),
+        client.WithEndorsingOrganizations("Org1MSP", "Org2MSP"),
     )
     if err != nil {
-        g.Log().Error(ctx, "CreateAssetWithMetadata 调用失败:", err)
-        return nil, fmt.Errorf("CreateAssetWithMetadata 调用失败: %v", err)
+        g.Log().Error(ctx, "CreateAssetWithMetadata 构建提案失败:", err)
+        return nil, fmt.Errorf("CreateAssetWithMetadata 构建提案失败: %v", err)
     }
-    
-    // 添加调试日志
-    g.Log().Info(ctx, "🔍 链码调用成功，返回结果长度:", len(result))
-    g.Log().Info(ctx, "🔍 链码返回原始数据:", string(result))
+
+    endorsed, err := proposal.Endorse()
+    if err != nil {
+        g.Log().Error(ctx, "CreateAssetWithMetadata 背书失败:", err)
+        return nil, fmt.Errorf("CreateAssetWithMetadata 背书失败: %v", err)
+    }
+
+    result := endorsed.Result()
+    g.Log().Info(ctx, "🔍 背书成功，返回结果长度:", len(result))
+    g.Log().Info(ctx, "🔍 返回原始数据:", string(result))
+
+    commit, err := endorsed.Submit()
+    if err != nil {
+        g.Log().Error(ctx, "CreateAssetWithMetadata 提交失败:", err)
+        return nil, fmt.Errorf("CreateAssetWithMetadata 提交失败: %v", err)
+    }
+
+    if status, stErr := commit.Status(); stErr == nil {
+        if !status.Successful {
+            return nil, fmt.Errorf("CreateAssetWithMetadata 交易未成功，状态码: %d", status.Code)
+        }
+        g.Log().Info(ctx, "✅ 交易已上链") 
+    }
 
     var metadata map[string]interface{}
     if err := json.Unmarshal(result, &metadata); err != nil {
